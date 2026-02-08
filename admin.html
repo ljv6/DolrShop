@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة إدارة Dolr</title>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f0f2f5; padding: 20px; direction: rtl; }
+        .admin-container { max-width: 800px; margin: auto; }
+        .section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h2 { border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
+        input { width: 95%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        button { background: #222; color: #ffd700; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .p-item { display: flex; align-items: center; justify-content: space-between; background: #fafafa; padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .del-btn { background: #ff4d4d; color: white; padding: 5px 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <h1>إدارة متجرك 🛠️</h1>
+
+    <div class="section">
+        <h2>🎨 هوية المتجر</h2>
+        <input type="text" id="set-name" placeholder="اسم المتجر">
+        <input type="text" id="set-logo" placeholder="رابط اللوقو">
+        <input type="text" id="set-hero" placeholder="عنوان المتجر الكبير">
+        <button onclick="updateSettings()">حفظ الإعدادات</button>
+    </div>
+
+    <div class="section">
+        <h2>📦 إضافة منتج جديد</h2>
+        <input type="text" id="p-name" placeholder="اسم المنتج">
+        <input type="number" id="p-price" placeholder="السعر">
+        <input type="number" id="p-old" placeholder="السعر القديم">
+        <input type="text" id="p-img" placeholder="رابط صورة المنتج">
+        <button onclick="addProduct()">إضافة للمتجر</button>
+    </div>
+
+    <div class="section">
+        <h2>🛒 المنتجات الحالية</h2>
+        <div id="admin-list"></div>
+    </div>
+</div>
+
+<script>
+    function updateSettings() {
+        const data = {
+            name: document.getElementById('set-name').value,
+            logo: document.getElementById('set-logo').value,
+            hero: document.getElementById('set-hero').value
+        };
+        localStorage.setItem('dolr_settings', JSON.stringify(data));
+        alert("تم تحديث الواجهة!");
+    }
+
+    function addProduct() {
+        let products = JSON.parse(localStorage.getItem('dolr_products')) || [];
+        products.push({
+            id: Date.now(),
+            name: document.getElementById('p-name').value,
+            price: document.getElementById('p-price').value,
+            oldPrice: document.getElementById('p-old').value,
+            img: document.getElementById('p-img').value
+        });
+        localStorage.setItem('dolr_products', JSON.stringify(products));
+        render();
+    }
+
+    function deleteP(id) {
+        let products = JSON.parse(localStorage.getItem('dolr_products'));
+        localStorage.setItem('dolr_products', JSON.stringify(products.filter(p => p.id !== id)));
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById('admin-list');
+        const products = JSON.parse(localStorage.getItem('dolr_products')) || [];
+        list.innerHTML = products.map(p => `
+            <div class="p-item">
+                <span>${p.name} (${p.price} $)</span>
+                <button class="del-btn" onclick="deleteP(${p.id})">حذف</button>
+            </div>
+        `).join('');
+    }
+    render();
+</script>
+</body>
+</html>
