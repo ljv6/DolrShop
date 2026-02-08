@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="tab-title">Dolr Store | متجر وولف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #080808;
+            --card-bg: #121212;
+            --accent: #ffd700;
+            --text-main: #ffffff;
+            --text-muted: #888;
+        }
+        body { background: var(--bg-color); color: var(--text-main); font-family: 'Cairo', sans-serif; margin: 0; }
+        
+        /* Navbar */
+        nav { background: var(--card-bg); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; sticky; top: 0; z-index: 100; }
+        .logo img { height: 45px; border-radius: 5px; }
+
+        /* Hero Section */
+        .hero { text-align: center; padding: 60px 20px; background: linear-gradient(180deg, #121212 0%, #080808 100%); }
+        .hero h1 { color: var(--accent); font-size: 2rem; margin-bottom: 10px; }
+
+        /* Grid */
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+
+        /* Product Card */
+        .card { background: var(--card-bg); border-radius: 15px; padding: 20px; text-align: center; border: 1px solid #1a1a1a; transition: 0.3s; position: relative; }
+        .card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        .card img { width: 100%; height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 15px; }
+        .card h3 { font-size: 1.1rem; margin: 10px 0; height: 50px; }
+        .price-box { margin-bottom: 15px; }
+        .curr-price { color: var(--accent); font-size: 1.4rem; font-weight: bold; }
+        .old-price { color: var(--text-muted); text-decoration: line-through; margin-right: 8px; font-size: 0.9rem; }
+        
+        .buy-btn { background: var(--accent); color: #000; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .buy-btn:hover { opacity: 0.8; }
+
+        footer { text-align: center; padding: 40px; color: var(--text-muted); border-top: 1px solid #1a1a1a; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo"><img id="store-logo" src="" alt="لوقو المتجر"></div>
+    <div id="store-name-nav" style="font-weight: bold;"></div>
+    <div>🛒</div>
+</nav>
+
+<section class="hero">
+    <h1 id="hero-title">تحميل...</h1>
+    <p>أفضل الخدمات الرقمية بأقل الأسعار</p>
+</section>
+
+<div class="container">
+    <div class="grid" id="product-display">
+        </div>
+</div>
+
+<footer>
+    <p>© <span id="footer-name"></span> | 2026 صنع بإتقان</p>
+</footer>
+
+<script>
+    function loadStore() {
+        const settings = JSON.parse(localStorage.getItem('dolr_settings')) || {
+            name: "Dolr Shop",
+            logo: "https://via.placeholder.com/150/FFD700/000000?text=WOLF",
+            hero: "وولف بلس"
+        };
+        const products = JSON.parse(localStorage.getItem('dolr_products')) || [];
+
+        // تحديث الهوية
+        document.getElementById('tab-title').innerText = settings.name;
+        document.getElementById('store-logo').src = settings.logo;
+        document.getElementById('store-name-nav').innerText = settings.name;
+        document.getElementById('hero-title').innerText = settings.hero;
+        document.getElementById('footer-name').innerText = settings.name;
+
+        // عرض المنتجات
+        const container = document.getElementById('product-display');
+        container.innerHTML = products.map(p => `
+            <div class="card">
+                <img src="${p.img}" alt="${p.name}">
+                <h3>${p.name}</h3>
+                <div class="price-box">
+                    <span class="curr-price">${p.price} $</span>
+                    <span class="old-price">${p.oldPrice} $</span>
+                </div>
+                <button class="buy-btn">إضافة للسلة</button>
+            </div>
+        `).join('');
+    }
+    window.onload = loadStore;
+</script>
+</body>
+</html>
