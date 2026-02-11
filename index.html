@@ -1,12 +1,126 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Store</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Fashion | متجر الأزياء الفاخرة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .hero-gradient { background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)); }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <nav class="flex items-center justify-between px-6 md:px-12 py-6 border-b border-gray-100 uppercase tracking-widest text-sm sticky top-0 bg-white z-50">
+        <div class="flex gap-6 items-center">
+            <button class="hover:opacity-50 transition">القائمة</button>
+            <button class="hidden md:block hover:opacity-50 transition">بحث</button>
+        </div>
+        
+        <h1 class="text-xl md:text-2xl font-serif font-bold tracking-[0.2em] text-center">LUXURY FASHION</h1>
+        
+        <div class="flex gap-6 items-center">
+            <span class="hidden md:inline cursor-pointer hover:opacity-50 transition">حسابي</span>
+            <div class="relative cursor-pointer group">
+                <span class="text-lg">🛒</span>
+                <span class="absolute -top-2 -right-2 bg-black text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-sans">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative h-[85vh] w-full overflow-hidden">
+        <div class="absolute inset-0 hero-gradient z-10"></div>
+        <img 
+            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070" 
+            alt="Hero" 
+            class="w-full h-full object-cover scale-105"
+        />
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-white text-center z-20 px-4">
+            <span class="uppercase tracking-[0.4em] mb-4 text-xs md:text-sm animate-pulse">مجموعة شتاء 2026</span>
+            <h2 class="text-5xl md:text-8xl font-serif mb-8 drop-shadow-lg">أناقة بلا حدود</h2>
+            <button class="px-12 py-4 border border-white hover:bg-white hover:text-black transition-all duration-500 uppercase tracking-[0.2em] text-sm">
+                تسوق الآن
+            </button>
+        </div>
+    </section>
+
+    <section class="px-6 md:px-12 py-24">
+        <div class="flex justify-between items-end mb-16">
+            <div>
+                <h3 class="text-3xl md:text-4xl font-serif">التصنيفات</h3>
+                <div class="h-0.5 w-16 bg-black mt-3"></div>
+            </div>
+            <button class="text-xs uppercase tracking-widest border-b border-black pb-1 hover:opacity-50 transition">عرض الكل</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="group relative overflow-hidden cursor-pointer h-[600px]">
+                <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500"></div>
+                <div class="absolute bottom-10 right-10 text-white">
+                    <h4 class="text-3xl font-serif mb-2">الفساتين</h4>
+                    <p class="text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500">استكشف المجموعة ←</p>
+                </div>
+            </div>
+            <div class="group relative overflow-hidden cursor-pointer h-[600px]">
+                <img src="https://images.unsplash.com/photo-1584917033904-7911ecf54751?q=80&w=1000" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500"></div>
+                <div class="absolute bottom-10 right-10 text-white">
+                    <h4 class="text-3xl font-serif mb-2">الحقائب</h4>
+                    <p class="text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500">استكشف المجموعة ←</p>
+                </div>
+            </div>
+            <div class="group relative overflow-hidden cursor-pointer h-[600px]">
+                <img src="https://images.unsplash.com/photo-1535633302704-5043d47f657e?q=80&w=1000" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500"></div>
+                <div class="absolute bottom-10 right-10 text-white">
+                    <h4 class="text-3xl font-serif mb-2">الإكسسوارات</h4>
+                    <p class="text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500">استكشف المجموعة ←</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-[#fcfcfc] px-6 md:px-12 py-24">
+        <h3 class="text-center text-4xl font-serif mb-20 tracking-wide">وصل حديثاً</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="group cursor-pointer">
+                <div class="aspect-[3/4] bg-gray-200 mb-6 overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1000" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <button class="absolute bottom-0 left-0 right-0 bg-black text-white py-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 text-xs uppercase tracking-widest">
+                        أضف إلى السلة
+                    </button>
+                </div>
+                <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-2">Luxury Studio</p>
+                <h5 class="text-sm font-medium hover:underline">معطف كشمير رمادي</h5>
+                <p class="mt-2 text-gray-900 font-serif font-bold">2,450 ر.س</p>
+            </div>
+            <div class="group cursor-pointer">
+                <div class="aspect-[3/4] bg-gray-200 mb-6 overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <button class="absolute bottom-0 left-0 right-0 bg-black text-white py-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 text-xs uppercase tracking-widest">
+                        أضف إلى السلة
+                    </button>
+                </div>
+                <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-2">Luxury Studio</p>
+                <h5 class="text-sm font-medium hover:underline">طقم صيفي ناعم</h5>
+                <p class="mt-2 text-gray-900 font-serif font-bold">1,800 ر.س</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-black text-white px-6 md:px-12 py-20 text-center">
+        <h2 class="text-2xl font-serif tracking-[0.3em] mb-8">LUXURY FASHION</h2>
+        <p class="text-gray-500 text-sm max-w-md mx-auto leading-loose mb-10">انضم إلى عالمنا لتصلك أحدث المجموعات الحصرية والخصومات السنوية قبل الجميع.</p>
+        <div class="flex justify-center gap-8 text-xs uppercase tracking-[0.2em]">
+            <a href="#" class="hover:text-gray-400">انستقرام</a>
+            <a href="#" class="hover:text-gray-400">تويتر</a>
+            <a href="#" class="hover:text-gray-400">سناب شات</a>
+        </div>
+    </footer>
+
+</body>
 </html>
