@@ -1,8 +1,9 @@
+// ملف تعريف البانرات المحدث - Dolr Plus
 const banners = [
     {
         title: "DOLR PLUS",
         subtitle: "موثوق في مركز الأعمال السعودي",
-        image: "E9BBC38E-7D19-4DFD-8FF8-344F41EC7B1C.jpeg", 
+        image: "IMG_7606.jpeg", 
         opacity: "opacity-80" 
     },
     {
@@ -13,8 +14,7 @@ const banners = [
     }
 ];
 
-// تأكد من تصدير المصفوفة إذا كنت تستخدم نظام الوحدات، 
-// أو اتركها هكذا إذا كنت تستدعي الملف مباشرة في HTML
+// تصدير البيانات
 if (typeof module !== 'undefined') {
     module.exports = banners;
 }
