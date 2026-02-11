@@ -3,134 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luxury Store | الإدارة الذكية</title>
+    <title>Luxury Store | تصنيفات أفقية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Tajawal', sans-serif; scroll-behavior: smooth; }
+        body { font-family: 'Tajawal', sans-serif; }
         .font-serif { font-family: 'Playfair Display', serif; }
-        .product-card:hover .add-to-cart { transform: translateY(0); opacity: 1; }
+        /* منع التفاف العناصر لجعلها أفقية دائماً في الجوال إذا زاد عددها */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-white">
 
     <nav class="flex items-center justify-between px-8 py-6 border-b border-gray-100 sticky top-0 bg-white/90 backdrop-blur-md z-50">
-        <div class="flex-1 flex gap-4 text-xs uppercase tracking-widest">
-            <a href="#" class="hover:text-gold-600 transition">الرئيسية</a>
-            <a href="#shop" class="hover:text-gold-600 transition">المتجر</a>
+        <div class="text-xs uppercase tracking-widest flex gap-4">
+             <span class="cursor-pointer hover:text-gray-400 transition">القائمة</span>
         </div>
-        <h1 class="text-2xl font-serif font-bold tracking-[0.3em] flex-1 text-center">LUXURY</h1>
-        <div class="flex-1 flex justify-end gap-4">
-            <span id="cart-count" class="bg-black text-white text-[10px] px-2 py-0.5 rounded-full">0</span>
-            <span class="cursor-pointer">🛒</span>
+        <h1 class="text-2xl font-serif font-bold tracking-[0.3em]">LUXURY</h1>
+        <div class="flex gap-4 items-center">
+            <span class="text-lg cursor-pointer">🛒</span>
         </div>
     </nav>
 
-    <section class="h-[70vh] relative overflow-hidden bg-gray-100">
-        <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2070" class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white">
-            <h2 class="text-6xl font-serif mb-4">تشكيلة 2026</h2>
-            <p class="tracking-[0.5em] text-sm uppercase">الفخامة في أدق التفاصيل</p>
+    <section class="px-8 py-12">
+        <div class="mb-8">
+            <h3 class="text-2xl font-serif tracking-wide">اكتشف مجموعتنا</h3>
+            <div class="h-0.5 w-12 bg-black mt-2"></div>
         </div>
-    </section>
 
-    <section class="px-8 py-20 bg-gray-50">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="relative h-64 group overflow-hidden cursor-pointer">
+        <div class="flex flex-row overflow-x-auto no-scrollbar gap-4 md:grid md:grid-cols-4 md:overflow-visible">
+            
+            <div class="min-w-[250px] md:min-w-full relative h-80 group overflow-hidden cursor-pointer">
                 <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=1000" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                <div class="absolute inset-0 bg-black/20 flex items-center justify-center text-white text-xl font-serif">أحذية</div>
-            </div>
-            <div class="relative h-64 group overflow-hidden cursor-pointer">
-                <img src="https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=1000" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                <div class="absolute inset-0 bg-black/20 flex items-center justify-center text-white text-xl font-serif">إكسسوارات</div>
-            </div>
-            <div class="relative h-64 group overflow-hidden cursor-pointer">
-                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                <div class="absolute inset-0 bg-black/20 flex items-center justify-center text-white text-xl font-serif">ملابس</div>
-            </div>
-            <div class="relative h-64 group overflow-hidden cursor-pointer">
-                <img src="https://images.unsplash.com/photo-1584917033904-7911ecf54751?q=80&w=1000" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                <div class="absolute inset-0 bg-black/20 flex items-center justify-center text-white text-xl font-serif">حقائب</div>
-            </div>
-        </div>
-    </section>
-
-    <section id="shop" class="px-8 py-20">
-        <h3 class="text-center font-serif text-3xl mb-12">المنتجات المختارة</h3>
-        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            </div>
-    </section>
-
-    <footer class="bg-white border-t border-gray-100 pt-16 pb-8">
-        <div class="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-right">
-            <div>
-                <h4 class="font-bold mb-4">عن المتجر</h4>
-                <p class="text-gray-500 text-sm leading-7">نحن نقدم أرقى تصاميم الموضة العالمية بجودة لا تضاهى لتناسب ذوقكم الرفيع.</p>
-            </div>
-            <div>
-                <h4 class="font-bold mb-4">روابط سريعة</h4>
-                <ul class="text-gray-500 text-sm space-y-2">
-                    <li><a href="#" class="hover:text-black">سياسة الاستبدال</a></li>
-                    <li><a href="#" class="hover:text-black">الشحن والتوصيل</a></li>
-                    <li><a href="#" class="hover:text-black">الأسئلة الشائعة</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="font-bold mb-4">تابعنا على</h4>
-                <div class="flex justify-center md:justify-start gap-6">
-                    <a href="https://instagram.com" class="group">
-                        <span class="text-gray-400 group-hover:text-pink-600 transition text-sm tracking-widest uppercase italic">Instagram</span>
-                    </a>
-                    <a href="https://twitter.com" class="group">
-                        <span class="text-gray-400 group-hover:text-blue-400 transition text-sm tracking-widest uppercase italic">Twitter</span>
-                    </a>
-                    <a href="https://snapchat.com" class="group">
-                        <span class="text-gray-400 group-hover:text-yellow-500 transition text-sm tracking-widest uppercase italic">Snapchat</span>
-                    </a>
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <h4 class="text-white text-2xl font-serif border-b-2 border-white/50 pb-1">الأحذية</h4>
                 </div>
             </div>
+
+            <div class="min-w-[250px] md:min-w-full relative h-80 group overflow-hidden cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=1000" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <h4 class="text-white text-2xl font-serif border-b-2 border-white/50 pb-1">الإكسسوارات</h4>
+                </div>
+            </div>
+
+            <div class="min-w-[250px] md:min-w-full relative h-80 group overflow-hidden cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <h4 class="text-white text-2xl font-serif border-b-2 border-white/50 pb-1">الملابس</h4>
+                </div>
+            </div>
+
+            <div class="min-w-[250px] md:min-w-full relative h-80 group overflow-hidden cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1584917033904-7911ecf54751?q=80&w=1000" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <h4 class="text-white text-2xl font-serif border-b-2 border-white/50 pb-1">الحقائب</h4>
+                </div>
+            </div>
+
         </div>
-        <div class="mt-16 text-center text-gray-400 text-[10px] tracking-widest uppercase">
-            © 2026 LUXURY FASHION. جميع الحقوق محفوظة.
+    </section>
+
+    <section id="shop" class="px-8 py-10 bg-gray-50">
+        <h3 class="font-serif text-2xl mb-8">وصل حديثاً</h3>
+        <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-6 text-right">
+            </div>
+    </section>
+
+    <footer class="bg-black text-white px-8 py-16">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+            <div class="text-center md:text-right">
+                <h2 class="text-2xl font-serif tracking-widest mb-4">LUXURY</h2>
+                <p class="text-gray-400 text-xs max-w-xs">نحن نختار لك الأناقة بعناية فائقة من أرقى بيوت الموضة العالمية.</p>
+            </div>
+
+            <div class="flex flex-col items-center gap-4">
+                <span class="text-[10px] tracking-[0.4em] text-gray-500 uppercase">تابعنا على</span>
+                <div class="flex gap-8 border-t border-white/10 pt-4">
+                    <a href="#" class="hover:text-pink-500 transition-all text-xs tracking-widest italic">INSTAGRAM</a>
+                    <a href="#" class="hover:text-blue-400 transition-all text-xs tracking-widest italic">TWITTER</a>
+                    <a href="#" class="hover:text-yellow-400 transition-all text-xs tracking-widest italic">SNAPCHAT</a>
+                </div>
+            </div>
+
+            <div class="text-[10px] text-gray-500 tracking-widest">
+                © 2026 جميع الحقوق محفوظة
+            </div>
         </div>
     </footer>
 
     <script>
-        // مصفوفة المنتجات: من هنا تقدر تضيف أو تحذف بسهولة
         const products = [
-            { id: 1, name: "معطف صوف إيطالي", price: "2,500", img: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=500" },
-            { id: 2, name: "حقيبة جلدية كلاسيك", price: "1,200", img: "https://images.unsplash.com/photo-1584917033904-7911ecf54751?w=500" },
-            { id: 3, name: "نظارة شمسية فاخرة", price: "850", img: "https://images.unsplash.com/photo-1511499767390-90342f568952?w=500" },
-            { id: 4, name: "فستان سهرة أسود", price: "3,100", img: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500" },
+            { id: 1, name: "معطف صوف فاخر", price: "2,500", img: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=500" },
+            { id: 2, name: "حقيبة جلدية", price: "1,200", img: "https://images.unsplash.com/photo-1584917033904-7911ecf54751?w=500" },
+            { id: 3, name: "نظارة شمسية", price: "850", img: "https://images.unsplash.com/photo-1511499767390-90342f568952?w=500" },
+            { id: 4, name: "فستان سهرة", price: "3,100", img: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500" },
         ];
 
-        // وظيفة لعرض المنتجات في الصفحة
-        function renderProducts() {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = products.map(product => `
-                <div class="product-card group cursor-pointer">
-                    <div class="relative overflow-hidden bg-gray-100 aspect-[3/4] mb-4">
-                        <img src="${product.img}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
-                        <button onclick="addToCart()" class="add-to-cart absolute bottom-0 left-0 right-0 bg-black text-white py-4 translate-y-full transition-transform duration-300 opacity-0 uppercase text-[10px] tracking-widest">
-                            أضف للسلة
-                        </button>
-                    </div>
-                    <h5 class="text-sm font-medium mb-1">${product.name}</h5>
-                    <p class="font-serif text-gray-600">${product.price} ر.س</p>
+        const grid = document.getElementById('product-grid');
+        grid.innerHTML = products.map(product => `
+            <div class="group cursor-pointer">
+                <div class="relative overflow-hidden bg-gray-100 aspect-[3/4] mb-3">
+                    <img src="${product.img}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
                 </div>
-            `).join('');
-        }
-
-        // تحديث عداد السلة (تجريبي)
-        let count = 0;
-        function addToCart() {
-            count++;
-            document.getElementById('cart-count').innerText = count;
-            alert("تم إضافة المنتج للسلة!");
-        }
-
-        // تشغيل الوظيفة عند تحميل الصفحة
-        renderProducts();
+                <h5 class="text-sm font-medium">${product.name}</h5>
+                <p class="text-gray-500 text-sm mt-1">${product.price} ر.س</p>
+            </div>
+        `).join('');
     </script>
 </body>
 </html>
