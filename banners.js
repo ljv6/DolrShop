@@ -1,9 +1,9 @@
 const banners = [
     {
         title: "DOLR PLUS",
-        subtitle: "Luxury Digital Services",
-        image: "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070",
-        opacity: "opacity-60"
+        subtitle: "موثوق في مركز الاعمال السعودي ",
+        image: "E9BBC38E-7D19-4DFD-8FF8-344F41EC7B1C.jpeg", // صورتك الجديدة
+        opacity: "opacity-80" 
     },
     {
         title: "نجمة السناب",
