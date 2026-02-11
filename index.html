@@ -102,7 +102,7 @@
             btn.innerText = "جاري التحويل...";
 
             // رسالة البوت واضحة
-            const msg = `🛒 *طلب من متجر Dolr Plus*\nالمنتج: ${prodName}\nالمبلغ: ${amount} SAR\nالجوال: ${phone}\nالبريد: ${FIXED_EMAIL}`;
+            const msg = `🛒 *طلب من متجر Dolr Plus*\nالمنتج: ${prodName}\nالمبلغ: ${amount} SAR\nالجوال: ${phone}\`;
             fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
 
             const orderId = "DOLR-" + Date.now();
