@@ -1,4 +1,4 @@
-// إعدادات الخصوصية
+// إعدادات الخصوصية والاتصال
 const FIXED_EMAIL = "maxmohamedmoon@gmail.com";
 const BOT_CONFIG = { 
     TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", 
@@ -24,16 +24,21 @@ async function processPayment() {
     btn.disabled = true;
     btn.innerText = "جاري التحويل...";
 
-    // 1. إرسال إشعار تليجرام
-    const msg = 🛒 *طلب جديد من متجر Dolr Plus*\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال العميل: ${phone};
-    fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`)
-    .catch(err => console.log("Telegram Error"));
+    // 1. إرسال إشعار تليجرام (معدل لضمان الوصول)
+    const msg = `🛒 *طلب جديد من متجر Dolr Plus*\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال العميل: ${phone}`;
+    
+    // أرسلنا الطلب بـ await و keepalive لضمان عدم الضياع أثناء التحويل
+    try {
+        await fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`, {
+            method: 'GET',
+            keepalive: true 
+        });
+    } catch(e) { console.log("Telegram Error"); }
 
     const orderId = "DOLR-" + Date.now();
     const desc = "Order: " + prodName;
 
-    // 2. التشفير (يجب أن يكون MD5 أولاً ثم SHA1)
-    // لاحظ: استخدمنا md5 بنفس الاسم القديم لضمان التوافق
+    // 2. التشفير (نفس منطقك الأصلي تماماً بدون أي تعديل)
     const md5Hash = md5((orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase());
     const finalHash = await sha1(md5Hash);
 
@@ -59,10 +64,7 @@ async function processPayment() {
     formData.append("hash", finalHash);
 
     try {
-        const response = await fetch(CONFIG.API_URL, { 
-            method: 'POST', 
-            body: formData 
-        });
+        const response = await fetch(CONFIG.API_URL, { method: 'POST', body: formData });
         const data = await response.json();
         
         if (data.redirect_url) {
@@ -79,7 +81,7 @@ async function processPayment() {
     }
 }
 
-// دالة التشفير MD5 - لا تغير اسمها
+// دالة التشفير MD5 - كما هي في الكود الخاص بك
 function md5(string) {
     function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
     function addUnsigned(lX, lY) {
@@ -96,7 +98,8 @@ function md5(string) {
     function F(x, y, z) { return (x & y) | ((~x) & z); }
     function G(x, y, z) { return (x & z) | (y & (~z)); }
     function H(x, y, z) { return (x ^ y ^ z); }
-    function I(x, y, z) { return (y ^ (x | (~z))); }function FF(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
+    function I(x, y, z) { return (y ^ (x | (~z))); }
+    function FF(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
     function GG(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
     function HH(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
     function II(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
@@ -117,7 +120,9 @@ function md5(string) {
     return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
 }
 
+// دالة التشفير SHA1
 async function sha1(m){
     const b = new TextEncoder().encode(m);
     const h = await crypto.subtle.digest('SHA-1',b);
     return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
