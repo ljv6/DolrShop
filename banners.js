@@ -1,10 +1,9 @@
-// ملف تعريف البانرات المحدث - Dolr Plus
 const banners = [
     {
         title: "DOLR PLUS",
         subtitle: "موثوق في مركز الأعمال السعودي",
-        // تم تحديث الرابط للرابط المباشر الصحيح من مستودعك
-        image: "https://raw.githubusercontent.com/ljv6/DolrShop/main/IMG_7606.jpeg", 
+        // نضع اسم الملف مباشرة، والكود في index.html سيتكفل بالباقي
+        image: "IMG_7606.jpeg", 
         opacity: "opacity-80" 
     },
     {
@@ -15,7 +14,4 @@ const banners = [
     }
 ];
 
-// تصدير البيانات
-if (typeof module !== 'undefined') {
-    module.exports = banners;
-}
+if (typeof module !== 'undefined') { module.exports = banners; }
