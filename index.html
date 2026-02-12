@@ -7,10 +7,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #ffffff; color: #000; overflow-x: hidden; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #ffffff; color: #000; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         #paymentModal { display: none; }
         #paymentModal.active { display: flex; }
+        
+        /* الوضع الداكن */
+        body.dark-mode { background-color: #0f172a; color: #f8fafc; }
+        .dark-mode nav { background-color: #1e293b; border-color: #334155; color: white; }
+        .dark-mode section.bg-gray-50 { background-color: #1e293b; }
+        .dark-mode .product-card { background-color: #1e293b; border-color: #334155; color: white; }
+        .dark-mode #paymentModal .modal-content { background-color: #1e293b; border: 1px solid #334155; color: white; }
+        .dark-mode input { background-color: #334155 !important; color: white !important; }
+
+        /* السلايدر */
         #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); cursor: grab; }
         .banner-slide { min-width: 100%; position: relative; height: 40vh; user-select: none; background-color: #1a1a1a; }
         .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; }
@@ -19,9 +29,12 @@
 </head>
 <body>
 
-    <nav class="flex items-center justify-between px-6 py-5 border-b border-gray-50 sticky top-0 bg-white z-50">
+    <nav class="flex items-center justify-between px-6 py-5 border-b border-gray-50 sticky top-0 bg-white z-50 transition-all">
         <h1 class="text-xl font-bold tracking-[0.2em] cursor-pointer" onclick="location.reload()">DOLR PLUS</h1>
-        <div class="flex gap-4"><span>🛒</span></div>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleDarkMode()" id="darkModeBtn" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 transition-all">🌙</button>
+            <span>🛒</span>
+        </div>
     </nav>
 
     <section class="relative overflow-hidden bg-black" id="slider-viewport">
@@ -33,30 +46,24 @@
         <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
     </section>
 
-    <section class="px-6 py-10 bg-gray-50">
+    <section class="px-6 py-10 bg-gray-50 transition-all">
         <div class="max-w-6xl mx-auto">
-            <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-black pr-3">وصل حديثاً</h3>
+            <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-black pr-3 dark:border-blue-500">وصل حديثاً</h3>
             <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
         </div>
     </section>
 
     <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-md p-8 rounded-3xl relative shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-5 left-5 text-gray-400 hover:text-black transition">✕</button>
+        <div class="modal-content bg-white w-full max-w-md p-8 rounded-3xl relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-5 left-5 text-gray-400">✕</button>
             <div class="text-center mb-8">
                 <h2 class="text-xl font-black italic">DOLR <span class="text-blue-600">PLUS</span></h2>
-                <p id="modalProdName" class="text-sm text-gray-500 mt-2 font-bold"></p>
+                <p id="modalProdName" class="text-sm mt-2 font-bold"></p>
             </div>
             <div class="space-y-4">
-                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <span class="text-[10px] text-gray-400 block mb-1">المبلغ الإجمالي</span>
-                    <input type="text" id="amountDisplay" readonly class="bg-transparent text-xl font-bold w-full outline-none">
-                </div>
-                <div class="bg-white p-4 rounded-2xl border border-gray-200 focus-within:border-blue-500 transition">
-                    <span class="text-[10px] text-gray-400 block mb-1">رقم الجوال</span>
-                    <input type="tel" id="phone" placeholder="9665xxxxxxxx" class="bg-transparent w-full outline-none font-bold">
-                </div>
-                <button onclick="processPayment()" id="payBtn" class="w-full bg-black text-white py-5 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-blue-600 transition-all">إتمام الدفع الآمن</button>
+                <input type="text" id="amountDisplay" readonly class="w-full p-4 rounded-2xl bg-gray-50 font-bold outline-none">
+                <input type="tel" id="phone" placeholder="9665xxxxxxxx" class="w-full p-4 rounded-2xl border border-gray-200 font-bold outline-none">
+                <button onclick="processPayment()" id="payBtn" class="w-full bg-black text-white py-5 rounded-2xl font-bold hover:bg-blue-600 transition-all">إتمام الدفع الآمن</button>
             </div>
         </div>
     </div>
@@ -67,16 +74,31 @@
     <script src="payment.js"></script>
 
     <script>
+        const body = document.body;
         const slider = document.getElementById('banner-slider');
         const dotsContainer = document.getElementById('slider-dots');
         let currentSlide = 0;
 
+        // تبديل الوضع الداكن
+        function toggleDarkMode() {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            document.getElementById('darkModeBtn').innerText = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // استعادة الوضع المفضل
+        if (localStorage.getItem('theme') === 'dark') {
+            body.classList.add('dark-mode');
+            document.getElementById('darkModeBtn').innerText = '☀️';
+        }
+
         function initSlider() {
             slider.innerHTML = banners.map(b => `
                 <div class="banner-slide">
-                    <img src="${b.image}" onerror="this.src='https://raw.githubusercontent.com/ljv6/DolrShop/main/${b.image}'; this.onerror=null;" class="w-full h-full object-cover" style="filter: brightness(0.7);">
+                    <img src="${b.image}" onerror="this.src='https://raw.githubusercontent.com/ljv6/DolrShop/main/${b.image}';" class="w-full h-full object-cover opacity-70">
                     <div class="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4">
-                        <h2 class="text-4xl font-black mb-2 uppercase tracking-tighter">${b.title}</h2>
+                        <h2 class="text-4xl font-black mb-2 uppercase">${b.title}</h2>
                         <p class="text-[10px] uppercase tracking-[0.3em] font-bold opacity-90">${b.subtitle}</p>
                     </div>
                 </div>
@@ -96,8 +118,8 @@
             const container = document.getElementById('products-list');
             const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter));
             container.innerHTML = filtered.map(p => `
-                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition group" onclick="openModal('${p.name}', '${p.price}')">
-                    <div class="overflow-hidden aspect-square"><img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500"></div>
+                <div class="product-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition group" onclick="openModal('${p.name}', '${p.price}')">
+                    <div class="aspect-square overflow-hidden"><img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500"></div>
                     <div class="p-4"><h5 class="text-[11px] font-bold mb-1 h-8 overflow-hidden">${p.name}</h5><p class="text-blue-600 font-black text-sm">${p.price} SAR</p></div>
                 </div>
             `).join('');
@@ -106,13 +128,16 @@
         const catContainer = document.getElementById('categories-list');
         catContainer.innerHTML = categories.map(cat => `
             <div class="min-w-[80px] text-center cursor-pointer" onclick="renderProducts('${cat.name}')">
-                <div class="w-16 h-16 mx-auto rounded-full border border-gray-100 p-3 mb-2 shadow-sm bg-white"><img src="${cat.img}" class="w-full h-full object-contain"></div>
+                <div class="w-16 h-16 mx-auto rounded-full border border-gray-100 p-3 mb-2 shadow-sm bg-white dark:bg-gray-800 dark:border-gray-700">
+                    <img src="${cat.img}" class="w-full h-full object-contain">
+                </div>
                 <span class="text-[10px] font-bold">${cat.name}</span>
             </div>
         `).join('');
 
         initSlider();
         renderProducts('الكل');
+        setInterval(() => { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); }, 5000);
 
         function openModal(name, price) {
             document.getElementById('modalProdName').innerText = name;
@@ -120,8 +145,6 @@
             document.getElementById('paymentModal').classList.add('active');
         }
         function closeModal() { document.getElementById('paymentModal').classList.remove('active'); }
-        
-        setInterval(() => { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); }, 5000);
     </script>
 </body>
 </html>
