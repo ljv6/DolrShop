@@ -1,3 +1,4 @@
+// إعدادات الخصوصية
 const FIXED_EMAIL = "maxmohamedmoon@gmail.com";
 const BOT_CONFIG = { 
     TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", 
@@ -11,25 +12,30 @@ const CONFIG = {
 
 async function processPayment() {
     const btn = document.getElementById('payBtn');
-    const amountVal = document.getElementById('amountDisplay').value.replace(' SAR', '');
+    const amountVal = document.getElementById('amountDisplay').value.replace(' SAR', '').trim();
     const phone = document.getElementById('phone').value;
     const prodName = document.getElementById('modalProdName').innerText;
 
-    if(!phone || phone.length < 9) return alert("يرجى إدخال رقم جوال صحيح");
+    if(!phone || phone.length < 9) {
+        alert("يرجى إدخال رقم جوال صحيح");
+        return;
+    }
 
     btn.disabled = true;
     btn.innerText = "جاري التحويل...";
 
-    // إشعار البوت
-    const msg = `🛒 *طلب جديد من متجر Dolr Plus*\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال العميل: ${phone}\n\n⏳ جاري توجيه العميل لبوابة الدفع...`;
-    fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
+    // 1. إرسال إشعار تليجرام
+    const msg = `🛒 *طلب جديد من متجر Dolr Plus*\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال العميل: ${phone}`;
+    fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`)
+    .catch(err => console.log("Telegram Error"));
 
     const orderId = "DOLR-" + Date.now();
     const desc = "Order: " + prodName;
 
-    // التشفير
-    const md5Hash = calculateMD5((orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase());
-    const finalHash = await calculateSHA1(md5Hash);
+    // 2. التشفير (يجب أن يكون MD5 أولاً ثم SHA1)
+    // لاحظ: استخدمنا md5 بنفس الاسم القديم لضمان التوافق
+    const md5Hash = md5((orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase());
+    const finalHash = await sha1(md5Hash);
 
     const formData = new FormData();
     formData.append("action", "SALE");
@@ -53,19 +59,28 @@ async function processPayment() {
     formData.append("hash", finalHash);
 
     try {
-        const response = await fetch(CONFIG.API_URL, { method: 'POST', body: formData });
+        const response = await fetch(CONFIG.API_URL, { 
+            method: 'POST', 
+            body: formData 
+        });
         const data = await response.json();
-        if (data.redirect_url) window.location.href = data.redirect_url;
-        else alert("خطأ من البنك: " + (data.error || "تأكد من بيانات التاجر"));
+        
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert("خطأ من البنك: " + (data.error_message || "تأكد من بيانات الحساب"));
+            btn.disabled = false;
+            btn.innerText = "إتمام الدفع الآمن";
+        }
     } catch (e) {
-        alert("فشل الاتصال بالخادم");
+        alert("فشل الاتصال بخادم البنك");
         btn.disabled = false;
         btn.innerText = "حاول مرة أخرى";
     }
 }
 
-// دالة MD5
-function calculateMD5(string) {
+// دالة التشفير MD5 - لا تغير اسمها
+function md5(string) {
     function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
     function addUnsigned(lX, lY) {
         var lX4, lY4, lX8, lY8, lResult;
@@ -103,4 +118,9 @@ function calculateMD5(string) {
     }
     return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
 }
-async function calculateSHA1(m){const b=new TextEncoder().encode(m);const h=await crypto.subtle.digest('SHA-1',b);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+
+async function sha1(m){
+    const b = new TextEncoder().encode(m);
+    const h = await crypto.subtle.digest('SHA-1',b);
+    return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
