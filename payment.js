@@ -1,93 +1,4 @@
-const FIXED_EMAIL = "maxmohamedmoon@gmail.com";
-const CONFIG = { 
-    MERCHANT_ID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2", 
-    MERCHANT_PASSWORD: "7ceb6437-92bc-411b-98fa-be054b39eaba", 
-    API_URL: "https://api.edfapay.com/payment/initiate" 
-};
-
-async function processPayment() {
-    const btn = document.getElementById('payBtn');
-    const amountVal = document.getElementById('amountDisplay').value.replace(' SAR', '').trim();
-    const phone = document.getElementById('phone').value;
-    const prodName = document.getElementById('modalProdName').innerText;
-
-    if(!phone || phone.length < 9) {
-        alert("يرجى إدخال رقم جوال صحيح");
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "جاري التحويل...";
-
-    // استدعاء التنبيه من الملف الآخر
-    if(typeof sendTelegramNotification === 'function') {
-        sendTelegramNotification(prodName, amountVal, phone);
-    }
-
-    const orderId = "DOLR-" + Date.now();
-    const desc = "Order: " + prodName;
-
-    // --- التشفير باستخدام الكود الخاص بك حرفياً ---
-    const md5Hash = md5((orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase());
-    const finalHash = await sha1(md5Hash);
-
-    const formData = new FormData();
-    formData.append("action", "SALE");
-    formData.append("edfa_merchant_id", CONFIG.MERCHANT_ID);
-    formData.append("order_id", orderId);
-    formData.append("order_amount", amountVal);
-    formData.append("order_currency", "SAR");
-    formData.append("order_description", desc);
-    formData.append("payer_first_name", "Dolr");
-    formData.append("payer_last_name", "Customer");
-    formData.append("payer_email", FIXED_EMAIL);
-    formData.append("payer_phone", phone);
-    formData.append("payer_country", "SA");
-    formData.append("payer_city", "Riyadh");
-    formData.append("payer_address", "Digital");
-    formData.append("payer_zip", "11000");
-    formData.append("payer_ip", "1.1.1.1");
-    formData.append("term_url_3ds", window.location.href);
-    formData.append("success_url", window.location.href);
-    formData.append("failure_url", window.location.href);
-    formData.append("hash", finalHash);
-
-    try {
-        const response = await fetch(CONFIG.API_URL, { method: 'POST', body: formData });
-        const data = await response.json();
-        if (data.redirect_url) {
-            window.location.href = data.redirect_url;
-        } else {
-            alert("خطأ من البنك: " + (data.error_message || "تأكد من بيانات الحساب"));
-            btn.disabled = false;
-            btn.innerText = "إتمام الدفع الآمن";
-        }
-    } catch (e) {
-        alert("فشل الاتصال بخادم البنك");
-        btn.disabled = false;
-        btn.innerText = "حاول مرة أخرى";
-    }
-}
-
-// دالة MD5 (الكود الذي أرسلته أنت)
-function md5(string) {
-    function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
-    function addUnsigned(lX, lY) {
-        var lX4, lY4, lX8, lY8, lResult;
-        lX8 = (lX & 0x80000000); lY8 = (lY & 0x80000000);
-        lX4 = (lX & 0x40000000); lY4 = (lY & 0x40000000);
-        lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
-        if (lX4 & lY4) return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
-        if (lX4 | lY4) {
-            if (lResult & 0x40000000) return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
-            else return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
-        } else return (lResult ^ lX8 ^ lY8);
-    }
-    function F(x, y, z) { return (x & y) | ((~x) & z); }
-    function G(x, y, z) { return (x & z) | (y & (~z)); }
-    function H(x, y, z) { return (x ^ y ^ z); }
-    function I(x, y, z) { return (y ^ (x | (~z))); }
-    function FF(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
+function FF(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
     function GG(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
     function HH(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
     function II(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
@@ -108,9 +19,7 @@ function md5(string) {
     return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
 }
 
-// دالة SHA1 (الكود الذي أرسلته أنت)
 async function sha1(m){
     const b = new TextEncoder().encode(m);
     const h = await crypto.subtle.digest('SHA-1',b);
     return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
