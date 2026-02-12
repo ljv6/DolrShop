@@ -11,13 +11,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         #paymentModal { display: none; }
         #paymentModal.active { display: flex; }
-        
-        /* تحسينات السلايدر */
         #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); cursor: grab; }
-        #banner-slider:active { cursor: grabbing; }
         .banner-slide { min-width: 100%; position: relative; height: 40vh; user-select: none; background-color: #1a1a1a; }
-        
-        /* نقاط التنقل مثل آيفون */
         .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; }
         .dot-item.active { width: 24px; background-color: white !important; }
     </style>
@@ -69,121 +64,64 @@
     <script src="banners.js"></script>
     <script src="categories.js"></script>
     <script src="products.js"></script>
+    <script src="payment.js"></script>
 
     <script>
-        // --- إعدادات السلايدر والتحكم باللمس ---
         const slider = document.getElementById('banner-slider');
         const dotsContainer = document.getElementById('slider-dots');
         let currentSlide = 0;
-        let startX = 0;
-        let isDragging = false;
 
         function initSlider() {
-            slider.innerHTML = banners.map((b, index) => {
-                // محاولة ذكية لإيجاد الصورة (محلي + جيت هاب مباشر)
-                const rawUrl = `https://raw.githubusercontent.com/ljv6/DolrShop/main/${b.image}`;
-                return `
+            slider.innerHTML = banners.map(b => `
                 <div class="banner-slide">
-                    <img src="${b.image}" 
-                         onerror="this.src='${rawUrl}'; this.onerror=null;"
-                         class="w-full h-full object-cover" 
-                         style="filter: brightness(0.7);"
-                         draggable="false">
+                    <img src="${b.image}" onerror="this.src='https://raw.githubusercontent.com/ljv6/DolrShop/main/${b.image}'; this.onerror=null;" class="w-full h-full object-cover" style="filter: brightness(0.7);">
                     <div class="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4">
-                        <h2 class="text-4xl font-black mb-2 uppercase tracking-tighter drop-shadow-2xl">${b.title}</h2>
-                        <p class="text-[10px] uppercase tracking-[0.3em] font-bold opacity-90 drop-shadow-md">${b.subtitle}</p>
+                        <h2 class="text-4xl font-black mb-2 uppercase tracking-tighter">${b.title}</h2>
+                        <p class="text-[10px] uppercase tracking-[0.3em] font-bold opacity-90">${b.subtitle}</p>
                     </div>
                 </div>
-                `;
-            }).join('');
-
-            dotsContainer.innerHTML = banners.map((_, i) => `
-                <div onclick="goToSlide(${i})" class="dot-item bg-white/30 cursor-pointer"></div>
             `).join('');
+            dotsContainer.innerHTML = banners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item bg-white/30 cursor-pointer"></div>`).join('');
             updateSlider();
         }
 
         function updateSlider() {
             slider.style.transform = `translateX(${currentSlide * 100}%)`;
-            const dots = document.querySelectorAll('.dot-item');
-            dots.forEach((dot, i) => {
-                if(i === currentSlide) dot.classList.add('active');
-                else dot.classList.remove('active');
-            });
+            document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
         }
 
         function goToSlide(index) { currentSlide = index; updateSlider(); }
 
-        // التحريك بالسحب (Swipe)
-        slider.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isDragging = true; });
-        slider.addEventListener('touchend', e => {
-            if (!isDragging) return;
-            let diff = startX - e.changedTouches[0].clientX;
-            if (Math.abs(diff) > 50) {
-                if (diff > 0) currentSlide = Math.min(currentSlide + 1, banners.length - 1);
-                else currentSlide = Math.max(currentSlide - 1, 0);
-            }
-            isDragging = false; updateSlider();
-        });
-
-        // تحريك تلقائي كل 5 ثواني
-        setInterval(() => {
-            if(!isDragging) {
-                currentSlide = (currentSlide + 1) % banners.length;
-                updateSlider();
-            }
-        }, 5000);
-
-        // --- نظام الفلترة وعرض المنتجات ---
         function renderProducts(filter = 'الكل') {
-            const prodContainer = document.getElementById('products-list');
-            const title = document.getElementById('section-title');
-            title.innerText = filter === 'الكل' ? 'وصل حديثاً' : filter;
-
+            const container = document.getElementById('products-list');
             const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter));
-
-            prodContainer.innerHTML = filtered.map(p => `
+            container.innerHTML = filtered.map(p => `
                 <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition group" onclick="openModal('${p.name}', '${p.price}')">
-                    <div class="overflow-hidden aspect-square">
-                        <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    </div>
-                    <div class="p-4">
-                        <h5 class="text-[11px] font-bold mb-1 h-8 overflow-hidden">${p.name}</h5>
-                        <p class="text-blue-600 font-black text-sm">${p.price} SAR</p>
-                    </div>
+                    <div class="overflow-hidden aspect-square"><img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500"></div>
+                    <div class="p-4"><h5 class="text-[11px] font-bold mb-1 h-8 overflow-hidden">${p.name}</h5><p class="text-blue-600 font-black text-sm">${p.price} SAR</p></div>
                 </div>
             `).join('');
         }
 
-        // عرض التصنيفات
         const catContainer = document.getElementById('categories-list');
         catContainer.innerHTML = categories.map(cat => `
-            <div class="min-w-[80px] text-center cursor-pointer hover:opacity-70 transition" onclick="renderProducts('${cat.name}')">
-                <div class="w-16 h-16 mx-auto rounded-full border border-gray-100 p-3 mb-2 shadow-sm bg-white">
-                    <img src="${cat.img}" class="w-full h-full object-contain">
-                </div>
+            <div class="min-w-[80px] text-center cursor-pointer" onclick="renderProducts('${cat.name}')">
+                <div class="w-16 h-16 mx-auto rounded-full border border-gray-100 p-3 mb-2 shadow-sm bg-white"><img src="${cat.img}" class="w-full h-full object-contain"></div>
                 <span class="text-[10px] font-bold">${cat.name}</span>
             </div>
         `).join('');
 
-        // تشغيل الدوال الأساسية
         initSlider();
         renderProducts('الكل');
 
-        // وظائف المودال
         function openModal(name, price) {
             document.getElementById('modalProdName').innerText = name;
             document.getElementById('amountDisplay').value = price + " SAR";
             document.getElementById('paymentModal').classList.add('active');
         }
         function closeModal() { document.getElementById('paymentModal').classList.remove('active'); }
-
-        async function processPayment() {
-            const phone = document.getElementById('phone').value;
-            if(!phone || phone.length < 9) return alert("يرجى إدخال رقم جوال صحيح");
-            alert("جاري تحويلك لبوابة الدفع...");
-            // هنا يكمل كود Edfapay الخاص بك
-        }
+        
+        setInterval(() => { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); }, 5000);
     </script>
 </body>
 </html>
