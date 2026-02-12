@@ -3,7 +3,8 @@ const banners = [
     {
         title: "DOLR PLUS",
         subtitle: "موثوق في مركز الأعمال السعودي",
-        image: "IMG_7606.jpeg", 
+        // تم تحديث الرابط للرابط المباشر الصحيح من مستودعك
+        image: "https://raw.githubusercontent.com/ljv6/DolrShop/main/IMG_7606.jpeg", 
         opacity: "opacity-80" 
     },
     {
