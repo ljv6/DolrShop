@@ -1,9 +1,3 @@
-/**
- * payment.js - محرك الدفع والربط مع التليجرام
- * تم فصله بالكامل ليعمل مع واجهة المتجر
- */
-
-// --- الإعدادات (تأكد من صحتها) ---
 const FIXED_EMAIL = "maxmohamedmoon@gmail.com";
 const BOT_CONFIG = { 
     TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", 
