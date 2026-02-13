@@ -1,5 +1,5 @@
 /**
- * payment.js - النسخة النهائية المعتمدة
+ * payment.js - النسخة المحسنة
  */
 
 const BOT_CONFIG = { 
@@ -14,7 +14,8 @@ const CONFIG = {
 
 async function processPayment() {
     const payBtn = document.getElementById('payBtn');
-    const phone = document.getElementById('phone').value.trim();
+    const phoneInput = document.getElementById('phone');
+    const phone = phoneInput ? phoneInput.value.trim() : "";
     const prodName = document.getElementById('modalProdName').innerText;
     let priceText = document.getElementById('modalPriceDisplay').innerText;
     
@@ -26,26 +27,31 @@ async function processPayment() {
         return;
     }
 
-    payBtn.disabled = true;
-    payBtn.innerText = "جاري المعالجة...";
+    // تعطيل الزر لمنع التكرار
+    if(payBtn) {
+        payBtn.disabled = true;
+        payBtn.innerText = "جاري المعالجة...";
+    }
 
-    // 1. تنسيق الرسالة المطلوب بالضبط
-    const telegramMsg = `طلب جديد 
-متجر Dolr Plus
-
-📦 المنتج: ${prodName}
-💰 المبلغ: ${amountVal} SAR
-📱 جوال العميل: ${phone}`;
-
-    // إرسال التليجرام
-    await fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}`);
-
-    // 2. حساب الهاش والتحويل
-    const orderId = "DOLR-" + Date.now();
-    const desc = "Order " + prodName;
-    const combinedString = (CONFIG.MERCHANT_PASSWORD + orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_ID).toUpperCase();
-    
     try {
+        // 1. إرسال بيانات الطلب للتليجرام أولاً لضمان وصول التنبيه لك
+        const telegramMsg = `طلب جديد 🛒\nمتجر Dolr Plus\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال العميل: ${phone}`;
+        
+        // استخدام التحميل في الخلفية لسرعة التحويل للبوابة
+        fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}`).catch(e => console.log("Telegram Error"));
+
+        // 2. إعدادات البوابة
+        const orderId = "DOLR-" + Date.now();
+        const desc = "Order " + prodName;
+        
+        // بناء سلسلة الهاش حسب طلب Edfapay
+        const combinedString = (CONFIG.MERCHANT_PASSWORD + orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_ID).toUpperCase();
+        
+        // التحقق من وجود مكتبة التشفير
+        if (typeof CryptoJS === 'undefined') {
+            throw new Error("Missing CryptoJS library");
+        }
+
         const md5Hash = CryptoJS.MD5(combinedString).toString().toUpperCase();
         const finalHash = await calculateSHA1(md5Hash);
 
@@ -76,12 +82,13 @@ async function processPayment() {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
-            alert("خطأ في بوابة الدفع: " + (data.error_message || "حاول لاحقاً"));
-            payBtn.disabled = false;
+            alert("بوابة الدفع: " + (data.error_message || "هناك مشكلة في البيانات"));
+            if(payBtn) { payBtn.disabled = false; payBtn.innerText = "إتمام الشراء"; }
         }
     } catch (e) {
-        alert("حدث خطأ تقني");
-        payBtn.disabled = false;
+        console.error(e);
+        alert("حدث خطأ تقني: " + e.message);
+        if(payBtn) { payBtn.disabled = false; payBtn.innerText = "إتمام الشراء"; }
     }
 }
 
