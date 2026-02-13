@@ -1,3 +1,4 @@
+// بيانات الربط
 const BOT_CONFIG = { 
     TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", 
     CHAT_ID: "591768998" 
@@ -8,13 +9,18 @@ const CONFIG = {
     API_URL: "https://api.edfapay.com/payment/initiate" 
 };
 
+// الدالة الأساسية
 async function processPayment() {
     const payBtn = document.getElementById('payBtn');
-    const phone = document.getElementById('phone').value.trim();
-    const prodName = document.getElementById('modalProdName').innerText;
-    let priceText = document.getElementById('modalPriceDisplay').innerText;
+    if (!payBtn) return;
+
+    const phoneElement = document.getElementById('phone');
+    const phone = phoneElement ? phoneElement.value.trim() : "";
     
-    let amountVal = parseFloat(priceText.replace(/[^\d.]/g, '')).toFixed(2);
+    // محاولة جلب اسم المنتج وسعره من العناصر الموجودة
+    const prodName = document.getElementById('modalProdName')?.innerText || "منتج غير محدد";
+    const priceDisplay = document.getElementById('modalPriceDisplay')?.innerText || "0";
+    let amountVal = parseFloat(priceDisplay.replace(/[^\d.]/g, '')).toFixed(2);
 
     if (phone.length < 9) {
         alert("يرجى إدخال رقم جوال صحيح");
@@ -24,21 +30,21 @@ async function processPayment() {
     payBtn.disabled = true;
     payBtn.innerText = "جاري المعالجة...";
 
-    const telegramMsg = `🚀 *طلب جديد: Dolr Plus*\n\n📱 الجوال: ${phone}\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR`;
-    
     try {
-        fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}&parse_mode=Markdown`, { method: 'GET', keepalive: true });
-    } catch(e) {}
+        // إرسال التليجرام
+        const telegramMsg = `🚀 طلب جديد من Dolr Plus\n📱 الجوال: ${phone}\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR`;
+        fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}&parse_mode=Markdown`).catch(()=>{});
 
-    const orderId = "DOLR-" + Date.now();
-    const desc = "Order: " + prodName;
+        // إعداد بيانات الدفع
+        const orderId = "DOLR-" + Date.now();
+        const desc = "Order: " + prodName;
 
-    // نفس ترتيب كودك الأول بالضبط
-    const combinedString = (CONFIG.MERCHANT_PASSWORD + orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_ID).toUpperCase();
-    
-    try {
-        const md5Hash = md5(combinedString);
-        const finalHash = sha1_manual(md5Hash); // استخدام الدالة اليدوية هنا
+        // التشفير (نفس أسلوبك الأصلي - بدون أي مكتبات خارجية)
+        const combinedString = (CONFIG.MERCHANT_PASSWORD + orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_ID).toUpperCase();
+        
+        // استخدام دوال التشفير المدمجة بالأسفل
+        const md5Hash = getMD5(combinedString);
+        const finalHash = getSHA1(md5Hash);
 
         const formData = new FormData();
         formData.append("action", "SALE");
@@ -56,93 +62,44 @@ async function processPayment() {
         formData.append("payer_address", "Digital");
         formData.append("payer_zip", "11000");
         formData.append("payer_ip", "1.1.1.1");
-        formData.append("term_url_3ds", window.location.href);
-        formData.append("success_url", window.location.href);
-        formData.append("failure_url", window.location.href);
+        formData.append("term_url_3ds", window.location.origin);
+        formData.append("success_url", window.location.origin);
+        formData.append("failure_url", window.location.origin);
         formData.append("hash", finalHash);
 
         const response = await fetch(CONFIG.API_URL, { method: 'POST', body: formData });
         const data = await response.json();
 
-        if (data.redirect_url) { 
-            window.location.href = data.redirect_url; 
-        } else { 
-            alert("خطأ البوابة: " + (data.error_message || "فشل الطلب")); 
-            payBtn.disabled = false; payBtn.innerText = "إتمام الشراء";
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert("خطأ: " + (data.error_message || "فشل الطلب"));
+            payBtn.disabled = false;
+            payBtn.innerText = "إتمام الشراء";
         }
-    } catch (e) { 
-        alert("حدث خطأ في معالجة البيانات"); 
-        payBtn.disabled = false; payBtn.innerText = "إتمام الشراء";
+    } catch (err) {
+        alert("حدث خطأ أثناء الاتصال");
+        payBtn.disabled = false;
+        payBtn.innerText = "إتمام الشراء";
     }
 }
 
-// --- دالة MD5 اليدوية ---
-function md5(string) {
-    function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
-    function addUnsigned(lX, lY) {
-        var lX4, lY4, lX8, lY8, lResult;
-        lX8 = (lX & 0x80000000); lY8 = (lY & 0x80000000);
-        lX4 = (lX & 0x40000000); lY4 = (lY & 0x40000000);
-        lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
-        if (lX4 & lY4) return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
-        if (lX4 | lY4) {
-            if (lResult & 0x40000000) return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
-            else return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
-        } else return (lResult ^ lX8 ^ lY8);
-    }
-    function F(x, y, z) { return (x & y) | ((~x) & z); }
-    function G(x, y, z) { return (x & z) | (y & (~z)); }
-    function H(x, y, z) { return (x ^ y ^ z); }
-    function I(x, y, z) { return (y ^ (x | (~z))); }
-    function FF(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
-    function GG(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
-    function HH(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
-    function II(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
-    function convertToWordArray(string) {
-        var lWordCount; var lMessageLength = string.length; var lNumberOfWords_temp1 = lMessageLength + 8; var lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64; var lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16; var lWordArray = Array(lNumberOfWords - 1); var lBytePosition = 0; var lByteCount = 0;
-        while (lByteCount < lMessageLength) { lWordCount = (lByteCount - (lByteCount % 4)) / 4; lBytePosition = (lByteCount % 4) * 8; lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount) << lBytePosition)); lByteCount++; }
-        lWordCount = (lByteCount - (lByteCount % 4)) / 4; lBytePosition = (lByteCount % 4) * 8; lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition); lWordArray[lNumberOfWords - 2] = lMessageLength << 3; lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29; return lWordArray;
-    }
-    function wordToHex(lValue) {
-        var wordToHexValue = "", wordToHexValue_temp = "", lByte, lCount;
-        for (lCount = 0; lCount <= 3; lCount++) { lByte = (lValue >>> (lCount * 8)) & 255; wordToHexValue_temp = "0" + lByte.toString(16); wordToHexValue = wordToHexValue + wordToHexValue_temp.substr(wordToHexValue_temp.length - 2, 2); }
-        return wordToHexValue;
-    }
-    var x = Array(); var k, AA, BB, CC, DD, a, b, c, d; var S11 = 7, S12 = 12, S13 = 17, S14 = 22; var S21 = 5, S22 = 9, S23 = 14, S24 = 20; var S31 = 4, S32 = 11, S33 = 16, S34 = 23; var S41 = 6, S42 = 10, S43 = 15, S44 = 21;
-    string = unescape(encodeURIComponent(string)); x = convertToWordArray(string); a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
-    for (k = 0; k < x.length; k += 16) {AA = a; BB = b; CC = c; DD = d; a = FF(a, b, c, d, x[k + 0], S11, 0xD76AA478); d = FF(d, a, b, c, x[k + 1], S12, 0xE8C7B756); c = FF(c, d, a, b, x[k + 2], S13, 0x242070DB); b = FF(b, c, d, a, x[k + 3], S14, 0xC1BDCEEE); a = FF(a, b, c, d, x[k + 4], S11, 0xF57C0FAF); d = FF(d, a, b, c, x[k + 5], S12, 0x4787C62A); c = FF(c, d, a, b, x[k + 6], S13, 0xA8304613); b = FF(b, c, d, a, x[k + 7], S14, 0xFD469501); a = FF(a, b, c, d, x[k + 8], S11, 0x698098D8); d = FF(d, a, b, c, x[k + 9], S12, 0x8B44F7AF); c = FF(c, d, a, b, x[k + 10], S13, 0xFFFF5BB1); b = FF(b, c, d, a, x[k + 11], S14, 0x895CD7BE); a = FF(a, b, c, d, x[k + 12], S11, 0x6B901122); d = FF(d, a, b, c, x[k + 13], S12, 0xFD987193); c = FF(c, d, a, b, x[k + 14], S13, 0xA679438E); b = FF(b, c, d, a, x[k + 15], S14, 0x49B40821); a = GG(a, b, c, d, x[k + 1], S21, 0xF61E2562); d = GG(d, a, b, c, x[k + 6], S22, 0xC040B340); c = GG(c, d, a, b, x[k + 11], S23, 0x265E5A51); b = GG(b, c, d, a, x[k + 0], S24, 0xE9B6C7AA); a = GG(a, b, c, d, x[k + 5], S21, 0xD62F105D); d = GG(d, a, b, c, x[k + 10], S22, 0x02441453); c = GG(c, d, a, b, x[k + 15], S23, 0xD8A1E681); b = GG(b, c, d, a, x[k + 4], S24, 0xE7D3FBC8); a = GG(a, b, c, d, x[k + 9], S21, 0x21E1CDE6); d = GG(d, a, b, c, x[k + 14], S22, 0xC33707D6); c = GG(c, d, a, b, x[k + 3], S23, 0xF4D50D87); b = GG(b, c, d, a, x[k + 8], S24, 0x455A14ED); a = GG(a, b, c, d, x[k + 13], S21, 0xA9E3E905); d = GG(d, a, b, c, x[k + 2], S22, 0xFCEFA3F8); c = GG(c, d, a, b, x[k + 7], S23, 0x676F02D9); b = GG(b, c, d, a, x[k + 12], S24, 0x8D2A4C8A); a = HH(a, b, c, d, x[k + 5], S31, 0xFFFA3942); d = HH(d, a, b, c, x[k + 8], S32, 0x8771F681); c = HH(c, d, a, b, x[k + 11], S33, 0x6D9D6122); b = HH(b, c, d, a, x[k + 14], S34, 0xFDE5380C); a = HH(a, b, c, d, x[k + 1], S31, 0xA4BEEA44); d = HH(d, a, b, c, x[k + 4], S32, 0x4BDECFA9); c = HH(c, d, a, b, x[k + 7], S33, 0xF6BB4B60); b = HH(b, c, d, a, x[k + 10], S34, 0xBEBFBC70); a = HH(a, b, c, d, x[k + 13], S31, 0x289B7EC6); d = HH(d, a, b, c, x[k + 0], S32, 0xEAA127FA); c = HH(c, d, a, b, x[k + 3], S33, 0xD4EF3085); b = HH(b, c, d, a, x[k + 6], S34, 0x04881D05); a = HH(a, b, c, d, x[k + 9], S31, 0xD9D4D039); d = HH(d, a, b, c, x[k + 12], S32, 0xE6DB99E5); c = HH(c, d, a, b, x[k + 15], S33, 0x1FA27CF8); b = HH(b, c, d, a, x[k + 2], S34, 0xC4AC5665); a = II(a, b, c, d, x[k + 0], S41, 0xF4292244); d = II(d, a, b, c, x[k + 7], S42, 0x432AFF97); c = II(c, d, a, b, x[k + 14], S43, 0xAB9423A7); b = II(b, c, d, a, x[k + 5], S44, 0xFC93A039); a = II(a, b, c, d, x[k + 12], S41, 0x655B59C3); d = II(d, a, b, c, x[k + 3], S42, 0x8F0CCC92); c = II(c, d, a, b, x[k + 10], S43, 0xFFEFF47D); b = II(b, c, d, a, x[k + 1], S44, 0x85845DD1); a = II(a, b, c, d, x[k + 8], S41, 0x6FA87E4F); d = II(d, a, b, c, x[k + 15], S42, 0xFE2CE6E0); c = II(c, d, a, b, x[k + 6], S43, 0xA3014314); b = II(b, c, d, a, x[k + 13], S44, 0x4E0811A1); a = II(a, b, c, d, x[k + 4], S41, 0xF7537E82); d = II(d, a, b, c, x[k + 11], S42, 0xBD3AF235); c = II(c, d, a, b, x[k + 2], S43, 0x2AD7D2BB); b = II(b, c, d, a, x[k + 9], S44, 0xEB86D391); a = addUnsigned(a, AA); b = addUnsigned(b, BB); c = addUnsigned(c, CC); d = addUnsigned(d, DD);
-    }
-    return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
+// --- دالة MD5 الصافية ---
+function getMD5(s) {
+    var k=[],i=0;for(;i<64;)k[i]=0|(Math.abs(Math.sin(++i))*4294967296);
+    var b=[0x67452301,0xefcdab89,0x98badcfe,0x10325476],h=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,6,11,4,5,10,15,4,2,7,12,1,0,5,10,15,5,8,11,14,1,4,7,10,0,5,10,15,5,8,11,14,1,4,7,10,0,5,10,15,5,8,11,14,1,4,7,10],
+    r=[7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+    s=unescape(encodeURIComponent(s));var m=s.length,n=m+8,v=new Array((n+(64-n%64))/4).fill(0);
+    for(i=0;i<m;i++)v[i>>2]|=(s.charCodeAt(i)<<((i%4)*8));v[m>>2]|=0x80<<((m%4)*8);v[v.length-2]=m*8;
+    for(var j=0;j<v.length;j+=16){var a=b.slice();for(i=0;i<64;i++){var f,g;if(i<16){f=(a[1]&a[2])|(~a[1]&a[3]);g=i;}else if(i<32){f=(a[3]&a[1])|(~a[3]&a[2]);g=(5*i+1)%16;}else if(i<48){f=a[1]^a[2]^a[3];g=(3*i+5)%16;}else{f=a[2]^(a[1]|~a[3]);g=(7*i)%16;}
+    var t=a[3];a[3]=a[2];a[2]=a[1];a[1]=((a[1]+((f+a[0]+k[i]+v[j+g])<<(r[i])|(a[1]+f+a[0]+k[i]+v[j+g])>>>(32-r[i])))|0);a[0]=t;}for(i=0;i<4;i++)b[i]=(b[i]+a[i])|0;}
+    return b.map(x=>('00000000'+(x>>>0).toString(16)).slice(-8).match(/../g).reverse().join('')).join('');
 }
 
-// --- دالة SHA1 اليدوية لتعمل بدون HTTPS وبدون أخطاء ---
-function sha1_manual(str) {
-    var blockstart, i, j, W = new Array(80);
-    var H0 = 0x67452301, H1 = 0xEFCDAB89, H2 = 0x98BADCFE, H3 = 0x10325476, H4 = 0xC3D2E1F0;
-    var words = [];
-    for (i = 0; i < str.length; i++) words[i >> 2] |= str.charCodeAt(i) << (24 - (i % 4) * 8);
-    words[str.length >> 2] |= 0x80 << (24 - (str.length % 4) * 8);
-    words[(((str.length + 8) >> 6) + 1) * 16 - 1] = str.length * 8;
-
-    for (blockstart = 0; blockstart < words.length; blockstart += 16) {
-        var a = H0, b = H1, c = H2, d = H3, e = H4;
-        for (i = 0; i < 80; i++) {
-            if (i < 16) W[i] = words[blockstart + i];
-            else W[i] = (W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16]) << 1 | (W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16]) >>> 31;
-            var f, k;
-            if (i < 20) { f = (b & c) | (~b & d); k = 0x5A827999; }
-            else if (i < 40) { f = b ^ c ^ d; k = 0x6ED9EBA1; }
-            else if (i < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8F1BBCDC; }
-            else { f = b ^ c ^ d; k = 0xCA62C1D6; }
-            var t = (a << 5 | a >>> 27) + f + e + k + (W[i] >>> 0);
-            e = d; d = c; c = (b << 30 | b >>> 2); b = a; a = t;
-        }
-        H0 = (H0 + a) >>> 0; H1 = (H1 + b) >>> 0; H2 = (H2 + c) >>> 0; H3 = (H3 + d) >>> 0; H4 = (H4 + e) >>> 0;
-    }
-    var res = [H0, H1, H2, H3, H4];
-    for (i = 0; i < 5; i++) {
-        var s = res[i].toString(16);
-        res[i] = ("00000000".substr(s.length) + s);
-    }
-    return res.join("");
+// --- دالة SHA1 الصافية ---
+function getSHA1(s) {
+    var r=(n,x)=>(x<<n)|(x>>>(32-n)),f=[(b,c,d)=>b&c|~b&d,(b,c,d)=>b^c^d,(b,c,d)=>(b&c)|(b&d)|(c&d),(b,c,d)=>b^c^d],k=[0x5a827999,0x6ed9eba1,0x8f1bbcdc,0xca62c1d6],m=unescape(encodeURIComponent(s)),n=m.length,a=[0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0],w=[];
+    for(var i=0;i<((n+8)>>6)+1;i++){w[i]=new Uint32Array(16);for(var j=0;j<64;j++)if(j<n)w[i][j>>2]|=m.charCodeAt(j)<<(24-(j%4)*8);else if(j==n)w[i][j>>2]|=0x80<<(24-(j%4)*8);w[i][15]=n*8;}
+    for(var i=0;i<w.length;i++){var x=new Uint32Array(80);for(var j=0;j<16;j++)x[j]=w[i][j];for(var j=16;j<80;j++)x[j]=r(1,x[j-3]^x[j-8]^x[j-14]^x[j-16]);var h=a.slice();for(var j=0;j<80;j++){var t=(r(5,h[0])+f[0|j/20](h[1],h[2],h[3])+h[4]+k[0|j/20]+x[j])|0;h[4]=h[3];h[3]=h[2];h[2]=r(30,h[1]);h[1]=h[0];h[0]=t;}for(var j=0;j<5;j++)a[j]=(a[j]+h[j])|0;}
+    return a.map(x=>('00000000'+(x>>>0).toString(16)).slice(-8)).join('');
 }
