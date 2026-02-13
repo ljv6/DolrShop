@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dolr Plus | المتجر المطوّر</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -72,47 +69,6 @@
         </div>
     </section>
 
-    <section class="px-6 py-12 bg-white dark:bg-[#0f172a]">
-        <div class="max-w-6xl mx-auto">
-            <h3 class="text-lg font-bold mb-8 border-r-4 border-yellow-400 pr-3 dark:text-white">آراء العملاء ⭐</h3>
-            <div class="flex overflow-x-auto gap-6 no-scrollbar pb-4 snap-x snap-mandatory">
-                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"خدمة سريعة جداً والدعم الفني متعاون لأبعد درجة، أنصح بالتعامل معهم وبقوة!"</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-xs">أ ش</div>
-                        <div>
-                            <h4 class="text-xs font-bold dark:text-white">أحمد الشمري</h4>
-                            <p class="text-[10px] text-gray-400">عميل موثق ✅</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"أفضل متجر شحن جربته، السعر منافس والتنفيذ فوري."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center font-bold text-pink-600 text-xs">س ع</div>
-                        <div>
-                            <h4 class="text-xs font-bold dark:text-white">سارة علي</h4>
-                            <p class="text-[10px] text-gray-400">عميل موثق ✅</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"تعامل راقي وسرعة في الإنجاز، الله يوفقكم."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center font-bold text-green-600 text-xs">م ف</div>
-                        <div>
-                            <h4 class="text-xs font-bold dark:text-white">محمد فهد</h4>
-                            <p class="text-[10px] text-gray-400">عميل موثق ✅</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
         <div class="modal-content bg-white dark:bg-[#1e293b] w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
             <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-white/80 dark:bg-gray-700 p-2 rounded-full text-black dark:text-white">✕</button>
@@ -121,7 +77,8 @@
                 <div class="w-full md:w-1/2 bg-gray-100 dark:bg-gray-900 aspect-square md:aspect-auto">
                     <img id="modalImg" src="" class="w-full h-full object-cover">
                 </div>
-                <div class="w-full md:w-1/2 p-6 md:p-8 text-right"> <div class="flex justify-between items-start mb-2">
+                <div class="w-full md:w-1/2 p-6 md:p-8">
+                    <div class="flex justify-between items-start mb-2">
                         <h2 id="modalProdName" class="text-xl font-black dark:text-white"></h2>
                         <span class="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded">متوفر ✅</span>
                     </div>
@@ -140,17 +97,11 @@
                             <h4 class="text-xs font-bold mb-1 dark:text-gray-200">وصف المنتج:</h4>
                             <p class="text-[12px] text-gray-500 dark:text-gray-400 leading-relaxed">تسليم آمن ونظامي 100%، يتم التنفيذ فورياً أو خلال 24 ساعة كحد أقصى.</p>
                         </div>
-                        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800 text-right">
-                            <h4 class="text-[11px] font-bold text-blue-600 mb-1">🛡️ سياسة المتجر:</h4>
-                            <ul class="text-[10px] text-gray-500 dark:text-gray-400 list-disc list-inside space-y-1">
-                                <li>ضمان كامل على الخدمة المقدمة.</li>
-                                <li>تأكد من صحة البيانات المدخلة قبل الدفع.</li>
-                            </ul>
-                        </div>
                     </div>
 
                     <div class="space-y-3">
-                        <input type="tel" id="phone" placeholder="رقم الواتساب (9665...)" class="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-bold outline-none focus:border-blue-500 dark:text-white text-right">
+                        <input type="tel" id="phone" placeholder="رقم الجوال (9665...)" class="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-bold outline-none focus:border-blue-500 dark:text-white">
+                        
                         <button id="payBtn" onclick="processPayment()" class="w-full bg-black dark:bg-blue-600 text-white py-4 rounded-xl font-bold hover:scale-[1.02] transition-all">إتمام الشراء</button>
                     </div>
                 </div>
@@ -220,12 +171,12 @@
             if(typeof products !== 'undefined') {
                 const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter) || (p.category && p.category === filter));
                 container.innerHTML = filtered.map(p => `
-                    <div class="product-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl transition-all group dark:bg-gray-800 dark:border-gray-700" 
+                    <div class="product-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl transition-all group" 
                          onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
                         <div class="aspect-square overflow-hidden bg-gray-50">
                             <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                         </div>
-                        <div class="p-4 text-right">
+                        <div class="p-4">
                             <h5 class="text-[11px] font-bold mb-1 h-8 overflow-hidden dark:text-gray-200">${p.name}</h5>
                             <p class="text-blue-600 font-black text-sm">${p.price} SAR</p>
                         </div>
@@ -237,6 +188,7 @@
         // --- إدارة نافذة المنتج ---
         function openModal(name, price, img) {
             document.getElementById('modalProdName').innerText = name;
+            // يتم تخزين السعر هنا ليتمكن payment.js من قراءته
             document.getElementById('modalPriceDisplay').innerText = price + " SAR";
             document.getElementById('modalImg').src = img;
             document.getElementById('paymentModal').classList.add('active');
