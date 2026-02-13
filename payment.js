@@ -1,5 +1,5 @@
 /**
- * payment.js - النسخة المحسنة
+ * payment.js - النسخة المصلحة 100%
  */
 
 const BOT_CONFIG = { 
@@ -19,37 +19,43 @@ async function processPayment() {
     const prodName = document.getElementById('modalProdName').innerText;
     let priceText = document.getElementById('modalPriceDisplay').innerText;
     
-    // تنسيق المبلغ رقمياً
-    let amountVal = parseFloat(priceText.replace(/[^\d.]/g, '')).toFixed(2);
+    // --- تعديل استخراج السعر (حل المشكلة) ---
+    // هذا السطر يسحب الأرقام فقط ويتجاهل "SAR" أو أي رموز أخرى
+    let cleanPrice = priceText.replace(/[^\d.]/g, ''); 
+    let amountVal = parseFloat(cleanPrice).toFixed(2);
+
+    if (isNaN(amountVal) || amountVal <= 0) {
+        alert("خطأ: تعذر تحديد سعر المنتج بشكل صحيح");
+        return;
+    }
 
     if (phone.length < 9) {
         alert("يرجى إدخال رقم جوال صحيح");
         return;
     }
 
-    // تعطيل الزر لمنع التكرار
-    if(payBtn) {
-        payBtn.disabled = true;
-        payBtn.innerText = "جاري المعالجة...";
-    }
+    // تعطيل الزر
+    payBtn.disabled = true;
+    payBtn.innerText = "جاري المعالجة...";
 
     try {
-        // 1. إرسال بيانات الطلب للتليجرام أولاً لضمان وصول التنبيه لك
-        const telegramMsg = `طلب جديد 🛒\nمتجر Dolr Plus\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال العميل: ${phone}`;
-        
-        // استخدام التحميل في الخلفية لسرعة التحويل للبوابة
-        fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}`).catch(e => console.log("Telegram Error"));
+        // 1. إرسال التليجرام
+        const telegramMsg = `طلب جديد 🛒\nمتجر Dolr Plus\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال: ${phone}`;
+        fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}`).catch(() => {});
 
-        // 2. إعدادات البوابة
+        // 2. حساب الهاش وبوابة الدفع
         const orderId = "DOLR-" + Date.now();
         const desc = "Order " + prodName;
         
-        // بناء سلسلة الهاش حسب طلب Edfapay
+        // بناء سلسلة الهاش (يجب أن يكون بالترتيب الصحيح لـ Edfapay)
         const combinedString = (CONFIG.MERCHANT_PASSWORD + orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_ID).toUpperCase();
         
-        // التحقق من وجود مكتبة التشفير
+        // التحقق من مكتبة التشفير
         if (typeof CryptoJS === 'undefined') {
-            throw new Error("Missing CryptoJS library");
+            alert("خطأ: مكتبة التشفير غير محملة في صفحة HTML");
+            payBtn.disabled = false;
+            payBtn.innerText = "إتمام الشراء";
+            return;
         }
 
         const md5Hash = CryptoJS.MD5(combinedString).toString().toUpperCase();
@@ -82,13 +88,15 @@ async function processPayment() {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
-            alert("بوابة الدفع: " + (data.error_message || "هناك مشكلة في البيانات"));
-            if(payBtn) { payBtn.disabled = false; payBtn.innerText = "إتمام الشراء"; }
+            alert("بوابة الدفع: " + (data.error_message || "فشل الطلب"));
+            payBtn.disabled = false;
+            payBtn.innerText = "إتمام الشراء";
         }
     } catch (e) {
         console.error(e);
         alert("حدث خطأ تقني: " + e.message);
-        if(payBtn) { payBtn.disabled = false; payBtn.innerText = "إتمام الشراء"; }
+        payBtn.disabled = false;
+        payBtn.innerText = "إتمام الشراء";
     }
 }
 
