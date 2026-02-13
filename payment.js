@@ -1,12 +1,7 @@
-/**
- * payment.js - العودة للكود الأصلي بأسلوب التشفير المضمون
- */
-
 const BOT_CONFIG = { 
     TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", 
     CHAT_ID: "591768998" 
 };
-
 const CONFIG = { 
     MERCHANT_ID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2", 
     MERCHANT_PASSWORD: "7ceb6437-92bc-411b-98fa-be054b39eaba", 
@@ -19,7 +14,6 @@ async function processPayment() {
     const prodName = document.getElementById('modalProdName').innerText;
     let priceText = document.getElementById('modalPriceDisplay').innerText;
     
-    // تنظيف السعر ليكون رقمي
     let amountVal = parseFloat(priceText.replace(/[^\d.]/g, '')).toFixed(2);
 
     if (phone.length < 9) {
@@ -30,63 +24,59 @@ async function processPayment() {
     payBtn.disabled = true;
     payBtn.innerText = "جاري المعالجة...";
 
-    // 1. إشعار التليجرام (نفس أسلوبك الأصلي)
     const telegramMsg = `🚀 *طلب جديد: Dolr Plus*\n\n📱 الجوال: ${phone}\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR`;
     
     try {
-        await fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}&parse_mode=Markdown`, {
-            method: 'GET', keepalive: true 
-        });
-    } catch(e) { console.error("Notify Error"); }
+        fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}&parse_mode=Markdown`, { method: 'GET', keepalive: true });
+    } catch(e) {}
 
     const orderId = "DOLR-" + Date.now();
     const desc = "Order: " + prodName;
 
-    // 2. التشفير بنفس الترتيب الأصلي تماماً (Password + ID + Amount + Currency + Desc + Merchant)
+    // نفس ترتيب كودك الأول بالضبط
     const combinedString = (CONFIG.MERCHANT_PASSWORD + orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_ID).toUpperCase();
     
-    const md5Hash = md5(combinedString);
-    const finalHash = await sha1(md5Hash);
-
-    const formData = new FormData();
-    formData.append("action", "SALE");
-    formData.append("edfa_merchant_id", CONFIG.MERCHANT_ID);
-    formData.append("order_id", orderId);
-    formData.append("order_amount", amountVal);
-    formData.append("order_currency", "SAR");
-    formData.append("order_description", desc);
-    formData.append("payer_first_name", "Customer");
-    formData.append("payer_last_name", "User");
-    formData.append("payer_email", "customer@dolrplus.com");
-    formData.append("payer_phone", phone);
-    formData.append("payer_country", "SA");
-    formData.append("payer_city", "Riyadh");
-    formData.append("payer_address", "Digital");
-    formData.append("payer_zip", "11000");
-    formData.append("payer_ip", "1.1.1.1");
-    formData.append("term_url_3ds", window.location.href);
-    formData.append("success_url", window.location.href);
-    formData.append("failure_url", window.location.href);
-    formData.append("hash", finalHash);
-
     try {
+        const md5Hash = md5(combinedString);
+        const finalHash = sha1_manual(md5Hash); // استخدام الدالة اليدوية هنا
+
+        const formData = new FormData();
+        formData.append("action", "SALE");
+        formData.append("edfa_merchant_id", CONFIG.MERCHANT_ID);
+        formData.append("order_id", orderId);
+        formData.append("order_amount", amountVal);
+        formData.append("order_currency", "SAR");
+        formData.append("order_description", desc);
+        formData.append("payer_first_name", "Customer");
+        formData.append("payer_last_name", "User");
+        formData.append("payer_email", "customer@dolrplus.com");
+        formData.append("payer_phone", phone);
+        formData.append("payer_country", "SA");
+        formData.append("payer_city", "Riyadh");
+        formData.append("payer_address", "Digital");
+        formData.append("payer_zip", "11000");
+        formData.append("payer_ip", "1.1.1.1");
+        formData.append("term_url_3ds", window.location.href);
+        formData.append("success_url", window.location.href);
+        formData.append("failure_url", window.location.href);
+        formData.append("hash", finalHash);
+
         const response = await fetch(CONFIG.API_URL, { method: 'POST', body: formData });
         const data = await response.json();
+
         if (data.redirect_url) { 
             window.location.href = data.redirect_url; 
         } else { 
-            alert("خطأ البوابة: " + data.error_message); 
-            payBtn.disabled = false; 
-            payBtn.innerText = "إتمام الشراء"; 
+            alert("خطأ البوابة: " + (data.error_message || "فشل الطلب")); 
+            payBtn.disabled = false; payBtn.innerText = "إتمام الشراء";
         }
     } catch (e) { 
-        alert("خطأ تقني في الاتصال"); 
-        payBtn.disabled = false; 
-        payBtn.innerText = "إتمام الشراء"; 
+        alert("حدث خطأ في معالجة البيانات"); 
+        payBtn.disabled = false; payBtn.innerText = "إتمام الشراء";
     }
 }
 
-// --- دوال التشفير الموثوقة التي أرسلتها أنت ---
+// --- دالة MD5 اليدوية ---
 function md5(string) {
     function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
     function addUnsigned(lX, lY) {
@@ -125,8 +115,34 @@ function md5(string) {
     return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
 }
 
-async function sha1(m){
-    const b = new TextEncoder().encode(m);
-    const h = await crypto.subtle.digest('SHA-1',b);
-    return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
+// --- دالة SHA1 اليدوية لتعمل بدون HTTPS وبدون أخطاء ---
+function sha1_manual(str) {
+    var blockstart, i, j, W = new Array(80);
+    var H0 = 0x67452301, H1 = 0xEFCDAB89, H2 = 0x98BADCFE, H3 = 0x10325476, H4 = 0xC3D2E1F0;
+    var words = [];
+    for (i = 0; i < str.length; i++) words[i >> 2] |= str.charCodeAt(i) << (24 - (i % 4) * 8);
+    words[str.length >> 2] |= 0x80 << (24 - (str.length % 4) * 8);
+    words[(((str.length + 8) >> 6) + 1) * 16 - 1] = str.length * 8;
+
+    for (blockstart = 0; blockstart < words.length; blockstart += 16) {
+        var a = H0, b = H1, c = H2, d = H3, e = H4;
+        for (i = 0; i < 80; i++) {
+            if (i < 16) W[i] = words[blockstart + i];
+            else W[i] = (W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16]) << 1 | (W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16]) >>> 31;
+            var f, k;
+            if (i < 20) { f = (b & c) | (~b & d); k = 0x5A827999; }
+            else if (i < 40) { f = b ^ c ^ d; k = 0x6ED9EBA1; }
+            else if (i < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8F1BBCDC; }
+            else { f = b ^ c ^ d; k = 0xCA62C1D6; }
+            var t = (a << 5 | a >>> 27) + f + e + k + (W[i] >>> 0);
+            e = d; d = c; c = (b << 30 | b >>> 2); b = a; a = t;
+        }
+        H0 = (H0 + a) >>> 0; H1 = (H1 + b) >>> 0; H2 = (H2 + c) >>> 0; H3 = (H3 + d) >>> 0; H4 = (H4 + e) >>> 0;
+    }
+    var res = [H0, H1, H2, H3, H4];
+    for (i = 0; i < 5; i++) {
+        var s = res[i].toString(16);
+        res[i] = ("00000000".substr(s.length) + s);
+    }
+    return res.join("");
 }
