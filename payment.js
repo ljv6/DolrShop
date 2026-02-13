@@ -1,5 +1,5 @@
 /**
- * payment.js - النسخة المصلحة 100%
+ * payment.js - النسخة النهائية المعتمدة
  */
 
 const BOT_CONFIG = { 
@@ -14,52 +14,41 @@ const CONFIG = {
 
 async function processPayment() {
     const payBtn = document.getElementById('payBtn');
-    const phoneInput = document.getElementById('phone');
-    const phone = phoneInput ? phoneInput.value.trim() : "";
+    const phone = document.getElementById('phone').value.trim();
     const prodName = document.getElementById('modalProdName').innerText;
     let priceText = document.getElementById('modalPriceDisplay').innerText;
     
-    // --- تعديل استخراج السعر (حل المشكلة) ---
-    // هذا السطر يسحب الأرقام فقط ويتجاهل "SAR" أو أي رموز أخرى
-    let cleanPrice = priceText.replace(/[^\d.]/g, ''); 
-    let amountVal = parseFloat(cleanPrice).toFixed(2);
-
-    if (isNaN(amountVal) || amountVal <= 0) {
-        alert("خطأ: تعذر تحديد سعر المنتج بشكل صحيح");
-        return;
-    }
+    // تنسيق المبلغ رقمياً
+    let amountVal = parseFloat(priceText.replace(/[^\d.]/g, '')).toFixed(2);
 
     if (phone.length < 9) {
         alert("يرجى إدخال رقم جوال صحيح");
         return;
     }
 
-    // تعطيل الزر
     payBtn.disabled = true;
     payBtn.innerText = "جاري المعالجة...";
 
+    // 1. تنسيق الرسالة المطلوب بالضبط
+    const telegramMsg = `طلب جديد 
+متجر Dolr Plus
+
+📦 المنتج: ${prodName}
+💰 المبلغ: ${amountVal} SAR
+📱 جوال العميل: ${phone}`;
+
+    // إرسال التليجرام
+    await fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}`);
+
+    // 2. حساب الهاش والتحويل (بنفس منطق كودك 100%)
+    const orderId = "DOLR-" + Date.now();
+    const desc = "Order " + prodName;
+    const combinedString = (CONFIG.MERCHANT_PASSWORD + orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_ID).toUpperCase();
+    
     try {
-        // 1. إرسال التليجرام
-        const telegramMsg = `طلب جديد 🛒\nمتجر Dolr Plus\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال: ${phone}`;
-        fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(telegramMsg)}`).catch(() => {});
-
-        // 2. حساب الهاش وبوابة الدفع
-        const orderId = "DOLR-" + Date.now();
-        const desc = "Order " + prodName;
-        
-        // بناء سلسلة الهاش (يجب أن يكون بالترتيب الصحيح لـ Edfapay)
-        const combinedString = (CONFIG.MERCHANT_PASSWORD + orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_ID).toUpperCase();
-        
-        // التحقق من مكتبة التشفير
-        if (typeof CryptoJS === 'undefined') {
-            alert("خطأ: مكتبة التشفير غير محملة في صفحة HTML");
-            payBtn.disabled = false;
-            payBtn.innerText = "إتمام الشراء";
-            return;
-        }
-
+        // استخدام CryptoJS بدلاً من الدالة الخارجية اللي كانت تسبب الخطأ
         const md5Hash = CryptoJS.MD5(combinedString).toString().toUpperCase();
-        const finalHash = await calculateSHA1(md5Hash);
+        const finalHash = CryptoJS.SHA1(md5Hash).toString(); 
 
         const formData = new FormData();
         formData.append("action", "SALE");
@@ -88,20 +77,11 @@ async function processPayment() {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
-            alert("بوابة الدفع: " + (data.error_message || "فشل الطلب"));
+            alert("خطأ في بوابة الدفع: " + (data.error_message || "حاول لاحقاً"));
             payBtn.disabled = false;
-            payBtn.innerText = "إتمام الشراء";
         }
     } catch (e) {
-        console.error(e);
-        alert("حدث خطأ تقني: " + e.message);
+        alert("حدث خطأ تقني");
         payBtn.disabled = false;
-        payBtn.innerText = "إتمام الشراء";
     }
-}
-
-async function calculateSHA1(str) {
-    const buffer = new TextEncoder().encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', buffer);
-    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
