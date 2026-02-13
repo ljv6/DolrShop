@@ -20,7 +20,7 @@
         .banner-slide { min-width: 100%; position: relative; height: 40vh; background-color: #1a1a1a; }
         .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; }
         .dot-item.active { width: 24px; background-color: white !important; }
-        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; z-index: 100; }
         #paymentModal.active { display: flex; opacity: 1; }
     </style>
 </head>
@@ -51,34 +51,18 @@
         <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
     </section>
 
-    <section class="px-6 py-10 bg-gray-50 transition-all min-h-[400px]">
+    <section class="px-6 py-10 bg-gray-50 dark:bg-gray-900 transition-all min-h-[400px]">
         <div class="max-w-6xl mx-auto">
             <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-black pr-3 dark:border-blue-500 dark:text-white">وصل حديثاً</h3>
             <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
         </div>
     </section>
 
-    <section class="px-6 py-12 bg-white dark:bg-[#0f172a]">
-        <div class="max-w-6xl mx-auto">
-            <h3 class="text-lg font-bold mb-8 border-r-4 border-yellow-400 pr-3 dark:text-white">آراء العملاء ⭐</h3>
-            <div class="flex overflow-x-auto gap-6 no-scrollbar pb-4 snap-x snap-mandatory">
-                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"خدمة سريعة جداً والدعم الفني متعاون لأبعد درجة، أنصح بالتعامل معهم وبقوة!"</p>
-                </div>
-                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"أفضل متجر شحن جربته، السعر منافس والتنفيذ فوري."</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
-        <div class="modal-content bg-white dark:bg-[#1e293b] w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
+    <div id="paymentModal" class="fixed inset-0 bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
+        <div class="modal-content bg-white dark:bg-[#1e293b] w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
             <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-white/80 dark:bg-gray-700 p-2 rounded-full text-black dark:text-white">✕</button>
             <div class="flex flex-col md:flex-row">
-                <div class="w-full md:w-1/2 bg-gray-100 dark:bg-gray-900 aspect-square md:aspect-auto">
+                <div class="w-full md:w-1/2 bg-gray-100 dark:bg-gray-900 aspect-square">
                     <img id="modalImg" src="" class="w-full h-full object-cover">
                 </div>
                 <div class="w-full md:w-1/2 p-6 md:p-8">
@@ -99,19 +83,16 @@
     <script src="payment.js"></script>
 
     <script>
-        // دالة الثيم
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
         }
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
 
-        // إخفاء اللودر
         window.addEventListener('load', () => {
             setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 1000);
         });
 
-        // تشغيل السلايدر
         let currentSlide = 0;
         function initSlider() {
             const slider = document.getElementById('banner-slider');
@@ -119,17 +100,16 @@
                 slider.innerHTML = banners.map(b => `<div class="banner-slide"><img src="${b.image}" class="w-full h-full object-cover opacity-60"></div>`).join('');
                 setInterval(() => {
                     currentSlide = (currentSlide + 1) % banners.length;
-                    slider.style.transform = `translateX(${currentSlide * 100}%)`;
+                    slider.style.transform = `translateX(-${currentSlide * 100}%)`;
                 }, 5000);
             }
         }
 
-        // عرض المنتجات
         function renderProducts() {
             const container = document.getElementById('products-list');
             if(typeof products !== 'undefined') {
                 container.innerHTML = products.map(p => `
-                    <div class="product-card bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-4 cursor-pointer" onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
+                    <div class="product-card bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-4 cursor-pointer hover:shadow-lg transition-all" onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
                         <img src="${p.img}" class="w-full aspect-square object-cover rounded-xl mb-3">
                         <h5 class="text-xs font-bold dark:text-white">${p.name}</h5>
                         <p class="text-blue-600 font-black">${p.price} SAR</p>
@@ -143,11 +123,30 @@
             document.getElementById('modalPriceDisplay').innerText = price + " SAR";
             document.getElementById('modalImg').src = img;
             document.getElementById('paymentModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
-        function closeModal() { document.getElementById('paymentModal').classList.remove('active'); }
+        function closeModal() { 
+            document.getElementById('paymentModal').classList.remove('active'); 
+            document.body.style.overflow = 'auto';
+        }
 
-        document.addEventListener('DOMContentLoaded', () => { initSlider(); renderProducts(); });
+        document.addEventListener('DOMContentLoaded', () => { 
+            initSlider(); 
+            renderProducts(); 
+            
+            if(typeof categories !== 'undefined') {
+                const catContainer = document.getElementById('categories-list');
+                catContainer.innerHTML = categories.map(cat => `
+                    <div class="min-w-[80px] text-center cursor-pointer" onclick="renderProducts('${cat.name}')">
+                        <div class="w-16 h-16 mx-auto rounded-full border p-2 mb-2 bg-white dark:bg-gray-800 dark:border-gray-700">
+                            <img src="${cat.img}" class="w-full h-full object-contain">
+                        </div>
+                        <span class="text-[10px] font-bold dark:text-gray-300">${cat.name}</span>
+                    </div>
+                `).join('');
+            }
+        });
     </script>
 </body>
 </html>
