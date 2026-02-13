@@ -11,33 +11,33 @@ const CONFIG = {
 };
 
 async function processPayment() {
-    // 1. جلب العناصر من النافذة الجديدة
+    // جلب العناصر بناءً على التصميم الجديد
     const btn = document.querySelector('#paymentModal button[onclick="processPayment()"]');
-    const amountElement = document.getElementById('modalPriceDisplay'); // المعرف الجديد للسعر
+    const amountElement = document.getElementById('modalPriceDisplay'); 
     const phoneInput = document.getElementById('phone');
     const nameElement = document.getElementById('modalProdName');
 
+    // التحقق من وجود العناصر
     if(!amountElement || !phoneInput || !nameElement) {
-        console.error("تعذر العثور على عناصر النافذة");
+        alert("خطأ في النظام: لم يتم العثور على بيانات المنتج");
         return;
     }
 
-    const amountVal = amountElement.innerText.replace(' SAR', '').trim();
+    // تنظيف السعر (أخذ الرقم فقط)
+    const amountVal = amountElement.innerText.replace('SAR', '').replace('sar', '').trim();
     const phone = phoneInput.value.trim();
     const prodName = nameElement.innerText;
 
-    // 2. التحقق من البيانات
     if(!phone || phone.length < 9) {
-        alert("يرجى إدخال رقم جوال صحيح للمتابعة");
+        alert("يرجى إدخال رقم جوال صحيح");
         return;
     }
 
-    // تغيير حالة الزر
-    const originalText = btn.innerText;
+    // تحديث حالة الزر
     btn.disabled = true;
-    btn.innerText = "جاري تحويلك للدفع الآمن...";
+    btn.innerText = "جاري التحويل للدفع الآمن...";
 
-    // 3. إرسال إشعار تليجرام
+    // إرسال إشعار تليجرام
     const msg = `🛒 *طلب جديد من متجر Dolr Plus*\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال العميل: ${phone}`;
     
     try {
@@ -45,16 +45,15 @@ async function processPayment() {
             method: 'GET',
             keepalive: true 
         });
-    } catch(e) { console.log("Telegram Notification Failed"); }
+    } catch(e) { console.log("Telegram Error"); }
 
     const orderId = "DOLR-" + Date.now();
     const desc = "Order: " + prodName;
 
-    // 4. التشفير (نفس منطقك الأصلي)
+    // التشفير والحماية
     const md5Hash = md5((orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase());
     const finalHash = await sha1(md5Hash);
 
-    // 5. تجهيز بيانات الدفع بوابة Edfapay
     const formData = new FormData();
     formData.append("action", "SALE");
     formData.append("edfa_merchant_id", CONFIG.MERCHANT_ID);
@@ -83,15 +82,13 @@ async function processPayment() {
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
-            alert("عذراً، حدث خطأ في عملية الدفع: " + (data.error_message || "تأكد من بيانات البطاقة"));
+            alert("خطأ: " + (data.error_message || "يرجى المحاولة مرة أخرى"));
             btn.disabled = false;
-            btn.innerText = originalText;
+            btn.innerText = "إتمام الشراء";
         }
     } catch (e) {
-        alert("فشل الاتصال بخادم البنك، يرجى المحاولة لاحقاً");
+        alert("فشل الاتصال ببوابة الدفع");
         btn.disabled = false;
-        btn.innerText = originalText;
+        btn.innerText = "إتمام الشراء";
     }
 }
-
-// الدوال المساعدة (MD5 & SHA1) تبقى كما هي في كودك...
