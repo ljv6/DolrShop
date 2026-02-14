@@ -1,29 +1,57 @@
-const FIXED_EMAIL = "maxmohamedmoon@gmail.com";
-const BOT_CONFIG = { TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", CHAT_ID: "591768998" };
-const CONFIG = { MERCHANT_ID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2", MERCHANT_PASSWORD: "7ceb6437-92bc-411b-98fa-be054b39eaba", API_URL: "https://api.edfapay.com/payment/initiate" };
+/**
+ * Dolr Plus - Payment Handler
+ * ربط بوابة الدفع Edfapay مع إشعارات Telegram
+ */
+
+const BOT_CONFIG = { 
+    TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", 
+    CHAT_ID: "591768998" 
+};
+
+const CONFIG = { 
+    MERCHANT_ID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2", 
+    MERCHANT_PASSWORD: "7ceb6437-92bc-411b-98fa-be054b39eaba", 
+    API_URL: "https://api.edfapay.com/payment/initiate",
+    FIXED_EMAIL: "maxmohamedmoon@gmail.com"
+};
 
 async function processPayment() {
     const btn = document.getElementById('payBtn');
-    const amountVal = document.getElementById('amountDisplay').value.replace(' SAR', '');
     const phone = document.getElementById('phone').value;
     const prodName = document.getElementById('modalProdName').innerText;
+    // استخراج الرقم فقط من نص السعر (مثلاً "45.00 SAR" تصبح "45.00")
+    const priceText = document.getElementById('modalPriceDisplay').innerText;
+    const amountVal = priceText.replace(/[^\d.]/g, '').trim();
 
-    if(!phone || phone.length < 9) return alert("يرجى إدخال رقم جوال صحيح");
+    // التحقق من المدخلات
+    if (!phone || phone.length < 9) {
+        alert("يرجى إدخال رقم جوال صحيح");
+        return;
+    }
 
+    // تغيير حالة الزر
     btn.disabled = true;
-    btn.innerText = "جاري التحويل...";
+    btn.innerText = "جاري التحويل الآمن...";
 
-    // إشعار البوت
-    const msg = `🛒 *طلب جديد من متجر Dolr Plus*\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 جوال العميل: ${phone}\n\n⏳ جاري توجيه العميل لبوابة الدفع...`;
-    fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
+    // 1. إرسال إشعار فوري للتليجرام
+    const msg = `🛒 *طلب جديد من Dolr Plus*\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 الجوال: ${phone}\n\n⏳ يتم توجيه العميل الآن...`;
+    
+    try {
+        fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
+    } catch (e) { console.error("Telegram Notify Fail"); }
 
+    // 2. تجهيز بيانات الدفع
     const orderId = "DOLR-" + Date.now();
     const desc = "Order: " + prodName;
 
-    // التشفير بنفس ترتيب كودك الأصلي
-    const md5Hash = md5((orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase());
-    const finalHash = sha1_manual(md5Hash); // استخدمنا الدالة اليدوية الجديدة هنا
+    // 3. نظام التشفير (Hash Generation)
+    // الخطوة الأولى: MD5 للبيانات المدمجة
+    const combinedString = (orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase();
+    const md5Hash = md5(combinedString);
+    // الخطوة الثانية: SHA1 للناتج
+    const finalHash = await sha1(md5Hash);
 
+    // 4. بناء طلب الدفع
     const formData = new FormData();
     formData.append("action", "SALE");
     formData.append("edfa_merchant_id", CONFIG.MERCHANT_ID);
@@ -33,11 +61,11 @@ async function processPayment() {
     formData.append("order_description", desc);
     formData.append("payer_first_name", "Dolr");
     formData.append("payer_last_name", "Customer");
-    formData.append("payer_email", FIXED_EMAIL);
+    formData.append("payer_email", CONFIG.FIXED_EMAIL);
     formData.append("payer_phone", phone);
     formData.append("payer_country", "SA");
     formData.append("payer_city", "Riyadh");
-    formData.append("payer_address", "Digital");
+    formData.append("payer_address", "Digital Service");
     formData.append("payer_zip", "11000");
     formData.append("payer_ip", "1.1.1.1");
     formData.append("term_url_3ds", window.location.href);
@@ -45,19 +73,27 @@ async function processPayment() {
     formData.append("failure_url", window.location.href);
     formData.append("hash", finalHash);
 
+    // 5. الاتصال بالبوابة
     try {
         const response = await fetch(CONFIG.API_URL, { method: 'POST', body: formData });
         const data = await response.json();
-        if (data.redirect_url) window.location.href = data.redirect_url;
-        else alert("خطأ من البنك: " + (data.error_message || "تأكد من بيانات التاجر"));
+        
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert("خطأ في بوابة الدفع: " + (data.error_message || "تأكد من إعدادات التاجر"));
+            btn.disabled = false;
+            btn.innerText = "إتمام الشراء";
+        }
     } catch (e) {
-        alert("فشل الاتصال بالخادم");
+        alert("فشل الاتصال بالخادم، يرجى المحاولة لاحقاً");
         btn.disabled = false;
-        btn.innerText = "حاول مرة أخرى";
+        btn.innerText = "إتمام الشراء";
     }
 }
 
-// --- دالة MD5 اليدوية (نفس حقتك) ---
+// --- توابع التشفير الضرورية ---
+
 function md5(string) {
     function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
     function addUnsigned(lX, lY) {
@@ -97,10 +133,8 @@ function md5(string) {
     return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
 }
 
-// --- الدالة الجديدة اليدوية SHA1 (عشان ما تطلب HTTPS) ---
-function sha1_manual(s) {
-    var r=(n,x)=>(x<<n)|(x>>>(32-n)),f=[(b,c,d)=>b&c|~b&d,(b,c,d)=>b^c^d,(b,c,d)=>(b&c)|(b&d)|(c&d),(b,c,d)=>b^c^d],k=[0x5a827999,0x6ed9eba1,0x8f1bbcdc,0xca62c1d6],m=unescape(encodeURIComponent(s)),n=m.length,a=[0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0],w=[];
-    for(var i=0;i<((n+8)>>6)+1;i++){w[i]=new Uint32Array(16);for(var j=0;j<64;j++)if(j<n)w[i][j>>2]|=m.charCodeAt(j)<<(24-(j%4)*8);else if(j==n)w[i][j>>2]|=0x80<<(24-(j%4)*8);w[i][15]=n*8;}
-    for(var i=0;i<w.length;i++){var x=new Uint32Array(80);for(var j=0;j<16;j++)x[j]=w[i][j];for(var j=16;j<80;j++)x[j]=r(1,x[j-3]^x[j-8]^x[j-14]^x[j-16]);var h=a.slice();for(var j=0;j<80;j++){var t=(r(5,h[0])+f[0|j/20](h[1],h[2],h[3])+h[4]+k[0|j/20]+x[j])|0;h[4]=h[3];h[3]=h[2];h[2]=r(30,h[1]);h[1]=h[0];h[0]=t;}for(var j=0;j<5;j++)a[j]=(a[j]+h[j])|0;}
-    return a.map(x=>('00000000'+(x>>>0).toString(16)).slice(-8)).join('');
+async function sha1(m){
+    const b = new TextEncoder().encode(m);
+    const h = await crypto.subtle.digest('SHA-1',b);
+    return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
