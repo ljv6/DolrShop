@@ -1,9 +1,7 @@
 /**
  * Dolr Plus - Payment Handler
- * ربط بوابة الدفع Edfapay مع إشعارات Telegram
  */
 
-// 1. إعدادات التليجرام والبوابة
 const BOT_CONFIG = { 
     TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", 
     CHAT_ID: "591768998" 
@@ -16,45 +14,46 @@ const CONFIG = {
     FIXED_EMAIL: "maxmohamedmoon@gmail.com"
 };
 
-// 2. الدالة الأساسية لمعالجة الدفع
 async function processPayment() {
     const btn = document.getElementById('payBtn');
-    const phoneInput = document.getElementById('phone');
-    const phone = phoneInput.value.trim();
+    const phone = document.getElementById('phone').value.trim();
     const prodName = document.getElementById('modalProdName').innerText;
+    const priceElement = document.getElementById('modalPriceDisplay');
     
-    // جلب السعر الصافي من الـ Attribute لضمان دقة التشفير
-    const amountVal = document.getElementById('modalPriceDisplay').getAttribute('data-raw-price');
+    // محاولة جلب السعر الخام، وإذا لم يوجد نأخذ النص وننظفه
+    let amountVal = priceElement.getAttribute('data-raw-price');
+    if (!amountVal) {
+        amountVal = priceElement.innerText.replace(/[^\d.]/g, '').trim();
+    }
 
-    // التحقق من صحة المدخلات
     if (!phone || phone.length < 9) {
         alert("يرجى إدخال رقم جوال صحيح");
         return;
     }
 
-    // تجهيز حالة الزر (حماية من التكرار)
     btn.disabled = true;
-    const originalBtnText = btn.innerText;
+    const originalText = btn.innerText;
     btn.innerText = "جاري التحويل الآمن...";
 
-    // [أ] إرسال إشعار فوري للتليجرام
+    // 1. إرسال إشعار التليجرام (شغال عندك)
     const msg = `🛒 *طلب جديد من Dolr Plus*\n\n📦 المنتج: ${prodName}\n💰 المبلغ: ${amountVal} SAR\n📱 الجوال: ${phone}\n\n⏳ يتم توجيه العميل الآن...`;
-    
     try {
         fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
-    } catch (e) { console.error("Telegram Notify Fail"); }
+    } catch (e) { console.error("Telegram Error"); }
 
+    // 2. معالجة التشفير والدفع
     try {
-        // [ب] توليد بيانات الطلب والتشفير
         const orderId = "DOLR-" + Date.now();
         const desc = "Order: " + prodName;
 
-        // التشفير المزدوج (MD5 ثم SHA1) كما تطلبه Edfapay
+        // توليد الهاش
         const combinedString = (orderId + amountVal + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase();
         const md5Hash = md5(combinedString);
-        const finalHash = await sha1(md5Hash);
+        
+        // --- نقطة الخطأ المحتملة ---
+        // إذا كان الموقع ليس HTTPS، سيفشل السطر التالي
+        const finalHash = await sha1(md5Hash); 
 
-        // [ج] بناء طلب الدفع (FormData)
         const formData = new FormData();
         formData.append("action", "SALE");
         formData.append("edfa_merchant_id", CONFIG.MERCHANT_ID);
@@ -76,31 +75,32 @@ async function processPayment() {
         formData.append("failure_url", window.location.href);
         formData.append("hash", finalHash);
 
-        // [د] إرسال الطلب للبوابة
         const response = await fetch(CONFIG.API_URL, { method: 'POST', body: formData });
         const data = await response.json();
         
         if (data.redirect_url) {
             window.location.href = data.redirect_url;
         } else {
-            alert("خطأ من بوابة الدفع: " + (data.error_message || "تأكد من إعدادات التاجر"));
+            alert("خطأ البوابة: " + (data.error_message || "خطأ في بيانات التاجر"));
             btn.disabled = false;
-            btn.innerText = originalBtnText;
+            btn.innerText = originalText;
         }
     } catch (e) {
-        console.error("Payment Error:", e);
-        alert("حدث خطأ أثناء المعالجة (تأكد من تشغيل الموقع عبر HTTPS)");
+        console.error("Critical Error:", e);
+        // التنبيه الذي يظهر لك حالياً
+        alert("حدث خطأ أثناء المعالجة. تأكد من أن الموقع يعمل برابط HTTPS مشفر.");
         btn.disabled = false;
-        btn.innerText = originalBtnText;
+        btn.innerText = originalText;
     }
 }
 
-// 3. توابع التشفير الضرورية (SHA1 & MD5)
+// --- دوابل التشفير المكتملة ---
 
-async function sha1(m) {
-    const b = new TextEncoder().encode(m);
-    const h = await crypto.subtle.digest('SHA-1', b);
-    return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+async function sha1(str) {
+    const buffer = new TextEncoder().encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-1', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function md5(string) {
