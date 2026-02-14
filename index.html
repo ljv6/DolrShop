@@ -69,6 +69,36 @@
         </div>
     </section>
 
+    <section class="px-6 py-12 bg-white dark:bg-[#0f172a]">
+        <div class="max-w-6xl mx-auto">
+            <h3 class="text-lg font-bold mb-8 border-r-4 border-yellow-400 pr-3 dark:text-white">آراء العملاء ⭐</h3>
+            <div class="flex overflow-x-auto gap-6 no-scrollbar pb-4 snap-x snap-mandatory">
+                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
+                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"خدمة سريعة جداً والدعم الفني متعاون لأبعد درجة، أنصح بالتعامل معهم وبقوة!"</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-xs">أ ش</div>
+                        <div>
+                            <h4 class="text-xs font-bold dark:text-white">أحمد الشمري</h4>
+                            <p class="text-[10px] text-gray-400">عميل موثق ✅</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
+                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"أفضل متجر شحن جربته، السعر منافس والتنفيذ فوري."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center font-bold text-pink-600 text-xs">س ع</div>
+                        <div>
+                            <h4 class="text-xs font-bold dark:text-white">سارة علي</h4>
+                            <p class="text-[10px] text-gray-400">عميل موثق ✅</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
         <div class="modal-content bg-white dark:bg-[#1e293b] w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
             <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-white/80 dark:bg-gray-700 p-2 rounded-full text-black dark:text-white">✕</button>
@@ -89,7 +119,7 @@
                     </div>
 
                     <div class="mb-6">
-                        <p class="text-2xl font-black text-blue-600" id="modalPriceDisplay"></p>
+                        <p class="text-2xl font-black text-blue-600" id="modalPriceDisplay" data-raw-price="0"></p>
                     </div>
 
                     <div class="space-y-4 mb-8">
@@ -100,8 +130,7 @@
                     </div>
 
                     <div class="space-y-3">
-                        <input type="tel" id="phone" placeholder="رقم الجوال (9665...)" class="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-bold outline-none focus:border-blue-500 dark:text-white">
-                        
+                        <input type="tel" id="phone" placeholder="رقم الواتساب (9665...)" class="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-bold outline-none focus:border-blue-500 dark:text-white">
                         <button id="payBtn" onclick="processPayment()" class="w-full bg-black dark:bg-blue-600 text-white py-4 rounded-xl font-bold hover:scale-[1.02] transition-all">إتمام الشراء</button>
                     </div>
                 </div>
@@ -188,12 +217,17 @@
         // --- إدارة نافذة المنتج ---
         function openModal(name, price, img) {
             document.getElementById('modalProdName').innerText = name;
-            // يتم تخزين السعر هنا ليتمكن payment.js من قراءته
-            document.getElementById('modalPriceDisplay').innerText = price + " SAR";
+            
+            // تحديث السعر المعروض + تخزين السعر الصافي في Attribute
+            const priceDisplay = document.getElementById('modalPriceDisplay');
+            priceDisplay.innerText = price + " SAR";
+            priceDisplay.setAttribute('data-raw-price', price); 
+
             document.getElementById('modalImg').src = img;
             document.getElementById('paymentModal').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
+
         function closeModal() {
             document.getElementById('paymentModal').classList.remove('active');
             document.body.style.overflow = 'auto';
