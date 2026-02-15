@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolr Plus | المتجر المطوّر</title>
+    <title>دولر بلس | عنوان التميز</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* ثبيت الوضع الداكن كوضع افتراضي */
+        /* تثبيت الوضع الداكن */
         body { 
             font-family: 'Tajawal', sans-serif; 
             background-color: #0f172a; 
@@ -24,9 +24,8 @@
         @keyframes loading-bar { 0% { width: 0; } 50% { width: 100px; } 100% { width: 0; } }
         .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 3px; background-color: #2563eb; margin-top: 20px; border-radius: 10px; position: relative; z-index: 10; }
 
-        /* تنسيقات العناصر في الوضع الداكن */
+        /* التنسيقات الداكنة */
         nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
-        section.bg-gray-50 { background-color: #111827; }
         .product-card { background-color: #1e293b; border: 1px solid #334155; }
         .modal-content { background-color: #1e293b; color: white; }
 
@@ -39,7 +38,7 @@
         #paymentModal.active { display: flex; opacity: 1; }
     </style>
 </head>
-<body class="antialiased dark-mode">
+<body class="antialiased">
 
     <div id="loader">
         <div class="loader-bg"></div>
@@ -51,10 +50,10 @@
 
     <nav class="flex items-center justify-between px-6 py-4 sticky top-0 z-50 transition-all">
         <div class="flex items-center cursor-pointer" onclick="location.reload()">
-            <img src="IMG_7454-removebg-preview.png" alt="Dolr Plus" class="h-10 w-auto">
+            <img src="IMG_7454-removebg-preview.png" alt="دولر بلس" class="h-10 w-auto">
         </div>
         <div class="flex items-center gap-4">
-            <div class="relative cursor-pointer text-xl">🛒</div>
+            <div class="relative cursor-pointer text-xl" title="السلة">🛒</div>
         </div>
     </nav>
 
@@ -67,9 +66,9 @@
         <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
     </section>
 
-    <section class="px-6 py-10 bg-[#111827] transition-all min-h-[400px]">
+    <section class="px-6 py-10 bg-[#111827] min-h-[400px]">
         <div class="max-w-6xl mx-auto">
-            <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3 text-white">وصل حديثاً</h3>
+            <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3 text-white tracking-wide">وصل حديثاً</h3>
             <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
         </div>
     </section>
@@ -81,20 +80,24 @@
         </div>
     </section>
 
-    <footer class="px-6 py-8 border-t border-gray-800 bg-[#0f172a]">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+    <footer class="px-6 py-10 border-t border-gray-800 bg-[#0f172a]">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
             <div class="text-center md:text-right">
-                <img src="IMG_7454-removebg-preview.png" alt="Dolr Plus" class="h-12 w-auto mb-2 mx-auto md:mr-0">
-                <p class="text-xs text-gray-400">خيارك الأول لشحن الألعاب والخدمات الرقمية</p>
+                <img src="IMG_7454-removebg-preview.png" alt="دولر بلس" class="h-14 w-auto mb-3 mx-auto md:mr-0">
+                <h2 class="text-lg font-bold text-white mb-1">دولر بلس</h2>
+                <p class="text-sm text-blue-400 font-medium">عنوان التميز</p>
+                <p class="text-xs text-gray-500 mt-2">خيارك الأول لشحن الألعاب والخدمات الرقمية</p>
             </div>
             <div id="social-links" class="flex gap-4"></div>
         </div>
-        <p class="text-center text-[10px] text-gray-500 mt-8">جميع الحقوق محفوظة © 2026 Dolr Plus</p>
+        <div class="border-t border-gray-800/50 mt-10 pt-6 text-center">
+            <p class="text-[10px] text-gray-500 tracking-widest uppercase">جميع الحقوق محفوظة © 2026 دولر بلس</p>
+        </div>
     </footer>
 
     <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
         <div class="modal-content w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-gray-700 p-2 rounded-full text-white">✕</button>
+            <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-gray-700/50 hover:bg-gray-700 p-2 rounded-full text-white transition-colors">✕</button>
             
             <div class="flex flex-col md:flex-row">
                 <div class="w-full md:w-1/2 bg-gray-900 aspect-square md:aspect-auto">
@@ -123,8 +126,8 @@
                     </div>
 
                     <div class="space-y-3">
-                        <input type="tel" id="phone" placeholder="رقم الواتساب (9665...)" class="w-full p-4 rounded-xl border border-gray-700 bg-gray-800 font-bold outline-none focus:border-blue-500 text-white">
-                        <button id="payBtn" onclick="processPayment()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:scale-[1.02] transition-all">إتمام الشراء</button>
+                        <input type="tel" id="phone" placeholder="رقم الواتساب (9665...)" class="w-full p-4 rounded-xl border border-gray-700 bg-gray-800 font-bold outline-none focus:border-blue-500 text-white placeholder:text-gray-600">
+                        <button id="payBtn" onclick="processPayment()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold hover:scale-[1.01] active:scale-95 transition-all shadow-lg shadow-blue-600/20">إتمام الشراء</button>
                     </div>
                 </div>
             </div>
@@ -176,13 +179,13 @@
         function goToSlide(index) { currentSlide = index; updateSlider(); }
         setInterval(() => { if(typeof banners !== 'undefined') { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); } }, 5000);
 
-        // المنتجات
+        // عرض المنتجات
         function renderProducts(filter = 'الكل') {
             const container = document.getElementById('products-list');
             if(typeof products !== 'undefined') {
                 const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter) || (p.category && p.category === filter));
                 container.innerHTML = filtered.map(p => `
-                    <div class="product-card rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl transition-all group" 
+                    <div class="product-card rounded-2xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all group" 
                          onclick="openModal('${p.id}')">
                         <div class="aspect-square overflow-hidden bg-gray-900">
                             <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
@@ -196,6 +199,7 @@
             }
         }
 
+        // فتح نافذة المنتج
         function openModal(productId) {
             const p = products.find(prod => prod.id == productId);
             if(!p) return;
@@ -222,10 +226,10 @@
                 const catContainer = document.getElementById('categories-list');
                 catContainer.innerHTML = categories.map(cat => `
                     <div class="min-w-[80px] text-center cursor-pointer group" onclick="renderProducts('${cat.name}')">
-                        <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 shadow-sm bg-gray-800 group-hover:border-blue-500 transition-all">
+                        <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 shadow-sm bg-gray-800 group-hover:border-blue-500 group-hover:scale-105 transition-all">
                             <img src="${cat.img}" class="w-full h-full object-contain">
                         </div>
-                        <span class="text-[10px] font-bold text-gray-300">${cat.name}</span>
+                        <span class="text-[10px] font-bold text-gray-400 group-hover:text-white transition-colors">${cat.name}</span>
                     </div>
                 `).join('');
             }
