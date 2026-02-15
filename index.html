@@ -3,164 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دولر بلس | عنوان التميز</title>
+    <title>Dolr Plus | المتجر المطوّر</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            background-color: #0f172a; 
-            color: #f8fafc; 
-            overflow-x: hidden; 
-        }
+        body { font-family: 'Tajawal', sans-serif; background-color: #ffffff; color: #000; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* شاشة التحميل */
+        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease-in-out; }
+        .loader-bg { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); }
+        .dark-mode .loader-bg { background: rgba(15, 23, 42, 0.95); }
+        @keyframes loading-bar { 0% { width: 0; } 50% { width: 120px; } 100% { width: 0; } }
+        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 2px; background-color: #2563eb; margin-top: 15px; }
 
-        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; items-center: center; justify-content: center; transition: opacity 0.8s ease-in-out; }
-        .loader-bg { position: absolute; inset: 0; background: #0f172a; }
-        .loader-logo { width: 150px; height: auto; position: relative; z-index: 10; }
+        /* الوضع الداكن */
+        body.dark-mode { background-color: #0f172a; color: #f8fafc; }
+        .dark-mode nav { background-color: #1e293b; border-color: #334155; }
+        .dark-mode section.bg-gray-50 { background-color: #111827; }
+        .dark-mode .product-card { background-color: #1e293b; border-color: #334155; }
 
-        @keyframes loading-bar { 0% { width: 0; } 50% { width: 100px; } 100% { width: 0; } }
-        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 3px; background-color: #2563eb; margin-top: 20px; border-radius: 10px; position: relative; z-index: 10; }
-
-        nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
-        .product-card { background-color: #1e293b; border: 1px solid #334155; }
-        .modal-content { background-color: #1e293b; color: white; }
-
+        /* السلايدر */
         #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
-        .banner-slide { min-width: 100%; position: relative; height: 40vh; background-color: #000; }
-        .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; background-color: rgba(255,255,255,0.3); }
+        .banner-slide { min-width: 100%; position: relative; height: 40vh; background-color: #1a1a1a; }
+        .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; background: rgba(255,255,255,0.3); }
         .dot-item.active { width: 24px; background-color: white !important; }
 
-        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        #paymentModal.active { display: flex; opacity: 1; }
+        /* النوافذ */
+        #paymentModal, #cartModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #paymentModal.active, #cartModal.active { display: flex; opacity: 1; }
     </style>
 </head>
 <body class="antialiased">
 
-<div id="loader">
-    <div class="loader-bg"></div>
-    <div class="relative flex flex-col items-center">
-        <img src="IMG_7454-removebg-preview.png" alt="Logo" class="loader-logo">
-        <div class="animate-bar"></div>
+    <div id="loader">
+        <div class="loader-bg"></div>
+        <div class="relative flex flex-col items-center">
+            <h1 class="text-3xl font-black tracking-[0.3em]">DOLR <span class="text-blue-600">PLUS</span></h1>
+            <div class="animate-bar"></div>
+        </div>
     </div>
-</div>
 
-<nav class="flex items-center justify-between px-6 py-4 sticky top-0 z-50 transition-all">
-    <div class="flex items-center cursor-pointer" onclick="location.reload()">
-        <img src="IMG_7454-removebg-preview.png" alt="دولر بلس" class="h-10 w-auto">
-    </div>
-    <div class="flex items-center gap-4">
-        <div class="relative cursor-pointer text-xl" title="السلة">🛒</div>
-    </div>
-</nav>
-
-<section class="relative overflow-hidden bg-black">
-    <div id="banner-slider"></div>
-    <div id="slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10"></div>
-</section>
-
-<section class="px-6 py-10 bg-[#0f172a]">
-    <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
-</section>
-
-<section class="px-6 py-10 bg-[#111827] min-h-[400px]">
-    <div class="max-w-6xl mx-auto">
-        <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3 text-white tracking-wide">وصل حديثاً</h3>
-        <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
-    </div>
-</section>
-
-<div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
-    <div class="modal-content w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
-        <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-gray-700/50 hover:bg-gray-700 p-2 rounded-full text-white transition-colors">✕</button>
-        
-        <div class="flex flex-col md:flex-row">
-            <div class="w-full md:w-1/2 bg-gray-900 aspect-square md:aspect-auto">
-                <img id="modalImg" src="" class="w-full h-full object-cover">
+    <nav class="flex items-center justify-between px-6 py-5 border-b border-gray-50 sticky top-0 bg-white z-50 transition-all">
+        <h1 class="text-xl font-bold tracking-[0.2em] cursor-pointer" onclick="location.reload()">DOLR PLUS</h1>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleDarkMode()" id="darkModeBtn" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200">🌙</button>
+            <div class="relative cursor-pointer text-xl" onclick="toggleCart()">
+                🛒 <span id="cart-count" class="absolute -top-2 -left-2 bg-blue-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
             </div>
-            <div class="w-full md:w-1/2 p-6 md:p-8">
-                <div class="flex justify-between items-start mb-2">
-                    <h2 id="modalProdName" class="text-xl font-black text-white"></h2>
-                    <span class="bg-blue-600/20 text-blue-400 text-[10px] font-bold px-2 py-1 rounded">متوفر ✅</span>
-                </div>
+        </div>
+    </nav>
 
-                <div class="mb-6">
-                    <p class="text-2xl font-black text-blue-500" id="modalPriceDisplay" data-raw-price="0"></p>
-                </div>
+    <section class="relative overflow-hidden bg-black">
+        <div id="banner-slider"></div>
+        <div id="slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10"></div>
+    </section>
 
-                <div class="space-y-4 mb-8">
-                    <div>
-                        <h4 class="text-xs font-bold mb-1 text-gray-200">وصف المنتج:</h4>
-                        <p id="modalDescription" class="text-[12px] text-gray-400 leading-relaxed"></p>
-                    </div>
-                </div>
+    <section class="px-6 py-10">
+        <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
+    </section>
 
-                <div class="space-y-3">
-                    <input type="tel" id="phone" placeholder="رقم الواتساب (9665...)" class="w-full p-4 rounded-xl border border-gray-700 bg-gray-800 font-bold outline-none focus:border-blue-500 text-white placeholder:text-gray-600">
-                    <button id="payBtn" onclick="processPayment()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20">
-                        إتمام الشراء
-                    </button>
+    <section class="px-6 py-10 bg-gray-50 transition-all min-h-[400px]">
+        <div class="max-w-6xl mx-auto">
+            <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-black pr-3 dark:border-blue-500 dark:text-white">وصل حديثاً</h3>
+            <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
+        </div>
+    </section>
+
+    <div id="cartModal" class="fixed inset-0 z-[110] bg-black/80 items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-[#1e293b] w-full max-w-md rounded-[2rem] p-6 relative shadow-2xl">
+            <button onclick="toggleCart()" class="absolute top-5 left-5 text-gray-400">✕</button>
+            <h2 class="text-xl font-bold mb-6 text-center dark:text-white">سلة المشتريات</h2>
+            <div id="cart-items" class="max-h-[300px] overflow-y-auto mb-6 space-y-4 px-2"></div>
+            <div class="border-t dark:border-gray-700 pt-4 mb-6 flex justify-between font-bold dark:text-white text-lg">
+                <span>الإجمالي:</span>
+                <span id="cart-total" class="text-blue-600">0 SAR</span>
+            </div>
+            <input type="tel" id="checkout-phone" placeholder="رقم الجوال (9665...)" class="w-full p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 mb-4 outline-none dark:text-white text-center">
+            <button onclick="handleCheckout()" class="w-full bg-black dark:bg-blue-600 text-white py-4 rounded-xl font-bold">إتمام الدفع</button>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
+        <div class="modal-content bg-white dark:bg-[#1e293b] w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto rounded-t-[2rem] md:rounded-[2rem] relative p-0 overflow-hidden">
+            <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-white/80 dark:bg-gray-700 p-2 rounded-full">✕</button>
+            <div class="flex flex-col md:flex-row">
+                <div class="w-full md:w-1/2 aspect-square">
+                    <img id="modalImg" src="" class="w-full h-full object-cover">
+                </div>
+                <div class="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
+                    <h2 id="modalProdName" class="text-xl font-black mb-2 dark:text-white"></h2>
+                    <p class="text-2xl font-black text-blue-600 mb-6" id="modalPriceDisplay"></p>
+                    <button id="addToCartBtn" class="w-full bg-black dark:bg-blue-600 text-white py-4 rounded-xl font-bold">إضافة للسلة 🛒</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="banners.js"></script>
-<script src="categories.js"></script>
-<script src="products.js"></script>
-<script src="payment.js"></script>
+    <script src="banners.js"></script>
+    <script src="categories.js"></script>
+    <script src="products.js"></script>
+    <script src="payment.js"></script>
 
-<script>
+    <script>
+        let cart = [];
 
-// عرض المنتجات (تم تعديل استدعاء openModal فقط)
-function renderProducts(filter = 'الكل') {
-    const container = document.getElementById('products-list');
-    if(typeof products !== 'undefined') {
-        const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter) || (p.category && p.category === filter));
-        container.innerHTML = filtered.map(p => `
-            <div class="product-card rounded-2xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all group" 
-                 onclick="openModal('${p.name}', '${p.price}', '${p.img}', \`${p.desc || ""}\`)">
-                <div class="aspect-square overflow-hidden bg-gray-900">
-                    <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                </div>
-                <div class="p-4">
-                    <h5 class="text-[11px] font-bold mb-1 h-8 overflow-hidden text-gray-200">${p.name}</h5>
-                    <p class="text-blue-500 font-black text-sm">${p.price} SAR</p>
-                </div>
-            </div>
-        `).join('');
-    }
-}
+        // إخفاء التحميل فوراً
+        function hideLoader() {
+            const loader = document.getElementById('loader');
+            if(loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }
+        }
+        window.addEventListener('load', hideLoader);
+        setTimeout(hideLoader, 2000); // أمان
 
-// دالة openModal الجديدة (مطابقة للكود الثاني)
-function openModal(name, price, img, desc) {
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('darkModeBtn').innerText = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+        if(localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('darkModeBtn').innerText = '☀️';
+        }
 
-    document.getElementById('modalProdName').innerText = name;
+        // السلايدر
+        let currentSlide = 0;
+        function initSlider() {
+            if(typeof banners !== 'undefined') {
+                document.getElementById('banner-slider').innerHTML = banners.map(b => `
+                    <div class="banner-slide">
+                        <img src="${b.image}" class="w-full h-full object-cover opacity-60">
+                        <div class="absolute inset-0 flex flex-col items-center justify-center text-white text-center">
+                            <h2 class="text-3xl font-black uppercase">${b.title}</h2>
+                        </div>
+                    </div>`).join('');
+                document.getElementById('slider-dots').innerHTML = banners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item cursor-pointer"></div>`).join('');
+                updateSlider();
+            }
+        }
+        function updateSlider() {
+            document.getElementById('banner-slider').style.transform = `translateX(${currentSlide * 100}%)`;
+            document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+        }
+        function goToSlide(index) { currentSlide = index; updateSlider(); }
+        setInterval(() => { if(typeof banners !== 'undefined') { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); } }, 5000);
 
-    const priceDisplay = document.getElementById('modalPriceDisplay');
-    priceDisplay.innerText = price + " SAR";
-    priceDisplay.setAttribute('data-raw-price', price);
+        // السلة
+        function toggleCart() { document.getElementById('cartModal').classList.toggle('active'); }
+        function closeModal() { document.getElementById('paymentModal').classList.remove('active'); }
+        
+        function openModal(name, price, img) {
+            document.getElementById('modalProdName').innerText = name;
+            document.getElementById('modalPriceDisplay').innerText = price + " SAR";
+            document.getElementById('modalImg').src = img;
+            document.getElementById('addToCartBtn').onclick = () => {
+                cart.push({ name, price: parseFloat(price), img });
+                updateCartUI();
+                closeModal();
+                toggleCart();
+            };
+            document.getElementById('paymentModal').classList.add('active');
+        }
 
-    document.getElementById('modalDescription').innerText =
-        desc || "تسليم آمن ونظامي 100%، يتم التنفيذ فورياً أو خلال 24 ساعة كحد أقصى.";
+        function updateCartUI() {
+            document.getElementById('cart-count').innerText = cart.length;
+            const container = document.getElementById('cart-items');
+            let total = 0;
+            container.innerHTML = cart.map((item, index) => {
+                total += item.price;
+                return `
+                <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-3 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.img}" class="w-10 h-10 rounded object-cover">
+                        <span class="text-xs font-bold dark:text-white">${item.name}</span>
+                    </div>
+                    <button onclick="removeFromCart(${index})" class="text-red-500 text-xs">حذف</button>
+                </div>`;
+            }).join('');
+            document.getElementById('cart-total').innerText = total + " SAR";
+        }
 
-    document.getElementById('modalImg').src = img;
+        function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
 
-    document.getElementById('paymentModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
+        function handleCheckout() {
+            const phone = document.getElementById('checkout-phone').value;
+            if(cart.length === 0 || !phone) return alert("أكمل البيانات");
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            const items = cart.map(i => i.name).join(' + ');
+            processPayment(items, total, phone);
+        }
 
-function closeModal() {
-    document.getElementById('paymentModal').classList.remove('active');
-    document.body.style.overflow = 'auto';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    renderProducts('الكل');
-});
-
-</script>
-
+        document.addEventListener('DOMContentLoaded', () => {
+            initSlider();
+            if(typeof products !== 'undefined') {
+                document.getElementById('products-list').innerHTML = products.map(p => `
+                    <div class="product-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer p-4" onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
+                        <img src="${p.img}" class="w-full aspect-square object-cover rounded-xl mb-3">
+                        <h5 class="text-[11px] font-bold h-8 overflow-hidden dark:text-gray-200">${p.name}</h5>
+                        <p class="text-blue-600 font-black">${p.price} SAR</p>
+                    </div>`).join('');
+            }
+        });
+    </script>
 </body>
 </html>
