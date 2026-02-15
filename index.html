@@ -11,148 +11,106 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
         /* شاشة التحميل */
-        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease-in-out; }
-        .loader-bg { position: absolute; inset: 0; background: #0f172a; }
-        .loader-logo { width: 150px; height: auto; position: relative; z-index: 10; }
-        @keyframes loading-bar { 0% { width: 0; } 50% { width: 100px; } 100% { width: 0; } }
-        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 3px; background-color: #2563eb; margin-top: 20px; border-radius: 10px; position: relative; z-index: 10; }
+        #loader { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; transition: opacity 0.5s; }
+        .loader-logo { width: 120px; height: auto; margin-bottom: 20px; }
+        .animate-bar { width: 100px; height: 3px; background: #2563eb; border-radius: 10px; animation: loading 1.5s infinite; }
+        @keyframes loading { 0% { width: 0; } 50% { width: 100px; } 100% { width: 0; } }
 
-        /* التصميم */
-        nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
-        .product-card { background-color: #1e293b; border: 1px solid #334155; transition: 0.3s; }
-        #banner-slider { display: flex; transition: transform 0.5s ease-in-out; }
-        .banner-slide { min-width: 100%; height: 40vh; position: relative; background: #000; }
-        .dot-item { width: 8px; height: 6px; border-radius: 10px; background: rgba(255,255,255,0.3); transition: 0.4s; }
-        .dot-item.active { width: 24px; background: white; }
+        /* نافذة المودال - رفعنا الـ Z-index لأعلى شيء */
+        #paymentModal { 
+            position: fixed; inset: 0; z-index: 999; 
+            display: none; align-items: flex-end; justify-content: center;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+        }
+        #paymentModal.active { display: flex; }
+        @media (min-width: 768px) { #paymentModal { align-items: center; } }
 
-        /* النافذة المنبثقة */
-        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; z-index: 100; }
-        #paymentModal.active { display: flex; opacity: 1; }
+        .product-card { background: #1e293b; border: 1px solid #334155; transition: 0.3s; cursor: pointer; }
+        .product-card:active { scale: 0.95; }
     </style>
 </head>
-<body class="antialiased">
+<body>
 
     <div id="loader">
-        <div class="loader-bg"></div>
-        <img src="IMG_7454-removebg-preview.png" class="loader-logo" alt="Logo">
+        <img src="IMG_7454-removebg-preview.png" class="loader-logo">
         <div class="animate-bar"></div>
     </div>
 
-    <nav class="flex items-center justify-between px-6 py-4 sticky top-0 z-50">
-        <img src="IMG_7454-removebg-preview.png" class="h-10 cursor-pointer" onclick="location.reload()">
-        <div class="text-xl cursor-pointer">🛒</div>
+    <nav class="flex items-center justify-between px-6 py-4 sticky top-0 bg-[#1e293b] z-50 border-b border-gray-800">
+        <img src="IMG_7454-removebg-preview.png" class="h-10" onclick="location.reload()">
+        <div class="text-xl">🛒</div>
     </nav>
 
-    <section class="relative overflow-hidden">
-        <div id="banner-slider"></div>
-        <div id="slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2"></div>
-    </section>
+    <main class="pb-20">
+        <section class="relative h-[35vh] bg-black overflow-hidden">
+            <div id="banner-slider" class="flex h-full transition-transform duration-500"></div>
+        </section>
 
-    <section class="px-6 py-10">
-        <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
-    </section>
-
-    <section class="px-6 py-10 bg-[#111827]">
-        <div class="max-w-6xl mx-auto">
-            <h3 class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3">وصل حديثاً</h3>
-            <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
-        </div>
-    </section>
-
-    <section class="px-6 py-12">
-        <div class="max-w-6xl mx-auto">
-            <h3 class="text-lg font-bold mb-8 border-r-4 border-yellow-400 pr-3">آراء العملاء ⭐</h3>
-            <div class="flex overflow-x-auto gap-6 no-scrollbar pb-4">
-                <div class="min-w-[280px] bg-[#1e293b] p-6 rounded-3xl border border-gray-700">
-                    <div class="text-yellow-400 text-sm mb-2">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm text-gray-300 italic">"أفضل متجر شحن جربته، تنفيذ سريع جداً!"</p>
-                    <p class="mt-4 text-xs font-bold">— محمد العتيبي</p>
+        <section class="px-6 py-10">
+            <h3 class="text-lg font-bold mb-6 border-r-4 border-blue-500 pr-3">وصل حديثاً</h3>
+            <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 </div>
-                <div class="min-w-[280px] bg-[#1e293b] p-6 rounded-3xl border border-gray-700">
-                    <div class="text-yellow-400 text-sm mb-2">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm text-gray-300 italic">"الدعم الفني محترم والأسعار منافسة."</p>
-                    <p class="mt-4 text-xs font-bold">— سارة خالد</p>
+        </section>
+
+        <section class="px-6 py-10 bg-[#111827]">
+            <h3 class="text-lg font-bold mb-6 border-r-4 border-yellow-500 pr-3">آراء العملاء ⭐</h3>
+            <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4">
+                <div class="min-w-[250px] bg-[#1e293b] p-4 rounded-2xl border border-gray-700">
+                    <p class="text-xs italic text-gray-300">"ثقة وسرعة خيالية في التسليم، شكراً لكم."</p>
+                    <p class="mt-3 text-[10px] font-bold text-blue-400">— فهد العتيبي</p>
+                </div>
+                <div class="min-w-[250px] bg-[#1e293b] p-4 rounded-2xl border border-gray-700">
+                    <p class="text-xs italic text-gray-300">"أفضل سعر حصلته في السوق."</p>
+                    <p class="mt-3 text-[10px] font-bold text-blue-400">— ناصر الشمري</p>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <footer class="px-6 py-10 border-t border-gray-800 bg-[#0f172a] text-center">
-        <img src="IMG_7454-removebg-preview.png" class="h-12 mx-auto mb-4 opacity-50">
-        <div class="flex justify-center gap-6 mb-6">
-            <a href="https://wa.me/9665XXXXXXXX" target="_blank" class="text-gray-400 hover:text-green-500">واتساب</a>
-            <a href="https://t.me/USERNAME" target="_blank" class="text-gray-400 hover:text-blue-400">تيليجرام</a>
-        </div>
-        <p class="text-[10px] text-gray-600">جميع الحقوق محفوظة © 2026 دولر بلس</p>
-    </footer>
-
-    <div id="paymentModal" class="fixed inset-0 bg-black/90 items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm">
-        <div class="bg-[#1e293b] w-full max-w-2xl rounded-t-[2rem] md:rounded-[2rem] relative overflow-hidden flex flex-col md:flex-row">
-            <button onclick="closeModal()" class="absolute top-5 left-5 z-20 bg-gray-800 p-2 rounded-full text-white">✕</button>
-            <img id="modalImg" src="" class="w-full md:w-1/2 aspect-square object-cover">
-            <div class="p-8 flex-1">
-                <h2 id="modalProdName" class="text-xl font-black mb-2 text-white"></h2>
-                <p id="modalPriceDisplay" class="text-2xl font-black text-blue-500 mb-6"></p>
-                <div class="space-y-4">
-                    <input type="tel" id="userPhone" placeholder="رقم الجوال (966...)" class="w-full p-4 rounded-xl bg-[#0f172a] border border-gray-700 text-white outline-none focus:border-blue-500">
-                    <button onclick="executeOrder()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-transform active:scale-95">إتمام الطلب الآن</button>
+    <div id="paymentModal">
+        <div class="bg-[#1e293b] w-full max-w-xl rounded-t-3xl md:rounded-3xl overflow-hidden relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 left-4 z-50 bg-gray-800/50 w-10 h-10 rounded-full text-white">✕</button>
+            <div class="flex flex-col md:flex-row">
+                <img id="modalImg" class="w-full md:w-1/2 aspect-square object-cover">
+                <div class="p-6 flex-1">
+                    <h2 id="modalName" class="text-xl font-black mb-1"></h2>
+                    <p id="modalPrice" class="text-2xl font-black text-blue-500 mb-6"></p>
+                    <input type="tel" id="userPhone" placeholder="رقم الجوال (966...)" class="w-full p-4 rounded-xl bg-[#0f172a] border border-gray-700 text-white mb-4 outline-none focus:border-blue-500">
+                    <button onclick="sendOrder()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all transform active:scale-95">إتمام الطلب الآن</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="banners.js"></script>
-    <script src="categories.js"></script>
     <script src="products.js"></script>
 
     <script>
-        // إخفاء التحميل
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const loader = document.getElementById('loader');
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 800);
-            }, 1000);
-        });
+        // 1. إخفاء التحميل
+        window.onload = () => {
+            const loader = document.getElementById('loader');
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+        };
 
-        // السلايدر
-        let currentSlide = 0;
-        function initSlider() {
-            if(typeof banners !== 'undefined' && banners.length > 0) {
-                const slider = document.getElementById('banner-slider');
-                const dots = document.getElementById('slider-dots');
-                slider.innerHTML = banners.map(b => `<div class="banner-slide"><img src="${b.image}" class="w-full h-full object-cover opacity-50"><div class="absolute inset-0 flex items-center justify-center font-black text-2xl text-white uppercase">${b.title}</div></div>`).join('');
-                dots.innerHTML = banners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item cursor-pointer"></div>`).join('');
-                updateSlider();
-            }
-        }
-        function updateSlider() {
-            document.getElementById('banner-slider').style.transform = `translateX(${currentSlide * 100}%)`;
-            document.querySelectorAll('.dot-item').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
-        }
-        function goToSlide(i) { currentSlide = i; updateSlider(); }
-        setInterval(() => { if(typeof banners !== 'undefined') { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); } }, 5000);
-
-        // عرض المنتجات
-        function renderProducts() {
+        // 2. عرض المنتجات (برمجة مباشرة)
+        function renderUI() {
             const list = document.getElementById('products-list');
-            if(typeof products !== 'undefined') {
+            if (typeof products !== 'undefined') {
                 list.innerHTML = products.map(p => `
-                    <div class="product-card rounded-2xl overflow-hidden cursor-pointer" onclick="openModal('${p.name.replace(/'/g, "\\'")}', '${p.price}', '${p.img}')">
-                        <img src="${p.img}" class="w-full aspect-square object-cover">
-                        <div class="p-4">
-                            <h5 class="text-[11px] font-bold h-8 overflow-hidden text-gray-200">${p.name}</h5>
-                            <p class="text-blue-500 font-black mt-1">${p.price} SAR</p>
-                        </div>
+                    <div class="product-card rounded-2xl p-3" onclick="openModal('${p.name.replace(/'/g, "\\'")}', '${p.price}', '${p.img}')">
+                        <img src="${p.img}" class="w-full aspect-square object-cover rounded-xl mb-3">
+                        <h4 class="text-[10px] font-bold h-7 overflow-hidden">${p.name}</h4>
+                        <p class="text-blue-500 font-black text-xs mt-1">${p.price} SAR</p>
                     </div>
                 `).join('');
             }
         }
 
-        // النافذة
+        // 3. فتح وإغلاق النافذة
         function openModal(name, price, img) {
-            document.getElementById('modalProdName').innerText = name;
-            document.getElementById('modalPriceDisplay').innerText = price + " SAR";
+            document.getElementById('modalName').innerText = name;
+            document.getElementById('modalPrice').innerText = price + " SAR";
             document.getElementById('modalImg').src = img;
             document.getElementById('paymentModal').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -163,39 +121,42 @@
             document.body.style.overflow = 'auto';
         }
 
-        // إتمام الطلب والتحويل (واتساب وتيليجرام)
-        function executeOrder() {
-            const name = document.getElementById('modalProdName').innerText;
-            const price = document.getElementById('modalPriceDisplay').innerText;
+        // 4. إتمام الطلب (تيليجرام)
+        function sendOrder() {
+            const name = document.getElementById('modalName').innerText;
+            const price = document.getElementById('modalPrice').innerText;
             const phone = document.getElementById('userPhone').value;
 
             if(!phone || phone.length < 9) {
-                alert("يرجى إدخال رقم جوال صحيح");
+                alert("أدخل رقم جوال صحيح");
                 return;
             }
 
-            const msg = `طلب جديد من المتجر 🛒%0Aالمنتج: ${name}%0Aالسعر: ${price}%0Aرقم العميل: ${phone}`;
+            // نص الرسالة
+            const text = `طلب جديد 🛒%0Aالمنتج: ${name}%0Aالسعر: ${price}%0Aالعميل: ${phone}`;
             
-            // رابط التيليجرام (استبدل USERNAME باسمك)
-            const telegramLink = `https://t.me/DOLR_SUPPORT?text=${msg}`;
+            // رابط التيليجرام - استبدل USERNAME باسمك
+            const telegramUrl = `https://t.me/DOLR_SUPPORT?text=${text}`;
             
-            // فتح الرابط في نافذة جديدة
-            window.open(telegramLink, '_blank');
+            // فتح الرابط
+            window.location.href = telegramUrl;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initSlider();
-            renderProducts();
-            if(typeof categories !== 'undefined') {
-                document.getElementById('categories-list').innerHTML = categories.map(cat => `
-                    <div class="min-w-[80px] text-center">
-                        <div class="w-14 h-14 mx-auto rounded-full bg-gray-800 p-3 mb-2 border border-gray-700">
-                            <img src="${cat.img}" class="w-full h-full object-contain">
-                        </div>
-                        <span class="text-[10px] font-bold text-gray-400">${cat.name}</span>
+        // 5. تشغيل السلايدر
+        function initSlider() {
+            if(typeof banners !== 'undefined') {
+                document.getElementById('banner-slider').innerHTML = banners.map(b => `
+                    <div class="min-w-full h-full relative">
+                        <img src="${b.image}" class="w-full h-full object-cover opacity-40">
+                        <div class="absolute inset-0 flex items-center justify-center font-black text-xl uppercase">${b.title}</div>
                     </div>
                 `).join('');
             }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderUI();
+            initSlider();
         });
     </script>
 </body>
