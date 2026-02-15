@@ -10,12 +10,16 @@
         body { font-family: 'Tajawal', sans-serif; background-color: #ffffff; color: #000; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* شاشة التحميل المعدلة */
         #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; items-center: center; justify-content: center; transition: opacity 0.8s ease-in-out; }
-        .loader-bg { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); }
-        .dark-mode .loader-bg { background: rgba(15, 23, 42, 0.9); }
+        .loader-bg { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); }
+        .dark-mode .loader-bg { background: rgba(15, 23, 42, 0.95); }
         
-        @keyframes loading-bar { 0% { width: 0; } 50% { width: 120px; } 100% { width: 0; } }
-        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 2px; background-color: #2563eb; margin-top: 15px; }
+        /* اللوقو في الشاشة الافتتاحية */
+        .loader-logo { width: 150px; height: auto; position: relative; z-index: 10; }
+
+        @keyframes loading-bar { 0% { width: 0; } 50% { width: 100px; } 100% { width: 0; } }
+        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 3px; background-color: #2563eb; margin-top: 20px; border-radius: 10px; position: relative; z-index: 10; }
 
         body.dark-mode { background-color: #0f172a; color: #f8fafc; }
         .dark-mode nav { background-color: #1e293b; border-color: #334155; }
@@ -36,13 +40,15 @@
     <div id="loader">
         <div class="loader-bg"></div>
         <div class="relative flex flex-col items-center">
-            <h1 class="text-3xl font-black tracking-[0.3em]">DOLR <span class="text-blue-600">PLUS</span></h1>
+            <img src="IMG_7454-removebg-preview.png" alt="Logo" class="loader-logo">
             <div class="animate-bar"></div>
         </div>
     </div>
 
-    <nav class="flex items-center justify-between px-6 py-5 border-b border-gray-50 sticky top-0 bg-white z-50 transition-all">
-        <h1 class="text-xl font-bold tracking-[0.2em] cursor-pointer" onclick="location.reload()">DOLR PLUS</h1>
+    <nav class="flex items-center justify-between px-6 py-4 border-b border-gray-50 sticky top-0 bg-white z-50 transition-all">
+        <div class="flex items-center cursor-pointer" onclick="location.reload()">
+            <img src="IMG_7454-removebg-preview.png" alt="Dolr Plus" class="h-10 w-auto">
+        </div>
         <div class="flex items-center gap-4">
             <button onclick="toggleDarkMode()" id="darkModeBtn" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-all">🌙</button>
             <div class="relative cursor-pointer text-xl">🛒</div>
@@ -75,7 +81,7 @@
     <footer class="px-6 py-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#0f172a]">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-right">
-                <h4 class="font-black text-xl mb-1 dark:text-white">DOLR <span class="text-blue-600">PLUS</span></h4>
+                <img src="IMG_7454-removebg-preview.png" alt="Dolr Plus" class="h-12 w-auto mb-2 mx-auto md:mr-0">
                 <p class="text-xs text-gray-500 dark:text-gray-400">خيارك الأول لشحن الألعاب والخدمات الرقمية</p>
             </div>
             <div id="social-links" class="flex gap-4"></div>
@@ -197,17 +203,13 @@
         }
 
         function openModal(productId) {
-            // البحث عن المنتج بالـ ID لجلب بياناته كاملة
             const p = products.find(prod => prod.id == productId);
             if(!p) return;
-
             document.getElementById('modalProdName').innerText = p.name;
             document.getElementById('modalDescription').innerText = p.desc || "تسليم آمن ونظامي 100%، يتم التنفيذ فورياً أو خلال 24 ساعة كحد أقصى.";
-            
             const priceDisplay = document.getElementById('modalPriceDisplay');
             priceDisplay.innerText = p.price + " SAR";
             priceDisplay.setAttribute('data-raw-price', p.price); 
-
             document.getElementById('modalImg').src = p.img;
             document.getElementById('paymentModal').classList.add('active');
             document.body.style.overflow = 'hidden';
