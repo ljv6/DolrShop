@@ -72,32 +72,22 @@
     <section class="px-6 py-12 bg-white dark:bg-[#0f172a]">
         <div class="max-w-6xl mx-auto">
             <h3 class="text-lg font-bold mb-8 border-r-4 border-yellow-400 pr-3 dark:text-white">آراء العملاء ⭐</h3>
-            <div class="flex overflow-x-auto gap-6 no-scrollbar pb-4 snap-x snap-mandatory">
-                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"خدمة سريعة جداً والدعم الفني متعاون لأبعد درجة، أنصح بالتعامل معهم وبقوة!"</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-xs">أ ش</div>
-                        <div>
-                            <h4 class="text-xs font-bold dark:text-white">أحمد الشمري</h4>
-                            <p class="text-[10px] text-gray-400">عميل موثق ✅</p>
-                        </div>
-                    </div>
+            <div id="reviews-container" class="flex overflow-x-auto gap-6 no-scrollbar pb-4 snap-x snap-mandatory">
                 </div>
-                <div class="min-w-[280px] md:min-w-[350px] bg-gray-50 dark:bg-gray-800 p-6 rounded-3xl snap-center shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
-                    <p class="text-sm font-medium mb-4 italic text-gray-600 dark:text-gray-300">"أفضل متجر شحن جربته، السعر منافس والتنفيذ فوري."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center font-bold text-pink-600 text-xs">س ع</div>
-                        <div>
-                            <h4 class="text-xs font-bold dark:text-white">سارة علي</h4>
-                            <p class="text-[10px] text-gray-400">عميل موثق ✅</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
+
+    <footer class="px-6 py-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#0f172a]">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-right">
+                <h4 class="font-black text-xl mb-1 dark:text-white">DOLR <span class="text-blue-600">PLUS</span></h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">خيارك الأول لشحن الألعاب والخدمات الرقمية</p>
+            </div>
+            <div id="social-links" class="flex gap-4">
+                </div>
+        </div>
+        <p class="text-center text-[10px] text-gray-400 mt-8">جميع الحقوق محفوظة © 2026 Dolr Plus</p>
+    </footer>
 
     <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
         <div class="modal-content bg-white dark:bg-[#1e293b] w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
@@ -142,6 +132,8 @@
     <script src="categories.js"></script>
     <script src="products.js"></script>
     <script src="payment.js"></script>
+    <script src="reviews.js"></script>
+    <script src="social.js"></script>
 
     <script>
         // --- إدارة الثيم ---
@@ -217,12 +209,9 @@
         // --- إدارة نافذة المنتج ---
         function openModal(name, price, img) {
             document.getElementById('modalProdName').innerText = name;
-            
-            // تحديث السعر المعروض + تخزين السعر الصافي في Attribute
             const priceDisplay = document.getElementById('modalPriceDisplay');
             priceDisplay.innerText = price + " SAR";
             priceDisplay.setAttribute('data-raw-price', price); 
-
             document.getElementById('modalImg').src = img;
             document.getElementById('paymentModal').classList.add('active');
             document.body.style.overflow = 'hidden';
