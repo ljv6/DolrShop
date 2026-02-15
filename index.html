@@ -9,20 +9,14 @@
     <style>
         body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; items-center: center; justify-content: center; transition: opacity 0.8s ease-in-out; background: #0f172a; }
-        .loader-logo { width: 120px; height: auto; margin-bottom: 20px; }
-        @keyframes loading-bar { 0% { width: 0; } 50% { width: 100px; } 100% { width: 0; } }
-        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 3px; background-color: #2563eb; border-radius: 10px; }
-
-        nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
-        .product-card { background-color: #1e293b; border: 1px solid #334155; }
-        
-        #banner-slider { display: flex; transition: transform 0.5s ease; }
-        .banner-slide { min-width: 100%; height: 40vh; position: relative; background-color: #000; }
-        
-        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        #paymentModal.active { display: flex; opacity: 1; }
+        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; items-center: center; justify-content: center; background: #0f172a; transition: opacity 0.8s; }
+        .loader-logo { width: 130px; height: auto; }
+        @keyframes loading-bar { 0% { width: 0; } 50% { width: 120px; } 100% { width: 0; } }
+        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 3px; background-color: #2563eb; margin-top: 15px; border-radius: 10px; }
+        nav { background-color: #1e293b; border-color: #334155; }
+        .product-card { background-color: #1e293b; border-color: #334155; }
+        #cartModal, #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #cartModal.active, #paymentModal.active { display: flex; opacity: 1; }
     </style>
 </head>
 <body class="antialiased">
@@ -32,31 +26,40 @@
         <div class="animate-bar"></div>
     </div>
 
-    <nav class="flex items-center justify-between px-6 py-4 sticky top-0 z-50">
-        <img src="IMG_7454-removebg-preview.png" class="h-10 w-auto" onclick="location.reload()">
-        <div class="text-xl">🛒</div>
+    <nav class="flex items-center justify-between px-6 py-4 border-b border-gray-800 sticky top-0 z-50 bg-[#1e293b]">
+        <img src="IMG_7454-removebg-preview.png" class="h-10 w-auto cursor-pointer" onclick="location.reload()">
+        <div class="relative cursor-pointer text-2xl" onclick="toggleCart()">
+            🛒 <span id="cart-count" class="absolute -top-2 -left-2 bg-blue-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">0</span>
+        </div>
     </nav>
 
-    <section class="relative overflow-hidden">
-        <div id="banner-slider"></div>
-    </section>
+    <section id="banner-slider" class="relative overflow-hidden bg-black"></section>
 
     <section class="px-6 py-10 bg-[#0f172a]">
         <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
     </section>
 
-    <section class="px-6 py-10 bg-[#111827]">
+    <section class="px-6 py-10 bg-[#111827] min-h-[400px]">
         <div class="max-w-6xl mx-auto">
             <h3 class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3 text-white">وصل حديثاً</h3>
             <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
         </div>
     </section>
 
-    <footer class="px-6 py-10 border-t border-gray-800 bg-[#0f172a] text-center">
-        <img src="IMG_7454-removebg-preview.png" class="h-12 w-auto mx-auto mb-4">
-        <p class="text-blue-400 font-bold">دولر بلس | عنوان التميز</p>
-        <p class="text-[10px] text-gray-500 mt-4">جميع الحقوق محفوظة © 2026</p>
-    </footer>
+    <div id="cartModal" class="fixed inset-0 z-[100] bg-black/80 items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-[#1e293b] w-full max-w-md rounded-[2rem] p-6 shadow-2xl relative">
+            <button onclick="toggleCart()" class="absolute top-5 left-5 text-white text-xl">✕</button>
+            <h2 class="text-xl font-bold mb-6 text-center">سلة المشتريات</h2>
+            <div id="cart-items" class="max-h-[40vh] overflow-y-auto mb-6 space-y-4"></div>
+            <div class="border-t border-gray-700 pt-4 mb-6">
+                <div class="flex justify-between font-bold text-lg">
+                    <span>الإجمالي:</span>
+                    <span id="cart-total">0 SAR</span>
+                </div>
+            </div>
+            <button onclick="openPaymentFromCart()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg">إتمام الطلب</button>
+        </div>
+    </div>
 
     <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
         <div class="bg-[#1e293b] w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto rounded-t-[2rem] md:rounded-[2rem] relative p-6">
@@ -65,41 +68,40 @@
                 <img id="modalImg" src="" class="w-full md:w-1/2 aspect-square object-cover rounded-xl">
                 <div class="flex-1">
                     <h2 id="modalProdName" class="text-xl font-bold mb-2"></h2>
-                    <p class="text-2xl font-black text-blue-500 mb-4" id="modalPriceDisplay" data-raw-price="0"></p>
-                    <div class="mb-6">
-                        <h4 class="text-xs font-bold text-gray-400 mb-1">وصف المنتج:</h4>
-                        <p id="modalDescription" class="text-sm text-gray-300"></p>
-                    </div>
-                    <input type="tel" id="phone" placeholder="رقم الواتساب" class="w-full p-4 rounded-xl bg-gray-800 border border-gray-700 mb-4 outline-none focus:border-blue-500 text-white">
-                    <button id="payBtn" onclick="processPayment()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">إتمام الشراء</button>
+                    <p class="text-2xl font-black text-blue-500 mb-4" id="modalPriceDisplay"></p>
+                    <p id="modalDescription" class="text-sm text-gray-400 mb-8"></p>
+                    <button id="addToCartBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">إضافة للسلة 🛒</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <footer class="px-6 py-10 border-t border-gray-800 bg-[#0f172a] text-center">
+        <img src="IMG_7454-removebg-preview.png" class="h-12 w-auto mx-auto mb-3">
+        <p class="text-blue-400 font-bold">دولر بلس | عنوان التميز</p>
+    </footer>
+
     <script src="banners.js"></script>
-    <script src="categories.js"></script>
     <script src="products.js"></script>
     <script src="payment.js"></script>
 
     <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 1000);
-        });
+        let cart = [];
+
+        window.addEventListener('load', () => { setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 800); });
 
         function initSlider() {
             if(typeof banners !== 'undefined') {
                 const b = banners[0];
                 document.getElementById('banner-slider').innerHTML = `
-                    <div class="banner-slide flex flex-col items-center justify-center">
+                    <div class="h-[40vh] flex flex-col items-center justify-center relative">
                         <img src="${b.image}" class="absolute inset-0 w-full h-full object-cover opacity-40">
                         <div class="relative z-10 text-center">
                             <img src="IMG_7454-removebg-preview.png" class="h-24 mx-auto mb-4">
                             <h2 class="text-3xl font-black text-white">${b.title}</h2>
                             <p class="text-blue-400 text-xs">${b.subtitle}</p>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
         }
 
@@ -111,19 +113,55 @@
                         <img src="${p.img}" class="w-full aspect-square object-cover rounded-xl mb-3">
                         <h5 class="text-xs font-bold text-gray-200 h-8 overflow-hidden">${p.name}</h5>
                         <p class="text-blue-500 font-bold">${p.price} SAR</p>
-                    </div>
-                `).join('');
+                    </div>`).join('');
             }
         }
 
         function openModal(name, price, img, desc) {
             document.getElementById('modalProdName').innerText = name;
             document.getElementById('modalPriceDisplay').innerText = price + " SAR";
-            document.getElementById('modalPriceDisplay').setAttribute('data-raw-price', price);
             document.getElementById('modalImg').src = img;
-            document.getElementById('modalDescription').innerText = desc || "تسليم فوري وآمن.";
+            document.getElementById('modalDescription').innerText = desc || "تسليم آمن ونظامي 100%.";
+            document.getElementById('addToCartBtn').onclick = () => addToCart(name, price, img);
             document.getElementById('paymentModal').classList.add('active');
             document.body.style.overflow = 'hidden';
+        }
+
+        function addToCart(name, price, img) {
+            cart.push({ name, price: parseFloat(price), img });
+            updateCartUI();
+            closeModal();
+            toggleCart();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cart-count').innerText = cart.length;
+            const itemsContainer = document.getElementById('cart-items');
+            let total = 0;
+            itemsContainer.innerHTML = cart.map((item, index) => {
+                total += item.price;
+                return `
+                    <div class="flex items-center justify-between bg-gray-800/50 p-3 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <img src="${item.img}" class="w-12 h-12 rounded-lg object-cover">
+                            <div>
+                                <h4 class="text-xs font-bold">${item.name}</h4>
+                                <p class="text-blue-400 text-xs">${item.price} SAR</p>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="text-red-500 text-sm">حذف</button>
+                    </div>`;
+            }).join('');
+            document.getElementById('cart-total').innerText = total + " SAR";
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function toggleCart() {
+            document.getElementById('cartModal').classList.toggle('active');
         }
 
         function closeModal() {
@@ -131,20 +169,17 @@
             document.body.style.overflow = 'auto';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initSlider();
-            renderProducts();
-            if(typeof categories !== 'undefined') {
-                document.getElementById('categories-list').innerHTML = categories.map(cat => `
-                    <div class="min-w-[80px] text-center cursor-pointer">
-                        <div class="w-16 h-16 mx-auto rounded-full bg-gray-800 p-3 mb-2 border border-gray-700">
-                            <img src="${cat.img}" class="w-full h-full object-contain">
-                        </div>
-                        <span class="text-[10px] text-gray-400">${cat.name}</span>
-                    </div>
-                `).join('');
-            }
-        });
+        // الوظيفة التي تحول البيانات لملف payment.js
+        function openPaymentFromCart() {
+            if(cart.length === 0) return alert("السلة فارغة!");
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const cartNames = cart.map(i => i.name).join(' + ');
+            
+            // استدعاء بوابة الدفع ببيانات السلة كاملة
+            processPayment(cartNames, total);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { initSlider(); renderProducts(); });
     </script>
 </body>
 </html>
