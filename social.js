@@ -4,14 +4,19 @@ const socialMedia = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('social-links');
+    // قمت بتغيير المعرف هنا ليتطابق مع الانديكس (social-container)
+    const container = document.getElementById('social-container');
+    
     if (container) {
         container.innerHTML = `
-            <a href="https://wa.me/${socialMedia.whatsapp}" target="_blank" class="flex items-center gap-2 bg-green-500/10 text-green-600 px-4 py-2 rounded-full hover:bg-green-500 hover:text-white transition-all duration-300">
-                <span class="text-sm font-bold">واتساب</span>
+            <a href="https://wa.me/${socialMedia.whatsapp}" target="_blank" class="flex items-center gap-2 bg-green-500/10 text-green-500 px-6 py-3 rounded-2xl border border-green-500/20 hover:bg-green-500 hover:text-white transition-all duration-300 group">
+                <span class="text-2xl">💬</span>
+                <span class="text-sm font-black">واتساب</span>
             </a>
-            <a href="https://instagram.com/${socialMedia.instagram}" target="_blank" class="flex items-center gap-2 bg-gradient-to-tr from-purple-600 to-pink-500 text-white px-4 py-2 rounded-full hover:scale-105 transition-all duration-300">
-                <span class="text-sm font-bold">إنستقرام</span>
+            
+            <a href="https://instagram.com/${socialMedia.instagram}" target="_blank" class="flex items-center gap-2 bg-pink-500/10 text-pink-500 px-6 py-3 rounded-2xl border border-pink-500/20 hover:bg-gradient-to-tr hover:from-purple-600 hover:to-pink-500 hover:text-white transition-all duration-300">
+                <span class="text-2xl">📸</span>
+                <span class="text-sm font-black">إنستقرام</span>
             </a>
         `;
     }
