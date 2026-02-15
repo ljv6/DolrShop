@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolr Plus | المتجر المطوّر</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease-in-out; background: #0f172a; }
+        .loader-logo { width: 140px; height: auto; position: relative; z-index: 10; }
+        
+        @keyframes loading-bar { 0% { width: 0; } 50% { width: 120px; } 100% { width: 0; } }
+        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 2px; background-color: #2563eb; margin-top: 20px; }
+
+        nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
+        .product-card { background-color: #1e293b; border: 1px solid #334155; }
+        .bg-gray-50 { background-color: #111827 !important; }
+
+        #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
+        .banner-slide { min-width: 100%; position: relative; height: 40vh; background-color: #000; }
+        .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; background-color: rgba(255,255,255,0.3); }
+        .dot-item.active { width: 24px; background-color: white !important; }
+
+        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #paymentModal.active { display: flex; opacity: 1; }
+        .modal-content { background-color: #1e293b; color: white; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="loader">
+        <img src="IMG_7454-removebg-preview.png" alt="Logo" class="loader-logo">
+        <div class="animate-bar"></div>
+    </div>
+
+    <nav class="flex items-center justify-between px-6 py-5 sticky top-0 z-50 transition-all">
+        <img src="IMG_7454-removebg-preview.png" alt="Logo" class="h-10 w-auto cursor-pointer" onclick="location.reload()">
+        <div class="flex items-center gap-4">
+            <div class="relative cursor-pointer text-xl">🛒</div>
+        </div>
+    </nav>
+
+    <section class="relative overflow-hidden bg-black">
+        <div id="banner-slider"></div>
+        <div id="slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10"></div>
+    </section>
+
+    <section class="px-6 py-10">
+        <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
+    </section>
+
+    <section class="px-6 py-10 bg-gray-50 transition-all min-h-[400px]">
+        <div class="max-w-6xl mx-auto">
+            <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3 text-white">وصل حديثاً</h3>
+            <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
+        </div>
+    </section>
+
+    <section class="px-6 py-12 bg-[#0f172a]">
+        <div class="max-w-6xl mx-auto">
+            <h3 class="text-lg font-bold mb-8 border-r-4 border-yellow-400 pr-3 text-white">آراء العملاء ⭐</h3>
+            <div id="reviews-container" class="flex overflow-x-auto gap-6 no-scrollbar pb-4 snap-x snap-mandatory"></div>
+        </div>
+    </section>
+
+    <footer class="px-6 py-12 border-t border-gray-800 bg-[#1e293b]">
+        <div class="max-w-6xl mx-auto flex flex-col items-center gap-8">
+            <img src="IMG_7454-removebg-preview.png" alt="Logo" class="h-14 w-auto">
+            
+            <div id="social-container" class="flex gap-4">
+                </div>
+
+            <div class="text-center">
+                <p class="text-[10px] text-gray-500 tracking-[0.3em] uppercase mb-2">جميع الحقوق محفوظة © 2026 دولر بلس</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
+        <div class="modal-content w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-gray-700 p-2 rounded-full text-white">✕</button>
+            <div class="flex flex-col md:flex-row">
+                <div class="w-full md:w-1/2 bg-gray-900 aspect-square md:aspect-auto">
+                    <img id="modalImg" src="" class="w-full h-full object-cover">
+                </div>
+                <div class="w-full md:w-1/2 p-6 md:p-8">
+                    <h2 id="modalProdName" class="text-xl font-black text-white mb-2"></h2>
+                    <div class="mb-6"><p class="text-2xl font-black text-blue-500" id="modalPriceDisplay" data-raw-price="0"></p></div>
+                    <div class="space-y-3">
+                        <input type="tel" id="phone" placeholder="رقم الجوال (9665...)" class="w-full p-4 rounded-xl border border-gray-700 bg-gray-800 font-bold outline-none focus:border-blue-500 text-white">
+                        <button id="payBtn" onclick="processPayment()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold active:scale-95 transition-all">إتمام الشراء</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="banners.js"></script>
+    <script src="categories.js"></script>
+    <script src="products.js"></script>
+    <script src="reviews.js"></script>
+    <script src="social.js"></script> <script src="payment.js"></script>
+
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 800);
+            }, 1000);
+        });
+
+        // --- السلايدر ---
+        let currentSlide = 0;
+        const slider = document.getElementById('banner-slider');
+        const dotsContainer = document.getElementById('slider-dots');
+        function initSlider() {
+            if(typeof banners !== 'undefined') {
+                slider.innerHTML = banners.map(b => `<div class="banner-slide"><img src="${b.image}" class="w-full h-full object-cover opacity-60"></div>`).join('');
+                dotsContainer.innerHTML = banners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item cursor-pointer"></div>`).join('');
+                updateSlider();
+            }
+        }
+        function updateSlider() {
+            slider.style.transform = `translateX(${currentSlide * 100}%)`;
+            document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+        }
+        function goToSlide(index) { currentSlide = index; updateSlider(); }
+        setInterval(() => { if(typeof banners !== 'undefined') { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); } }, 5000);
+
+        // --- عرض المنتجات ---
+        function renderProducts(filter = 'الكل') {
+            const container = document.getElementById('products-list');
+            if(typeof products !== 'undefined') {
+                const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter));
+                container.innerHTML = filtered.map(p => `
+                    <div class="product-card rounded-2xl overflow-hidden cursor-pointer" onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
+                        <img src="${p.img}" class="w-full aspect-square object-cover">
+                        <div class="p-4"><h5 class="text-[11px] font-bold text-gray-200">${p.name}</h5><p class="text-blue-500 font-black text-sm">${p.price} SAR</p></div>
+                    </div>`).join('');
+            }
+        }
+
+        // --- آراء العملاء ---
+        function renderReviews() {
+            const container = document.getElementById('reviews-container');
+            if(typeof reviews !== 'undefined') {
+                container.innerHTML = reviews.map(r => `
+                    <div class="min-w-[280px] md:min-w-[350px] bg-gray-800 p-6 rounded-3xl snap-center border border-gray-700">
+                        <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
+                        <p class="text-sm font-medium mb-4 italic text-gray-300">"${r.comment}"</p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center font-bold text-blue-400 text-xs">${r.initials}</div>
+                            <div><h4 class="text-xs font-bold text-white">${r.name}</h4><p class="text-[10px] text-gray-400">عميل موثق ✅</p></div>
+                        </div>
+                    </div>`).join('');
+            }
+        }
+
+        // --- عرض قنوات التواصل ---
+        function renderSocial() {
+            const container = document.getElementById('social-container');
+            if(typeof socialLinks !== 'undefined') {
+                container.innerHTML = socialLinks.map(s => `
+                    <a href="${s.url}" target="_blank" class="flex items-center justify-center w-12 h-12 bg-gray-800 border border-gray-700 rounded-2xl text-2xl hover:scale-110 transition-transform shadow-lg" title="${s.name}">
+                        ${s.icon}
+                    </a>
+                `).join('');
+            }
+        }
+
+        function openModal(name, price, img) {
+            document.getElementById('modalProdName').innerText = name;
+            document.getElementById('modalPriceDisplay').innerText = price + " SAR";
+            document.getElementById('modalPriceDisplay').setAttribute('data-raw-price', price); 
+            document.getElementById('modalImg').src = img;
+            document.getElementById('paymentModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() { document.getElementById('paymentModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSlider();
+            renderProducts('الكل');
+            renderReviews();
+            renderSocial(); // تشغيل التواصل
+            if(typeof categories !== 'undefined') {
+                const catContainer = document.getElementById('categories-list');
+                catContainer.innerHTML = categories.map(cat => `
+                    <div class="min-w-[80px] text-center cursor-pointer group" onclick="renderProducts('${cat.name}')">
+                        <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 bg-gray-800"><img src="${cat.img}" class="w-full h-full object-contain"></div>
+                        <span class="text-[10px] font-bold text-gray-300">${cat.name}</span>
+                    </div>`).join('');
+            }
+        });
+    </script>
+</body>
+</html>
