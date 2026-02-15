@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دولر بلس | عنوان التميز</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background-color: #0f172a; 
+            color: #f8fafc; 
+            overflow-x: hidden; 
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; items-center: center; justify-content: center; transition: opacity 0.8s ease-in-out; }
+        .loader-bg { position: absolute; inset: 0; background: #0f172a; }
+        .loader-logo { width: 150px; height: auto; position: relative; z-index: 10; }
+
+        @keyframes loading-bar { 0% { width: 0; } 50% { width: 100px; } 100% { width: 0; } }
+        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 3px; background-color: #2563eb; margin-top: 20px; border-radius: 10px; position: relative; z-index: 10; }
+
+        nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
+        .product-card { background-color: #1e293b; border: 1px solid #334155; }
+        .modal-content { background-color: #1e293b; color: white; }
+
+        #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
+        .banner-slide { min-width: 100%; position: relative; height: 40vh; background-color: #000; }
+        .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; background-color: rgba(255,255,255,0.3); }
+        .dot-item.active { width: 24px; background-color: white !important; }
+
+        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #paymentModal.active { display: flex; opacity: 1; }
+    </style>
+</head>
+<body class="antialiased">
+
+<div id="loader">
+    <div class="loader-bg"></div>
+    <div class="relative flex flex-col items-center">
+        <img src="IMG_7454-removebg-preview.png" alt="Logo" class="loader-logo">
+        <div class="animate-bar"></div>
+    </div>
+</div>
+
+<nav class="flex items-center justify-between px-6 py-4 sticky top-0 z-50 transition-all">
+    <div class="flex items-center cursor-pointer" onclick="location.reload()">
+        <img src="IMG_7454-removebg-preview.png" alt="دولر بلس" class="h-10 w-auto">
+    </div>
+    <div class="flex items-center gap-4">
+        <div class="relative cursor-pointer text-xl" title="السلة">🛒</div>
+    </div>
+</nav>
+
+<section class="relative overflow-hidden bg-black">
+    <div id="banner-slider"></div>
+    <div id="slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10"></div>
+</section>
+
+<section class="px-6 py-10 bg-[#0f172a]">
+    <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
+</section>
+
+<section class="px-6 py-10 bg-[#111827] min-h-[400px]">
+    <div class="max-w-6xl mx-auto">
+        <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3 text-white tracking-wide">وصل حديثاً</h3>
+        <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
+    </div>
+</section>
+
+<div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
+    <div class="modal-content w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
+        <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-gray-700/50 hover:bg-gray-700 p-2 rounded-full text-white transition-colors">✕</button>
+        
+        <div class="flex flex-col md:flex-row">
+            <div class="w-full md:w-1/2 bg-gray-900 aspect-square md:aspect-auto">
+                <img id="modalImg" src="" class="w-full h-full object-cover">
+            </div>
+            <div class="w-full md:w-1/2 p-6 md:p-8">
+                <div class="flex justify-between items-start mb-2">
+                    <h2 id="modalProdName" class="text-xl font-black text-white"></h2>
+                    <span class="bg-blue-600/20 text-blue-400 text-[10px] font-bold px-2 py-1 rounded">متوفر ✅</span>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-2xl font-black text-blue-500" id="modalPriceDisplay" data-raw-price="0"></p>
+                </div>
+
+                <div class="space-y-4 mb-8">
+                    <div>
+                        <h4 class="text-xs font-bold mb-1 text-gray-200">وصف المنتج:</h4>
+                        <p id="modalDescription" class="text-[12px] text-gray-400 leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <input type="tel" id="phone" placeholder="رقم الواتساب (9665...)" class="w-full p-4 rounded-xl border border-gray-700 bg-gray-800 font-bold outline-none focus:border-blue-500 text-white placeholder:text-gray-600">
+                    <button id="payBtn" onclick="processPayment()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20">
+                        إتمام الشراء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="banners.js"></script>
+<script src="categories.js"></script>
+<script src="products.js"></script>
+<script src="payment.js"></script>
+
+<script>
+
+// عرض المنتجات (تم تعديل استدعاء openModal فقط)
+function renderProducts(filter = 'الكل') {
+    const container = document.getElementById('products-list');
+    if(typeof products !== 'undefined') {
+        const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter) || (p.category && p.category === filter));
+        container.innerHTML = filtered.map(p => `
+            <div class="product-card rounded-2xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all group" 
+                 onclick="openModal('${p.name}', '${p.price}', '${p.img}', \`${p.desc || ""}\`)">
+                <div class="aspect-square overflow-hidden bg-gray-900">
+                    <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                </div>
+                <div class="p-4">
+                    <h5 class="text-[11px] font-bold mb-1 h-8 overflow-hidden text-gray-200">${p.name}</h5>
+                    <p class="text-blue-500 font-black text-sm">${p.price} SAR</p>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// دالة openModal الجديدة (مطابقة للكود الثاني)
+function openModal(name, price, img, desc) {
+
+    document.getElementById('modalProdName').innerText = name;
+
+    const priceDisplay = document.getElementById('modalPriceDisplay');
+    priceDisplay.innerText = price + " SAR";
+    priceDisplay.setAttribute('data-raw-price', price);
+
+    document.getElementById('modalDescription').innerText =
+        desc || "تسليم آمن ونظامي 100%، يتم التنفيذ فورياً أو خلال 24 ساعة كحد أقصى.";
+
+    document.getElementById('modalImg').src = img;
+
+    document.getElementById('paymentModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('paymentModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderProducts('الكل');
+});
+
+</script>
+
+</body>
+</html>
