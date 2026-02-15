@@ -2,15 +2,9 @@ const banners = [
     {
         title: "DOLR PLUS",
         subtitle: "موثوق في مركز الأعمال السعودي",
-        // نضع اسم الملف مباشرة، والكود في index.html سيتكفل بالباقي
         image: "IMG_7606.jpeg", 
+        logo: "IMG_7454-removebg-preview.png", // أضفنا مسار اللوجو هنا ليتم استخدامه في المنتصف
         opacity: "opacity-80" 
-    },
-    {
-        title: "نجمة السناب",
-        subtitle: "اشتراك رسمي ومضمون",
-        image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=2074",
-        opacity: "opacity-50"
     }
 ];
 
