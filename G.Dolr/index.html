@@ -4,74 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة التوريد | Dolr Pay</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        :root {
+            --bg-dark: #020b13; --card-bg: #0a1622; --primary: #3b82f6;
+            --text-main: #f8fafc; --text-dim: #94a3b8; --border: #1e293b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body {
+            background-color: var(--bg-dark);
+            background: radial-gradient(circle at center, #0a1b2d 0%, #020b13 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: var(--text-main);
+        }
+        .card {
+            background: var(--card-bg); width: 100%; max-width: 450px; padding: 2rem;
+            border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border); position: relative; overflow: hidden;
+        }
+        .card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        header { text-align: center; margin-bottom: 1.5rem; }
+        .logo-img { width: 80px; margin-bottom: 0.5rem; border-radius: 15px; border: 1px solid var(--primary); }
         
-        /* الثيم الليلي المتوافق */
-        .card { background-color: #1e293b; border: 1px solid #334155; }
-        .product-item { background: #0f172a; border: 1px solid #334155; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .product-item:hover, .product-item.active { border-color: #3b82f6; background: #1e293b; transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5); }
-        
-        input { background-color: #0f172a !important; border: 1px solid #334155 !important; color: white !important; }
-        input:focus { border-color: #3b82f6 !important; ring: 2px; ring-color: #3b82f6; }
+        /* قائمة المنتجات */
+        .products-grid { display: grid; gap: 10px; margin-bottom: 1.5rem; }
+        .product-item {
+            background: #111e2d; border: 1px solid var(--border); padding: 12px;
+            border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; transition: 0.3s;
+        }
+        .product-item:hover, .product-item.active { border-color: var(--primary); background: #0d1a29; transform: scale(1.02); }
+        .product-item h3 { font-size: 0.9rem; }
+        .product-item span { color: var(--primary); font-weight: 800; }
 
-        .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.2); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; display: none; }
+        /* الفورم */
+        #paymentForm { display: none; border-top: 1px solid var(--border); padding-top: 1.5rem; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .form-group { margin-bottom: 1rem; text-align: right; }
+        label { display: block; margin-bottom: 0.4rem; font-size: 0.8rem; color: var(--text-dim); }
+        input {
+            width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 10px;
+            background: #111e2d; color: white; text-align: right; outline: none;
+        }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+        .btn {
+            width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+            color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.2); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .status-box { margin-top: 1rem; padding: 0.8rem; border-radius: 10px; text-align: center; font-size: 0.85rem; display: none; }
+        .error { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .processing { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
     </style>
 </head>
-<body class="antialiased min-h-screen flex items-center justify-center p-4">
+<body>
 
-<div class="card w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
-    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 to-blue-400"></div>
-
-    <header class="text-center mb-8">
-        <img src="IMG_7454.jpeg" alt="Dolr Logo" class="h-16 mx-auto mb-4 drop-shadow-lg rounded-xl">
-        <h2 class="text-2xl font-black text-white">بوابة التوريد <span class="text-blue-500">Dolr</span></h2>
-        <p class="text-sm text-gray-400 mt-2">اختر المنتج المطلوب لتجهيز طلبك</p>
+<div class="card">
+    <header>
+        <img src="IMG_7454.jpeg" alt="Dolr Logo" class="logo-img">
+        <h2 style="font-size: 1.2rem;">بوابة التوريد <span>Dolr</span></h2>
+        <p style="font-size: 0.75rem; color: var(--text-dim);">اختر المنتج لإتمام التوريد</p>
     </header>
 
-    <div class="grid gap-3 mb-8">
-        <div class="product-item p-4 rounded-2xl cursor-pointer flex justify-between items-center group" onclick="selectP(this, 'نت STC مفتوح', 45)">
-            <h3 class="font-bold text-sm text-gray-200 group-hover:text-white">نت STC مفتوح</h3>
-            <span class="text-blue-500 font-black">45 ريال</span>
+    <div class="products-grid">
+        <div class="product-item" onclick="selectP(this, 'نت STC مفتوح', 45)">
+            <h3>نت STC مفتوح</h3> <span>45 ريال</span>
         </div>
-        <div class="product-item p-4 rounded-2xl cursor-pointer flex justify-between items-center group" onclick="selectP(this, 'سناب رسمي (3 أشهر)', 16)">
-            <h3 class="font-bold text-sm text-gray-200 group-hover:text-white">سناب رسمي (3 أشهر)</h3>
-            <span class="text-blue-500 font-black">16 ريال</span>
+        <div class="product-item" onclick="selectP(this, 'سناب رسمي (3 أشهر)', 16)">
+            <h3>سناب رسمي (3 أشهر)</h3> <span>16 ريال</span>
         </div>
-        <div class="product-item p-4 rounded-2xl cursor-pointer flex justify-between items-center group" onclick="selectP(this, 'سناب رسمي (سنة)', 72)">
-            <h3 class="font-bold text-sm text-gray-200 group-hover:text-white">سناب رسمي (سنة)</h3>
-            <span class="text-blue-500 font-black">72 ريال</span>
+        <div class="product-item" onclick="selectP(this, 'سناب رسمي (سنة)', 72)">
+            <h3>سناب رسمي (سنة)</h3> <span>72 ريال</span>
         </div>
-        <div class="product-item p-4 rounded-2xl cursor-pointer flex justify-between items-center group" onclick="selectP(this, 'ChatGPT Plus', 25)">
-            <h3 class="font-bold text-sm text-gray-200 group-hover:text-white">ChatGPT Plus</h3>
-            <span class="text-blue-500 font-black">25 ريال</span>
+        <div class="product-item" onclick="selectP(this, 'ChatGPT Plus', 25)">
+            <h3>ChatGPT Plus</h3> <span>25 ريال</span>
         </div>
     </div>
 
-    <form id="paymentForm" class="hidden fade-in space-y-4 border-t border-gray-700 pt-6">
-        <div>
-            <label class="block text-xs font-bold text-gray-500 mb-2 pr-2">الاسم الكامل</label>
-            <input type="text" id="name" placeholder="أدخل اسمك الثلاثي" class="w-full p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium" required>
-        </div>
-        <div>
-            <label class="block text-xs font-bold text-gray-500 mb-2 pr-2">رقم الجوال</label>
-            <input type="tel" id="phone" placeholder="9665xxxxxxxx" class="w-full p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold tracking-widest" required>
-        </div>
-
-        <button type="submit" id="payBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 rounded-2xl font-black text-lg transition-all active:scale-95 flex justify-center items-center gap-3 shadow-lg shadow-blue-900/20">
+    <form id="paymentForm">
+        <div class="form-group"><label>الاسم الكامل</label><input type="text" id="name" required></div>
+        <div class="form-group"><label>رقم الجوال</label><input type="tel" id="phone" placeholder="9665xxxxxxxx" required></div>
+        <button type="submit" class="btn" id="payBtn">
             <span id="btnText">تأكيد طلب التوريد</span>
             <div class="spinner" id="spinner"></div>
         </button>
     </form>
-
-    <div id="statusBox" class="mt-4 p-4 rounded-2xl text-center text-sm font-bold hidden fade-in"></div>
+    <div id="statusBox" class="status-box"></div>
 </div>
 
 <script>
@@ -80,27 +99,24 @@
         MID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2",
         PASS: "7ceb6437-92bc-411b-98fa-be054b39eaba",
         API: "https://api.edfapay.com/payment/initiate",
-        FIXED_EMAIL: "maxmohamedmoon@gmail.com" // إيميلك الثابت
+        FIXED_EMAIL: "maxmohamedmoon@gmail.com"
     };
 
     let selected = { name: '', price: 0 };
 
     function selectP(el, n, p) {
-        document.querySelectorAll('.product-item').forEach(i => i.classList.remove('active', 'border-blue-500', 'bg-blue-900/10'));
-        el.classList.add('active', 'border-blue-500', 'bg-blue-900/10');
+        document.querySelectorAll('.product-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
         selected = { name: n, price: p };
-        
-        const form = document.getElementById('paymentForm');
-        form.classList.remove('hidden');
-        form.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('paymentForm').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
     function sendNotify(msg) {
         const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
-        fetch(url);
+        new Image().src = url;
     }
 
-    // دوال التشفير الموثوقة
     function md5(string) {
         function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
         function addUnsigned(lX, lY) {
@@ -154,10 +170,9 @@
         btn.disabled = true;
         document.getElementById('btnText').style.display = 'none';
         document.getElementById('spinner').style.display = 'block';
-        
-        sBox.classList.remove('hidden', 'bg-red-900/20', 'text-red-400');
-        sBox.classList.add('bg-blue-900/20', 'text-blue-400');
-        sBox.innerHTML = 'جاري معالجة الطلب...';
+        sBox.style.display = 'block';
+        sBox.className = 'status-box processing';
+        sBox.innerHTML = 'جاري طلب التوريد...';
 
         try {
             const amount = selected.price.toFixed(2);
@@ -178,7 +193,7 @@
             fd.append("order_description", desc);
             fd.append("payer_first_name", document.getElementById('name').value);
             fd.append("payer_last_name", "Mowarid");
-            fd.append("payer_email", CONFIG.FIXED_EMAIL); // استخدام الإيميل الثابت
+            fd.append("payer_email", CONFIG.FIXED_EMAIL);
             fd.append("payer_phone", document.getElementById('phone').value);
             fd.append("payer_country", "SA");
             fd.append("payer_city", "Riyadh");
@@ -196,12 +211,11 @@
                 sBox.innerHTML = '✅ تم التحقق، جاري التحويل للدفع...';
                 setTimeout(() => { window.location.href = data.redirect_url; }, 800);
             } else {
-                throw new Error(data.error || "عذراً، فشل الاتصال بالبوابة");
+                throw new Error(data.error || "خطأ في الاتصال");
             }
         } catch (err) {
-            sBox.classList.remove('bg-blue-900/20', 'text-blue-400');
-            sBox.classList.add('bg-red-900/20', 'text-red-400');
-            sBox.innerHTML = '❌ فشل: ' + err.message;
+            sBox.className = 'status-box error';
+            sBox.innerHTML = 'فشل: ' + err.message;
             btn.disabled = false;
             document.getElementById('btnText').style.display = 'block';
             document.getElementById('spinner').style.display = 'none';
