@@ -7,9 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
+        /* إجبار الثيم الليلي */
         body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* شاشة التحميل باللوجو */
         #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease-in-out; background: #0f172a; }
         .loader-logo { width: 140px; height: auto; position: relative; z-index: 10; }
         
@@ -20,11 +22,13 @@
         .product-card { background-color: #1e293b; border: 1px solid #334155; }
         .bg-gray-50 { background-color: #111827 !important; }
 
+        /* السلايدر */
         #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
         .banner-slide { min-width: 100%; position: relative; height: 40vh; background-color: #000; }
         .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; background-color: rgba(255,255,255,0.3); }
         .dot-item.active { width: 24px; background-color: white !important; }
 
+        /* نافذة الدفع */
         #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
         #paymentModal.active { display: flex; opacity: 1; }
         .modal-content { background-color: #1e293b; color: white; }
@@ -103,39 +107,43 @@
     <script src="categories.js"></script>
     <script src="products.js"></script>
     <script src="reviews.js"></script>
-    <script src="social.js"></script> <script src="payment.js"></script>
+    <script src="social.js"></script> 
+    <script src="payment.js"></script>
 
     <script>
+        // إخفاء اللودر
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const loader = document.getElementById('loader');
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 800);
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 800);
+                }
             }, 1000);
         });
 
-        // --- السلايدر ---
+        // السلايدر
         let currentSlide = 0;
         const slider = document.getElementById('banner-slider');
         const dotsContainer = document.getElementById('slider-dots');
         function initSlider() {
-            if(typeof banners !== 'undefined') {
+            if(typeof banners !== 'undefined' && slider) {
                 slider.innerHTML = banners.map(b => `<div class="banner-slide"><img src="${b.image}" class="w-full h-full object-cover opacity-60"></div>`).join('');
                 dotsContainer.innerHTML = banners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item cursor-pointer"></div>`).join('');
                 updateSlider();
             }
         }
         function updateSlider() {
-            slider.style.transform = `translateX(${currentSlide * 100}%)`;
+            if(slider) slider.style.transform = `translateX(${currentSlide * 100}%)`;
             document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
         }
         function goToSlide(index) { currentSlide = index; updateSlider(); }
         setInterval(() => { if(typeof banners !== 'undefined') { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); } }, 5000);
 
-        // --- عرض المنتجات ---
+        // المنتجات
         function renderProducts(filter = 'الكل') {
             const container = document.getElementById('products-list');
-            if(typeof products !== 'undefined') {
+            if(typeof products !== 'undefined' && container) {
                 const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter));
                 container.innerHTML = filtered.map(p => `
                     <div class="product-card rounded-2xl overflow-hidden cursor-pointer" onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
@@ -145,34 +153,7 @@
             }
         }
 
-        // --- آراء العملاء ---
-        function renderReviews() {
-            const container = document.getElementById('reviews-container');
-            if(typeof reviews !== 'undefined') {
-                container.innerHTML = reviews.map(r => `
-                    <div class="min-w-[280px] md:min-w-[350px] bg-gray-800 p-6 rounded-3xl snap-center border border-gray-700">
-                        <div class="flex text-yellow-400 mb-3 text-sm">⭐⭐⭐⭐⭐</div>
-                        <p class="text-sm font-medium mb-4 italic text-gray-300">"${r.comment}"</p>
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center font-bold text-blue-400 text-xs">${r.initials}</div>
-                            <div><h4 class="text-xs font-bold text-white">${r.name}</h4><p class="text-[10px] text-gray-400">عميل موثق ✅</p></div>
-                        </div>
-                    </div>`).join('');
-            }
-        }
-
-        // --- عرض قنوات التواصل ---
-        function renderSocial() {
-            const container = document.getElementById('social-container');
-            if(typeof socialLinks !== 'undefined') {
-                container.innerHTML = socialLinks.map(s => `
-                    <a href="${s.url}" target="_blank" class="flex items-center justify-center w-12 h-12 bg-gray-800 border border-gray-700 rounded-2xl text-2xl hover:scale-110 transition-transform shadow-lg" title="${s.name}">
-                        ${s.icon}
-                    </a>
-                `).join('');
-            }
-        }
-
+        // فتح المودال
         function openModal(name, price, img) {
             document.getElementById('modalProdName').innerText = name;
             document.getElementById('modalPriceDisplay').innerText = price + " SAR";
@@ -183,18 +164,20 @@
         }
         function closeModal() { document.getElementById('paymentModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
 
+        // التشغيل عند الجاهزية
         document.addEventListener('DOMContentLoaded', () => {
             initSlider();
             renderProducts('الكل');
-            renderReviews();
-            renderSocial(); // تشغيل التواصل
+            // ملاحظة: دالات renderReviews و renderSocial يتم استدعاؤها الآن من ملفاتها الخاصة لضمان عدم التضارب
             if(typeof categories !== 'undefined') {
                 const catContainer = document.getElementById('categories-list');
-                catContainer.innerHTML = categories.map(cat => `
-                    <div class="min-w-[80px] text-center cursor-pointer group" onclick="renderProducts('${cat.name}')">
-                        <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 bg-gray-800"><img src="${cat.img}" class="w-full h-full object-contain"></div>
-                        <span class="text-[10px] font-bold text-gray-300">${cat.name}</span>
-                    </div>`).join('');
+                if(catContainer) {
+                    catContainer.innerHTML = categories.map(cat => `
+                        <div class="min-w-[80px] text-center cursor-pointer group" onclick="renderProducts('${cat.name}')">
+                            <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 bg-gray-800"><img src="${cat.img}" class="w-full h-full object-contain"></div>
+                            <span class="text-[10px] font-bold text-gray-300">${cat.name}</span>
+                        </div>`).join('');
+                }
             }
         });
     </script>
