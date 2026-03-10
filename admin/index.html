@@ -2,134 +2,110 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luxury Store | Admin Mode</title>
+    <title>لوحة تحكم | دولر بلس</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Tajawal', sans-serif; scroll-behavior: smooth; }
-        .font-serif { font-family: 'Playfair Display', serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .admin-modal { display: none; }
-        .admin-modal.active { display: flex; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Tajawal', sans-serif; background: #0f172a; color: white; }</style>
 </head>
-<body class="bg-white">
-
-    <button onclick="toggleAdmin()" class="fixed bottom-5 left-5 bg-black text-white w-10 h-10 rounded-full z-[100] text-xs opacity-20 hover:opacity-100 transition">⚙️</button>
-
-    <nav class="flex items-center justify-between px-6 py-5 border-b border-gray-50 sticky top-0 bg-white/80 backdrop-blur-md z-50">
-        <div class="text-xs uppercase tracking-[0.2em] font-bold">القائمة</div>
-        <h1 class="text-xl font-serif font-bold tracking-[0.4em]">LUXURY</h1>
-        <div class="flex gap-4 items-center">
-            <span class="text-sm">🛒</span>
+<body class="p-4 md:p-10">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-10 border-b border-gray-700 pb-5">
+            <h1 class="text-2xl font-black text-blue-500">لوحة التحكم الذكية</h1>
+            <button onclick="saveAll()" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg font-bold transition">حفظ التغييرات النهائية</button>
         </div>
-    </nav>
 
-    <section class="relative h-[40vh] w-full overflow-hidden bg-black">
-        <img src="https://images.unsplash.com/photo-1445205170230-053b830c6039?q=80&w=2070" class="w-full h-full object-cover opacity-60">
-        <div class="absolute inset-0 flex flex-col items-center justify-center text-white text-center">
-            <h2 class="text-4xl font-serif mb-2">إدارة المتجر</h2>
-            <p class="text-[10px] tracking-[0.4em] uppercase">Control Your Luxury Collection</p>
-        </div>
-    </section>
-
-    <section class="px-6 py-8">
-        <div class="flex overflow-x-auto no-scrollbar gap-6 justify-start md:justify-center">
-            <div class="min-w-[100px] text-center"><div class="aspect-square rounded-full bg-gray-100 mb-2"></div><span class="text-[10px] font-bold uppercase">أحذية</span></div>
-            <div class="min-w-[100px] text-center"><div class="aspect-square rounded-full bg-gray-100 mb-2"></div><span class="text-[10px] font-bold uppercase">حقائب</span></div>
-            <div class="min-w-[100px] text-center"><div class="aspect-square rounded-full bg-gray-100 mb-2"></div><span class="text-[10px] font-bold uppercase">ملابس</span></div>
-        </div>
-    </section>
-
-    <section class="px-6 py-10 bg-[#fafafa]">
-        <div class="text-center mb-10">
-            <h3 class="text-2xl font-serif">وصل حديثاً</h3>
-        </div>
-        <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <section class="bg-slate-800 p-6 rounded-2xl mb-8 shadow-xl">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">📦 إدارة المنتجات</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <input id="p-name" type="text" placeholder="اسم المنتج" class="bg-slate-700 p-3 rounded-lg outline-none focus:ring-2 ring-blue-500">
+                <input id="p-price" type="number" placeholder="السعر" class="bg-slate-700 p-3 rounded-lg outline-none">
+                <input id="p-img" type="text" placeholder="رابط الصورة" class="bg-slate-700 p-3 rounded-lg outline-none">
+                <button onclick="addProduct()" class="md:col-span-3 bg-blue-600 py-3 rounded-lg font-bold hover:bg-blue-500">إضافة منتج جديد +</button>
             </div>
-    </section>
+            <div id="admin-products-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                </div>
+        </section>
 
-    <div id="adminModal" class="admin-modal fixed inset-0 bg-black/60 z-[200] items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md p-8 rounded-lg shadow-2xl relative">
-            <button onclick="toggleAdmin()" class="absolute top-4 left-4 text-xl">✕</button>
-            <h2 class="text-xl font-bold mb-6 border-b pb-2">إضافة منتج جديد</h2>
-            
-            <div class="space-y-4">
-                <input type="text" id="pName" placeholder="اسم المنتج" class="w-full border p-3 rounded text-sm">
-                <input type="text" id="pPrice" placeholder="السعر (مثال: 1,500)" class="w-full border p-3 rounded text-sm">
-                <input type="text" id="pImg" placeholder="رابط صورة المنتج (URL)" class="w-full border p-3 rounded text-sm">
-                <button onclick="addProduct()" class="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition">إضافة للمتجر</button>
+        <section class="bg-slate-800 p-6 rounded-2xl shadow-xl">
+            <h2 class="text-xl font-bold mb-4">🖼️ إدارة البانر (السلايدر)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <input id="b-title" type="text" placeholder="العنوان الرئيسي" class="bg-slate-700 p-3 rounded-lg outline-none">
+                <input id="b-img" type="text" placeholder="رابط صورة الخلفية" class="bg-slate-700 p-3 rounded-lg outline-none">
+                <button onclick="addBanner()" class="md:col-span-2 bg-purple-600 py-3 rounded-lg font-bold">إضافة بانر +</button>
             </div>
+            <div id="admin-banners-list" class="space-y-2"></div>
+        </section>
 
-            <div class="mt-8 border-t pt-4">
-                <h3 class="text-sm font-bold mb-4">المنتجات الحالية:</h3>
-                <div id="admin-items-list" class="max-h-40 overflow-y-auto space-y-2">
-                    </div>
-            </div>
-        </div>
+        <button onclick="clearSystem()" class="mt-10 text-red-400 text-sm underline opacity-50 hover:opacity-100">إعادة ضبط المصنع (حذف كل التعديلات)</button>
     </div>
 
     <script>
-        // تحميل المنتجات من التخزين المحلي أو وضع منتجات افتراضية
-        let products = JSON.parse(localStorage.getItem('myLuxuryProducts')) || [
-            { id: Date.now(), name: "حقيبة سهرة سوداء", price: "1,200", img: "https://images.unsplash.com/photo-1584917033904-7911ecf54751?w=500" }
-        ];
+        // مصفوفات البيانات المؤقتة
+        let localProducts = JSON.parse(localStorage.getItem('admin_products')) || [];
+        let localBanners = JSON.parse(localStorage.getItem('admin_banners')) || [];
 
-        function toggleAdmin() {
-            document.getElementById('adminModal').classList.toggle('active');
-            renderAdminList();
-        }
-
-        function renderProducts() {
-            const container = document.getElementById('products-list');
-            container.innerHTML = products.map(p => `
-                <div class="product-card group text-center">
-                    <div class="relative overflow-hidden aspect-[3/4] bg-white mb-4 shadow-sm">
-                        <img src="${p.img}" class="w-full h-full object-cover transition duration-700 group-hover:scale-105">
+        function renderAdminItems() {
+            // رندر المنتجات
+            const pList = document.getElementById('admin-products-list');
+            pList.innerHTML = localProducts.map((p, i) => `
+                <div class="flex justify-between bg-slate-700 p-3 rounded-lg items-center">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.img}" class="w-10 h-10 rounded object-cover">
+                        <span>${p.name} - <b class="text-blue-400">${p.price} SAR</b></span>
                     </div>
-                    <h5 class="text-xs font-bold uppercase mb-1">${p.name}</h5>
-                    <p class="text-sm font-serif text-gray-500">${p.price} ر.س</p>
+                    <button onclick="deleteProduct(${i})" class="text-red-400 font-bold px-3">حذف</button>
                 </div>
             `).join('');
-            localStorage.setItem('myLuxuryProducts', JSON.stringify(products));
-        }
 
-        function renderAdminList() {
-            const list = document.getElementById('admin-items-list');
-            list.innerHTML = products.map(p => `
-                <div class="flex justify-between items-center bg-gray-50 p-2 rounded">
-                    <span class="text-xs">${p.name}</span>
-                    <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs hover:underline">حذف</button>
+            // رندر البانرات
+            const bList = document.getElementById('admin-banners-list');
+            bList.innerHTML = localBanners.map((b, i) => `
+                <div class="flex justify-between bg-slate-700 p-3 rounded-lg items-center">
+                    <span>${b.title}</span>
+                    <button onclick="deleteBanner(${i})" class="text-red-400 font-bold px-3">حذف</button>
                 </div>
             `).join('');
         }
 
         function addProduct() {
-            const name = document.getElementById('pName').value;
-            const price = document.getElementById('pPrice').value;
-            const img = document.getElementById('pImg').value;
-
+            const name = document.getElementById('p-name').value;
+            const price = document.getElementById('p-price').value;
+            const img = document.getElementById('p-img').value;
             if(name && price && img) {
-                products.push({ id: Date.now(), name, price, img });
-                renderProducts();
-                toggleAdmin();
-                // مسح الخانات
-                document.getElementById('pName').value = '';
-                document.getElementById('pPrice').value = '';
-                document.getElementById('pImg').value = '';
-            } else {
-                alert("يرجى ملء جميع الخانات");
+                localProducts.unshift({name, price, img});
+                renderAdminItems();
+                clearInputs(['p-name', 'p-price', 'p-img']);
             }
         }
 
-        function deleteProduct(id) {
-            products = products.filter(p => p.id !== id);
-            renderProducts();
-            renderAdminList();
+        function addBanner() {
+            const title = document.getElementById('b-title').value;
+            const image = document.getElementById('b-img').value;
+            if(title && image) {
+                localBanners.unshift({title, image, subtitle: 'عرض خاص', logo: ''});
+                renderAdminItems();
+                clearInputs(['b-title', 'b-img']);
+            }
         }
 
-        renderProducts();
+        function deleteProduct(i) { localProducts.splice(i, 1); renderAdminItems(); }
+        function deleteBanner(i) { localBanners.splice(i, 1); renderAdminItems(); }
+        function clearInputs(ids) { ids.forEach(id => document.getElementById(id).value = ''); }
+
+        function saveAll() {
+            localStorage.setItem('admin_products', JSON.stringify(localProducts));
+            localStorage.setItem('admin_banners', JSON.stringify(localBanners));
+            alert('✅ تم حفظ البيانات بنجاح! قم بتحديث الصفحة الرئيسية للمتجر الآن.');
+        }
+
+        function clearSystem() {
+            if(confirm('هل أنت متأكد من حذف جميع تعديلاتك والعودة للملفات الأصلية؟')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        renderAdminItems();
     </script>
 </body>
 </html>
