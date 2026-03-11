@@ -17,7 +17,8 @@
         .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 2px; background-color: #2563eb; margin-top: 20px; }
 
         nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
-        .product-card { background-color: #1e293b; border: 1px solid #334155; }
+        .product-card { background-color: #1e293b; border: 1px solid #334155; transition: transform 0.2s; }
+        .product-card:hover { transform: translateY(-5px); }
         .bg-gray-50 { background-color: #111827 !important; }
 
         #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
@@ -40,7 +41,7 @@
     <nav class="flex items-center justify-between px-6 py-5 sticky top-0 z-50 transition-all">
         <img src="IMG_7454-removebg-preview.png" alt="Logo" class="h-10 w-auto cursor-pointer" onclick="location.reload()">
         <div class="flex items-center gap-4">
-            <a href="admin.html" class="text-[10px] text-gray-600">Admin</a>
+            <a href="admin.html" class="text-[10px] text-gray-800 opacity-10">Admin</a>
             <div class="relative cursor-pointer text-xl">🛒</div>
         </div>
     </nav>
@@ -105,11 +106,10 @@
     <script src="payment.js"></script>
 
     <script>
-        // --- (التعديل 1) دالة دمج المنتجات القديمة مع بيانات الأدمن ---
-        function getMergedData(key, originalData) {
+        // دالة مساعدة لدمج البيانات القديمة من الملفات مع تعديلات الأدمن
+        function getCombinedData(key, originalData) {
             const saved = localStorage.getItem(key);
             const adminData = saved ? JSON.parse(saved) : [];
-            // نضع بيانات الأدمن أولاً ثم البيانات الأصلية
             return [...adminData, ...originalData];
         }
 
@@ -127,8 +127,7 @@
         function initSlider() {
             const slider = document.getElementById('banner-slider');
             const dotsContainer = document.getElementById('slider-dots');
-            // التعديل هنا لدمج البانرات
-            const allBanners = getMergedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
+            const allBanners = getCombinedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
 
             if(allBanners && slider) {
                 slider.innerHTML = allBanners.map(b => `
@@ -137,7 +136,7 @@
                         <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-black/20">
                             ${b.logo ? `<img src="${b.logo}" class="h-24 md:h-32 w-auto mb-4 drop-shadow-2xl">` : ''}
                             <h1 class="text-3xl md:text-5xl font-black text-white mb-2 drop-shadow-lg uppercase">${b.title}</h1>
-                            <p class="text-xs md:text-sm font-bold text-blue-400 tracking-widest bg-black/40 px-4 py-1 rounded-full backdrop-blur-sm uppercase">${b.subtitle}</p>
+                            <p class="text-xs md:text-sm font-bold text-blue-400 tracking-widest bg-black/40 px-4 py-1 rounded-full backdrop-blur-sm uppercase">${b.subtitle || 'متوفر الآن'}</p>
                         </div>
                     </div>`).join('');
                 dotsContainer.innerHTML = allBanners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item cursor-pointer"></div>`).join('');
@@ -147,27 +146,22 @@
 
         function updateSlider() {
             const slider = document.getElementById('banner-slider');
-            if(slider) {
-                // التعديل هنا لضمان حركة السلايدر مع عدد البانرات الجديد
-                const allBanners = getMergedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
-                slider.style.transform = `translateX(${currentSlide * 100}%)`;
-                document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
-            }
+            if(slider) slider.style.transform = `translateX(${currentSlide * 100}%)`;
+            document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
         }
         function goToSlide(index) { currentSlide = index; updateSlider(); }
         
         setInterval(() => { 
-            const allBanners = getMergedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
-            if(allBanners.length > 0) { 
+            const allBanners = getCombinedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
+            if(allBanners.length > 0) {
                 currentSlide = (currentSlide + 1) % allBanners.length; 
-                updateSlider(); 
-            } 
+                updateSlider();
+            }
         }, 5000);
 
         function renderProducts(filter = 'الكل') {
             const container = document.getElementById('products-list');
-            // التعديل هنا لدمج المنتجات القديمة مع الجديدة
-            const allProducts = getMergedData('admin_products', typeof products !== 'undefined' ? products : []);
+            const allProducts = getCombinedData('admin_products', typeof products !== 'undefined' ? products : []);
 
             if(allProducts && container) {
                 const filtered = filter === 'الكل' ? allProducts : allProducts.filter(p => p.name.includes(filter));
@@ -189,7 +183,7 @@
         }
         function closeModal() { document.getElementById('paymentModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
 
-        // --- (التعديل 2) دالة إرسال الطلب وحفظه في الأدمن وتليجرام ---
+        // --- دالة إتمام الشراء المطورة: تليجرام + أدمن + تحويل للدفع ---
         function processPayment() {
             const phone = document.getElementById('phone').value;
             const productName = document.getElementById('modalProdName').innerText;
@@ -200,7 +194,7 @@
                 return;
             }
 
-            // حفظ الطلب للأدمن
+            // 1. تسجيل الطلب في الإدارة
             const newOrder = {
                 phone: phone,
                 product: productName,
@@ -212,27 +206,24 @@
             orders.unshift(newOrder);
             localStorage.setItem('admin_orders', JSON.stringify(orders));
 
-            // إرسال تليجرام (ضع التوكن والايدي الخاص بك هنا)
+            // 2. إرسال تليجرام (ضع بياناتك هنا)
             const token = "YOUR_BOT_TOKEN"; 
             const chat_id = "YOUR_CHAT_ID";
             const message = `🔔 طلب جديد من المتجر!\n📱 الجوال: ${phone}\n📦 المنتج: ${productName}\n💰 السعر: ${price} SAR`;
 
             fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(message)}`)
-            .then(() => {
-                alert("تم استلام طلبك بنجاح!");
-                closeModal();
-            }).catch(() => {
-                alert("حدث خطأ في الشبكة، لكن تم تسجيل طلبك لدينا.");
-                closeModal();
-            });
+            .catch(() => console.log("Telegram Failed"));
+
+            // 3. تحويل العميل لصفحة الدفع
+            alert("تم استلام طلبك! جارِ تحويلك للدفع...");
+            window.location.href = `payment.html?amount=${price}&phone=${phone}`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             initSlider();
             renderProducts('الكل');
             
-            // دمج التصنيفات
-            const allCategories = getMergedData('admin_categories', typeof categories !== 'undefined' ? categories : []);
+            const allCategories = getCombinedData('admin_categories', typeof categories !== 'undefined' ? categories : []);
             const catContainer = document.getElementById('categories-list');
             if(catContainer) {
                 catContainer.innerHTML = allCategories.map(cat => `
