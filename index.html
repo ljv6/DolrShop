@@ -41,7 +41,7 @@
     <nav class="flex items-center justify-between px-6 py-5 sticky top-0 z-50 transition-all">
         <img src="IMG_7454-removebg-preview.png" alt="Logo" class="h-10 w-auto cursor-pointer" onclick="location.reload()">
         <div class="flex items-center gap-4">
-            <a href="admin.html" class="text-[10px] text-gray-800 opacity-10">Admin</a>
+            <a href="admin.html" class="text-[10px] text-gray-800 opacity-10 hover:opacity-100 transition-opacity">Admin</a>
             <div class="relative cursor-pointer text-xl">🛒</div>
         </div>
     </nav>
@@ -57,7 +57,9 @@
 
     <section class="px-6 py-10 bg-gray-50 transition-all min-h-[400px]">
         <div class="max-w-6xl mx-auto">
-            <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3 text-white">وصل حديثاً</h3>
+            <div class="flex justify-between items-center mb-8">
+                <h3 id="section-title" class="text-lg font-bold border-r-4 border-blue-500 pr-3 text-white">وصل حديثاً</h3>
+            </div>
             <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
         </div>
     </section>
@@ -106,10 +108,11 @@
     <script src="payment.js"></script>
 
     <script>
-        // دالة مساعدة لدمج البيانات القديمة من الملفات مع تعديلات الأدمن
+        // دالة دمج البيانات الأصلية مع إضافات الأدمن لضمان عدم اختفاء المنتجات القديمة
         function getCombinedData(key, originalData) {
             const saved = localStorage.getItem(key);
             const adminData = saved ? JSON.parse(saved) : [];
+            // تظهر منتجات الأدمن أولاً ثم المنتجات القديمة
             return [...adminData, ...originalData];
         }
 
@@ -129,7 +132,7 @@
             const dotsContainer = document.getElementById('slider-dots');
             const allBanners = getCombinedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
 
-            if(allBanners && slider) {
+            if(allBanners.length > 0 && slider) {
                 slider.innerHTML = allBanners.map(b => `
                     <div class="banner-slide relative">
                         <img src="${b.image}" class="w-full h-full object-cover ${b.opacity || 'opacity-60'}">
@@ -149,6 +152,7 @@
             if(slider) slider.style.transform = `translateX(${currentSlide * 100}%)`;
             document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
         }
+
         function goToSlide(index) { currentSlide = index; updateSlider(); }
         
         setInterval(() => { 
@@ -181,9 +185,10 @@
             document.getElementById('paymentModal').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
+
         function closeModal() { document.getElementById('paymentModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
 
-        // --- دالة إتمام الشراء المطورة: تليجرام + أدمن + تحويل للدفع ---
+        // --- دالة إتمام الشراء المطورة: حفظ للطلبات + تليجرام + تحويل للدفع ---
         function processPayment() {
             const phone = document.getElementById('phone').value;
             const productName = document.getElementById('modalProdName').innerText;
@@ -194,7 +199,7 @@
                 return;
             }
 
-            // 1. تسجيل الطلب في الإدارة
+            // 1. تسجيل الطلب في قائمة الأدمن لكي يظهر في admin.html
             const newOrder = {
                 phone: phone,
                 product: productName,
@@ -206,16 +211,16 @@
             orders.unshift(newOrder);
             localStorage.setItem('admin_orders', JSON.stringify(orders));
 
-            // 2. إرسال تليجرام (ضع بياناتك هنا)
+            // 2. إرسال إشعار تليجرام (تأكد من وضع Token و ID الخاص بك)
             const token = "YOUR_BOT_TOKEN"; 
             const chat_id = "YOUR_CHAT_ID";
             const message = `🔔 طلب جديد من المتجر!\n📱 الجوال: ${phone}\n📦 المنتج: ${productName}\n💰 السعر: ${price} SAR`;
 
             fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(message)}`)
-            .catch(() => console.log("Telegram Failed"));
+            .catch(err => console.log("Telegram Failed"));
 
-            // 3. تحويل العميل لصفحة الدفع
-            alert("تم استلام طلبك! جارِ تحويلك للدفع...");
+            // 3. التحويل التلقائي لصفحة الدفع
+            alert("تم استلام طلبك! جارِ تحويلك لصفحة الدفع...");
             window.location.href = `payment.html?amount=${price}&phone=${phone}`;
         }
 
@@ -228,7 +233,9 @@
             if(catContainer) {
                 catContainer.innerHTML = allCategories.map(cat => `
                     <div class="min-w-[80px] text-center cursor-pointer group" onclick="renderProducts('${cat.name}')">
-                        <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 bg-gray-800"><img src="${cat.img}" class="w-full h-full object-contain"></div>
+                        <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 bg-gray-800 hover:border-blue-500 transition-all">
+                            <img src="${cat.img}" class="w-full h-full object-contain">
+                        </div>
                         <span class="text-[10px] font-bold text-gray-300">${cat.name}</span>
                     </div>`).join('');
             }
