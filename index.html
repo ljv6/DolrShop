@@ -17,8 +17,7 @@
         .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 2px; background-color: #2563eb; margin-top: 20px; }
 
         nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
-        .product-card { background-color: #1e293b; border: 1px solid #334155; transition: transform 0.2s; }
-        .product-card:hover { transform: translateY(-5px); }
+        .product-card { background-color: #1e293b; border: 1px solid #334155; }
         .bg-gray-50 { background-color: #111827 !important; }
 
         #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
@@ -41,7 +40,7 @@
     <nav class="flex items-center justify-between px-6 py-5 sticky top-0 z-50 transition-all">
         <img src="IMG_7454-removebg-preview.png" alt="Logo" class="h-10 w-auto cursor-pointer" onclick="location.reload()">
         <div class="flex items-center gap-4">
-            <a href="admin.html" class="text-xs bg-gray-700 px-3 py-1 rounded-md opacity-50 hover:opacity-100">لوحة التحكم</a>
+            <a href="admin.html" class="text-[10px] text-gray-600">Admin</a>
             <div class="relative cursor-pointer text-xl">🛒</div>
         </div>
     </nav>
@@ -106,13 +105,12 @@
     <script src="payment.js"></script>
 
     <script>
-        // دالة مساعدة لجلب البيانات من التخزين المحلي أو من الملفات الأصلية
-        function loadData(key, fallbackData) {
+        // --- (التعديل 1) دالة دمج المنتجات القديمة مع بيانات الأدمن ---
+        function getMergedData(key, originalData) {
             const saved = localStorage.getItem(key);
-            if (saved && JSON.parse(saved).length > 0) {
-                return JSON.parse(saved);
-            }
-            return fallbackData;
+            const adminData = saved ? JSON.parse(saved) : [];
+            // نضع بيانات الأدمن أولاً ثم البيانات الأصلية
+            return [...adminData, ...originalData];
         }
 
         window.addEventListener('load', () => {
@@ -129,12 +127,11 @@
         function initSlider() {
             const slider = document.getElementById('banner-slider');
             const dotsContainer = document.getElementById('slider-dots');
-            
-            // قراءة البيانات (من الأدمن أو الملف الأصلي)
-            const activeBanners = loadData('admin_banners', typeof banners !== 'undefined' ? banners : []);
+            // التعديل هنا لدمج البانرات
+            const allBanners = getMergedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
 
-            if(activeBanners && slider) {
-                slider.innerHTML = activeBanners.map(b => `
+            if(allBanners && slider) {
+                slider.innerHTML = allBanners.map(b => `
                     <div class="banner-slide relative">
                         <img src="${b.image}" class="w-full h-full object-cover ${b.opacity || 'opacity-60'}">
                         <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-black/20">
@@ -143,32 +140,41 @@
                             <p class="text-xs md:text-sm font-bold text-blue-400 tracking-widest bg-black/40 px-4 py-1 rounded-full backdrop-blur-sm uppercase">${b.subtitle}</p>
                         </div>
                     </div>`).join('');
-                dotsContainer.innerHTML = activeBanners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item cursor-pointer"></div>`).join('');
+                dotsContainer.innerHTML = allBanners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item cursor-pointer"></div>`).join('');
                 updateSlider();
             }
         }
 
         function updateSlider() {
             const slider = document.getElementById('banner-slider');
-            if(slider) slider.style.transform = `translateX(${currentSlide * 100}%)`;
-            document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+            if(slider) {
+                // التعديل هنا لضمان حركة السلايدر مع عدد البانرات الجديد
+                const allBanners = getMergedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
+                slider.style.transform = `translateX(${currentSlide * 100}%)`;
+                document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+            }
         }
-
         function goToSlide(index) { currentSlide = index; updateSlider(); }
+        
+        setInterval(() => { 
+            const allBanners = getMergedData('admin_banners', typeof banners !== 'undefined' ? banners : []);
+            if(allBanners.length > 0) { 
+                currentSlide = (currentSlide + 1) % allBanners.length; 
+                updateSlider(); 
+            } 
+        }, 5000);
 
         function renderProducts(filter = 'الكل') {
             const container = document.getElementById('products-list');
-            const activeProducts = loadData('admin_products', typeof products !== 'undefined' ? products : []);
+            // التعديل هنا لدمج المنتجات القديمة مع الجديدة
+            const allProducts = getMergedData('admin_products', typeof products !== 'undefined' ? products : []);
 
-            if(activeProducts && container) {
-                const filtered = filter === 'الكل' ? activeProducts : activeProducts.filter(p => p.name.includes(filter) || (p.category && p.category === filter));
+            if(allProducts && container) {
+                const filtered = filter === 'الكل' ? allProducts : allProducts.filter(p => p.name.includes(filter));
                 container.innerHTML = filtered.map(p => `
-                    <div class="product-card rounded-2xl overflow-hidden cursor-pointer shadow-lg" onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
+                    <div class="product-card rounded-2xl overflow-hidden cursor-pointer" onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
                         <img src="${p.img}" class="w-full aspect-square object-cover">
-                        <div class="p-4">
-                            <h5 class="text-[11px] font-bold text-gray-200">${p.name}</h5>
-                            <p class="text-blue-500 font-black text-sm">${p.price} SAR</p>
-                        </div>
+                        <div class="p-4"><h5 class="text-[11px] font-bold text-gray-200">${p.name}</h5><p class="text-blue-500 font-black text-sm">${p.price} SAR</p></div>
                     </div>`).join('');
             }
         }
@@ -181,33 +187,61 @@
             document.getElementById('paymentModal').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
-
         function closeModal() { document.getElementById('paymentModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
+
+        // --- (التعديل 2) دالة إرسال الطلب وحفظه في الأدمن وتليجرام ---
+        function processPayment() {
+            const phone = document.getElementById('phone').value;
+            const productName = document.getElementById('modalProdName').innerText;
+            const price = document.getElementById('modalPriceDisplay').getAttribute('data-raw-price');
+
+            if(phone.length < 10) {
+                alert("يرجى إدخال رقم جوال صحيح");
+                return;
+            }
+
+            // حفظ الطلب للأدمن
+            const newOrder = {
+                phone: phone,
+                product: productName,
+                qty: 1,
+                total: price,
+                date: new Date().toLocaleString('ar-SA')
+            };
+            let orders = JSON.parse(localStorage.getItem('admin_orders')) || [];
+            orders.unshift(newOrder);
+            localStorage.setItem('admin_orders', JSON.stringify(orders));
+
+            // إرسال تليجرام (ضع التوكن والايدي الخاص بك هنا)
+            const token = "YOUR_BOT_TOKEN"; 
+            const chat_id = "YOUR_CHAT_ID";
+            const message = `🔔 طلب جديد من المتجر!\n📱 الجوال: ${phone}\n📦 المنتج: ${productName}\n💰 السعر: ${price} SAR`;
+
+            fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(message)}`)
+            .then(() => {
+                alert("تم استلام طلبك بنجاح!");
+                closeModal();
+            }).catch(() => {
+                alert("حدث خطأ في الشبكة، لكن تم تسجيل طلبك لدينا.");
+                closeModal();
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             initSlider();
             renderProducts('الكل');
-
-            const activeCategories = loadData('admin_categories', typeof categories !== 'undefined' ? categories : []);
-            const catContainer = document.getElementById('categories-list');
             
-            if(catContainer && activeCategories) {
-                catContainer.innerHTML = activeCategories.map(cat => `
+            // دمج التصنيفات
+            const allCategories = getMergedData('admin_categories', typeof categories !== 'undefined' ? categories : []);
+            const catContainer = document.getElementById('categories-list');
+            if(catContainer) {
+                catContainer.innerHTML = allCategories.map(cat => `
                     <div class="min-w-[80px] text-center cursor-pointer group" onclick="renderProducts('${cat.name}')">
-                        <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 bg-gray-800 hover:border-blue-500 transition-all">
-                            <img src="${cat.img}" class="w-full h-full object-contain">
-                        </div>
+                        <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 bg-gray-800"><img src="${cat.img}" class="w-full h-full object-contain"></div>
                         <span class="text-[10px] font-bold text-gray-300">${cat.name}</span>
                     </div>`).join('');
             }
-            
-            // تدوير السلايدر تلقائياً
-            setInterval(() => {
-                const total = loadData('admin_banners', typeof banners !== 'undefined' ? banners : []).length;
-                if(total > 0) { currentSlide = (currentSlide + 1) % total; updateSlider(); }
-            }, 5000);
         });
     </script>
 </body>
 </html>
-
