@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>محرر ملفات المتجر | Dolr Plus Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../products.js"></script>
+    <script src="../banners.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background: #0b0f1a; color: white; padding: 20px; }
+        .card { background: #161c2d; border: 1px solid #2d3748; border-radius: 1rem; padding: 20px; margin-bottom: 20px; }
+        input, textarea { background: #0b0f1a; border: 1px solid #2d3748; padding: 10px; border-radius: 8px; width: 100%; color: white; margin-bottom: 10px; }
+    </style>
+</head>
+<body class="max-w-5xl mx-auto">
+
+    <h1 class="text-2xl font-black mb-6 text-blue-500 text-center">محرر ملفات البيانات (JS Editor)</h1>
+
+    <div class="card">
+        <h2 class="font-bold text-xl mb-4 text-green-400">📦 إدارة ملف المنتجات (products.js)</h2>
+        <div id="products-editor" class="space-y-4">
+            </div>
+        <button onclick="addNewProductField()" class="mt-4 bg-gray-700 px-4 py-2 rounded-lg text-sm">+ إضافة منتج جديد</button>
+        <button onclick="saveAndDownloadProducts()" class="mt-4 bg-green-600 w-full py-3 rounded-lg font-bold shadow-lg">حفظ وتحميل ملف products.js الجديد</button>
+    </div>
+
+    <div class="card">
+        <h2 class="font-bold text-xl mb-4 text-purple-400">🖼 إدارة ملف البانرات (banners.js)</h2>
+        <div id="banners-editor" class="space-y-4"></div>
+        <button onclick="saveAndDownloadBanners()" class="mt-4 bg-purple-600 w-full py-3 rounded-lg font-bold shadow-lg">حفظ وتحميل ملف banners.js الجديد</button>
+    </div>
+
+    <script>
+        // 1. تحميل المنتجات من الملف الأصلي وعرضها في مربعات نص
+        function initEditors() {
+            const pContainer = document.getElementById('products-editor');
+            products.forEach((p, index) => {
+                pContainer.innerHTML += createProductRow(p, index);
+            });
+
+            const bContainer = document.getElementById('banners-editor');
+            banners.forEach((b, index) => {
+                bContainer.innerHTML += createBannerRow(b, index);
+            });
+        }
+
+        function createProductRow(p, i) {
+            return `
+                <div class="p-4 border border-gray-700 rounded-lg bg-gray-800/50 relative">
+                    <span class="absolute top-2 left-2 text-xs text-gray-500">#${p.id || i+1}</span>
+                    <input type="text" value="${p.name}" class="p-name" placeholder="اسم المنتج">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" value="${p.price}" class="p-price" placeholder="السعر">
+                        <input type="text" value="${p.img}" class="p-img" placeholder="اسم الصورة">
+                    </div>
+                    <textarea class="p-desc" placeholder="الوصف">${p.desc || ''}</textarea>
+                </div>`;
+        }
+
+        function createBannerRow(b, i) {
+            return `
+                <div class="p-4 border border-gray-700 rounded-lg bg-gray-800/50">
+                    <input type="text" value="${b.title}" class="b-title" placeholder="العنوان">
+                    <input type="text" value="${b.subtitle}" class="b-sub" placeholder="العنوان الفرعي">
+                    <input type="text" value="${b.image}" class="b-img" placeholder="رابط الصورة">
+                </div>`;
+        }
+
+        // 2. تجميع البيانات وتحويلها لكود JS ثم تحميلها كملف
+        function saveAndDownloadProducts() {
+            const names = document.querySelectorAll('.p-name');
+            const prices = document.querySelectorAll('.p-price');
+            const imgs = document.querySelectorAll('.p-img');
+            const descs = document.querySelectorAll('.p-desc');
+
+            let updatedProducts = [];
+            names.forEach((name, i) => {
+                updatedProducts.push({
+                    id: i + 1,
+                    name: name.value,
+                    price: prices[i].value,
+                    img: imgs[i].value,
+                    desc: descs[i].value
+                });
+            });
+
+            const fileContent = `const products = ${JSON.stringify(updatedProducts, null, 4)};\n\nif (typeof module !== 'undefined') { module.exports = products; }`;
+            downloadFile(fileContent, 'products.js');
+        }
+
+        function saveAndDownloadBanners() {
+            const titles = document.querySelectorAll('.b-title');
+            const subs = document.querySelectorAll('.b-sub');
+            const imgs = document.querySelectorAll('.b-img');
+
+            let updatedBanners = [];
+            titles.forEach((title, i) => {
+                updatedBanners.push({
+                    title: title.value,
+                    subtitle: subs[i].value,
+                    image: imgs[i].value,
+                    logo: "IMG_7454-removebg-preview.png",
+                    opacity: "opacity-80"
+                });
+            });
+
+            const fileContent = `const banners = ${JSON.stringify(updatedBanners, null, 4)};\n\nif (typeof module !== 'undefined') { module.exports = banners; }`;
+            downloadFile(fileContent, 'banners.js');
+        }
+
+        function downloadFile(content, fileName) {
+            const blob = new Blob([content], { type: 'text/javascript' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+        }
+
+        function addNewProductField() {
+            document.getElementById('products-editor').innerHTML += createProductRow({name:'', price:'', img:'', desc:''}, 99);
+        }
+
+        window.onload = initEditors;
+    </script>
+</body>
+</html>
