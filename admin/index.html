@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>المحرك الرئيسي | Dolr Plus Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="../products.js"></script>
+    <script src="../banners.js"></script>
+    <script src="../categories.js"></script>
+    <script src="../reviews.js"></script>
+
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background: #0b0f1a; color: white; padding: 20px; }
+        .card { background: #161c2d; border: 1px solid #2d3748; border-radius: 1rem; padding: 20px; margin-bottom: 25px; transition: 0.3s; }
+        .card:hover { border-color: #3b82f6; }
+        input, textarea { background: #0b0f1a; border: 1px solid #2d3748; padding: 10px; border-radius: 8px; width: 100%; color: white; margin-bottom: 8px; font-size: 13px; outline: none; }
+        .btn-save { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
+    </style>
+</head>
+<body class="max-w-6xl mx-auto">
+
+    <header class="text-center mb-10">
+        <h1 class="text-3xl font-black text-blue-500">لوحة التحكم في الملفات</h1>
+        <p class="text-gray-400 text-sm mt-2">عدل البيانات ثم حمل الملف واستبدله في مجلد الموقع</p>
+    </header>
+
+    <div class="flex justify-center gap-6 mb-8 border-b border-gray-800">
+        <button onclick="showTab('prod-tab')" class="tab-btn active pb-3 font-bold">المنتجات</button>
+        <button onclick="showTab('cat-tab')" class="tab-btn pb-3 font-bold">التصنيفات</button>
+        <button onclick="showTab('ban-tab')" class="tab-btn pb-3 font-bold">البانرات</button>
+        <button onclick="showTab('rev-tab')" class="tab-btn pb-3 font-bold">الآراء</button>
+    </div>
+
+    <div id="prod-tab" class="tab-content active">
+        <div class="card">
+            <h2 class="text-green-400 font-bold mb-4 flex justify-between items-center">
+                📦 ملف المنتجات (products.js)
+                <button onclick="addItem('prod-list', 'prod')" class="bg-blue-600 text-xs px-3 py-1 rounded">+ إضافة</button>
+            </h2>
+            <div id="prod-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <button onclick="exportJS('products')" class="btn-save bg-green-600 hover:bg-green-700">تحميل ملف products.js الجديد</button>
+        </div>
+    </div>
+
+    <div id="cat-tab" class="tab-content">
+        <div class="card">
+            <h2 class="text-orange-400 font-bold mb-4 flex justify-between items-center">
+                📁 ملف التصنيفات (categories.js)
+                <button onclick="addItem('cat-list', 'cat')" class="bg-blue-600 text-xs px-3 py-1 rounded">+ إضافة</button>
+            </h2>
+            <div id="cat-list" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            <button onclick="exportJS('categories')" class="btn-save bg-orange-600 hover:bg-orange-700">تحميل ملف categories.js الجديد</button>
+        </div>
+    </div>
+
+    <div id="ban-tab" class="tab-content">
+        <div class="card">
+            <h2 class="text-purple-400 font-bold mb-4">🖼 ملف البانرات (banners.js)</h2>
+            <div id="ban-list"></div>
+            <button onclick="exportJS('banners')" class="btn-save bg-purple-600 hover:bg-purple-700">تحميل ملف banners.js الجديد</button>
+        </div>
+    </div>
+
+    <div id="rev-tab" class="tab-content">
+        <div class="card">
+            <h2 class="text-pink-400 font-bold mb-4 flex justify-between items-center">
+                ⭐ ملف الآراء (reviews.js)
+                <button onclick="addItem('rev-list', 'rev')" class="bg-blue-600 text-xs px-3 py-1 rounded">+ إضافة</button>
+            </h2>
+            <div id="rev-list" class="space-y-4"></div>
+            <button onclick="exportJS('reviews')" class="btn-save bg-pink-600 hover:bg-pink-700">تحميل ملف reviews.js الجديد</button>
+        </div>
+    </div>
+
+    <script>
+        // دالة تبديل التبويبات
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // قوالب الحقول
+        const templates = {
+            prod: (d) => `<div class="p-3 border border-gray-700 rounded-lg bg-gray-900 item-row" data-type="prod">
+                <input class="name" placeholder="الاسم" value="${d.name||''}">
+                <input class="price" placeholder="السعر" value="${d.price||''}">
+                <input class="img" placeholder="اسم الصورة" value="${d.img||''}">
+                <textarea class="desc" placeholder="الوصف">${d.desc||''}</textarea>
+            </div>`,
+            cat: (d) => `<div class="p-3 border border-gray-700 rounded-lg bg-gray-900 item-row" data-type="cat">
+                <input class="name" placeholder="اسم التصنيف" value="${d.name||''}">
+                <input class="img" placeholder="رابط الأيقونة" value="${d.img||''}">
+            </div>`,
+            ban: (d) => `<div class="p-3 border border-gray-700 rounded-lg bg-gray-900 item-row" data-type="ban">
+                <input class="title" placeholder="العنوان" value="${d.title||''}">
+                <input class="subtitle" placeholder="العنوان الفرعي" value="${d.subtitle||''}">
+                <input class="image" placeholder="رابط الخلفية" value="${d.image||''}">
+            </div>`,
+            rev: (d) => `<div class="p-3 border border-gray-700 rounded-lg bg-gray-900 item-row" data-type="rev">
+                <input class="name" placeholder="الاسم" value="${d.name||''}">
+                <input class="stars" placeholder="النجوم" value="${d.stars||'⭐⭐⭐⭐⭐'}">
+                <textarea class="text" placeholder="التعليق">${d.text||''}</textarea>
+                <input class="initials" placeholder="الاختصار" value="${d.initials||''}">
+                <input class="color" placeholder="كود اللون" value="${d.color||'bg-blue-900/50 text-blue-400'}">
+            </div>`
+        };
+
+        // تعبئة البيانات عند الفتح
+        window.onload = () => {
+            if(typeof products !== 'undefined') products.forEach(p => document.getElementById('prod-list').innerHTML += templates.prod(p));
+            if(typeof categories !== 'undefined') categories.forEach(c => document.getElementById('cat-list').innerHTML += templates.cat(c));
+            if(typeof banners !== 'undefined') banners.forEach(b => document.getElementById('ban-list').innerHTML += templates.ban(b));
+            if(typeof reviews !== 'undefined') reviews.forEach(r => document.getElementById('rev-list').innerHTML += templates.rev(r));
+        };
+
+        function addItem(containerId, type) {
+            document.getElementById(containerId).insertAdjacentHTML('afterbegin', templates[type]({}));
+        }
+
+        // دالة التصدير الذكية
+        function exportJS(fileName) {
+            let data = [];
+            let rows = [];
+            let header = "";
+
+            if(fileName === 'products') {
+                rows = document.querySelectorAll('[data-type="prod"]');
+                rows.forEach((r, i) => data.push({id:i+1, name:r.querySelector('.name').value, price:r.querySelector('.price').value, img:r.querySelector('.img').value, desc:r.querySelector('.desc').value}));
+                header = `const products = ${JSON.stringify(data, null, 4)};\n\nif (typeof module !== 'undefined') { module.exports = products; }`;
+            } 
+            else if(fileName === 'categories') {
+                rows = document.querySelectorAll('[data-type="cat"]');
+                rows.forEach(r => data.push({name:r.querySelector('.name').value, img:r.querySelector('.img').value}));
+                header = `const categories = ${JSON.stringify(data, null, 4)};`;
+            }
+            else if(fileName === 'banners') {
+                rows = document.querySelectorAll('[data-type="ban"]');
+                rows.forEach(r => data.push({title:r.querySelector('.title').value, subtitle:r.querySelector('.subtitle').value, image:r.querySelector('.image').value, logo: "IMG_7454-removebg-preview.png", opacity: "opacity-80"}));
+                header = `const banners = ${JSON.stringify(data, null, 4)};\n\nif (typeof module !== 'undefined') { module.exports = banners; }`;
+            }
+            else if(fileName === 'reviews') {
+                rows = document.querySelectorAll('[data-type="rev"]');
+                rows.forEach(r => data.push({stars:r.querySelector('.stars').value, text:r.querySelector('.text').value, initials:r.querySelector('.initials').value, name:r.querySelector('.name').value, color:r.querySelector('.color').value}));
+                // إضافة كود الـ DOM الخاص بآراء العملاء لضمان عملها فور الاستبدال
+                header = `const reviews = ${JSON.stringify(data, null, 4)};\n\ndocument.addEventListener('DOMContentLoaded', () => {\n    const container = document.getElementById('reviews-container');\n    if (container) {\n        container.innerHTML = reviews.map(rev => \`\n            <div class="min-w-[280px] md:min-w-[350px] bg-gray-800 p-6 rounded-3xl snap-center border border-gray-700 shadow-xl">\\n                <div class="flex text-yellow-400 mb-3 text-sm">\${rev.stars}</div>\\n                <p class="text-sm font-medium mb-4 italic text-gray-300">"\\${rev.text}"</p>\\n                <div class="flex items-center gap-3">\\n                    <div class="w-10 h-10 \${rev.color} rounded-full flex items-center justify-center font-bold text-xs border border-white/10">\${rev.initials}</div>\\n                    <div>\\n                        <h4 class="text-xs font-bold text-white">\${rev.name}</h4>\\n                        <p class="text-[10px] text-gray-500">عميل موثق ✅</p>\\n                    </div>\\n                </div>\\n            </div>\`).join('');\n    }\n});`;
+            }
+
+            const blob = new Blob([header], { type: 'text/javascript' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${fileName}.js`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
