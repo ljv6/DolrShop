@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة المشاهدة - Dolr Plus</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #3b82f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(to bottom, #1e293b, #0f172a);
+            margin-bottom: 30px;
+            border-radius: 15px;
+        }
+
+        .section-title {
+            border-right: 4px solid var(--accent-color);
+            padding-right: 15px;
+            margin: 40px 0 20px;
+            font-size: 1.5rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #334155;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        .card-info {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .card-info h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* نافذة الحلقات */
+        #episode-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .episode-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .episode-item {
+            background: #334155;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .episode-item:hover {
+            background: var(--accent-color);
+        }
+
+        .close-btn {
+            float: left;
+            cursor: pointer;
+            color: #ef4444;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>منصة المشاهدة الرقمية</h1>
+    <p>استمتع بمشاهدة أحدث المسلسلات والأفلام</p>
+</header>
+
+<div id="main-content">
+    </div>
+
+<div id="episode-modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">إغلاق X</span>
+        <h2 id="modal-title"></h2>
+        <div class="episode-list" id="modal-episodes"></div>
+    </div>
+</div>
+
+<script>
+    // البيانات (الجسن الخاص بك)
+    const data = {
+        "sections": [
+            {
+                "id": 1,
+                "title_ar": "المسلسلات الخليجية",
+                "type": "series",
+                "channels": [
+                    {
+                        "id": 105,
+                        "name_ar": "شارع الأعشى - الموسم الأول",
+                        "image": "https://via.placeholder.com/200x280?text=شارع+الأعشى+1",
+                        "episodes": Array.from({length: 30}, (_, i) => ({
+                            "title": `الحلقة ${String(i+1).padStart(2, '0')}`,
+                            "url": `https://vid4.zvde-dsn-03.site/ramadan-2025/kleeji/Sharee-Al-Asha/${String(i+1).padStart(2, '0')}.mp4`
+                        }))
+                    },
+                    {
+                        "id": 106,
+                        "name_ar": "شارع الأعشى - الموسم الثاني",
+                        "image": "https://via.placeholder.com/200x280?text=شارع+الأعشى+2",
+                        "episodes": Array.from({length: 30}, (_, i) => ({
+                            "title": `الحلقة ${String(i+1).padStart(2, '0')}`,
+                            "url": `https://vid4.klj-5lkik-wdnd.space/Sharee-Al-Asha-2/${String(i+1).padStart(2, '0')}.mp4`
+                        }))
+                    }
+                ]
+            }
+            // يمكنك إضافة باقي الأقسام هنا بنفس الطريقة
+        ]
+    };
+
+    function init() {
+        const container = document.getElementById('main-content');
+        
+        data.sections.forEach(section => {
+            const sectionHTML = `
+                <h2 class="section-title">${section.title_ar}</h2>
+                <div class="grid-container">
+                    ${section.channels.map(item => `
+                        <div class="card" onclick="openEpisodes('${item.name_ar}', ${JSON.stringify(item.episodes).replace(/"/g, '&quot;')})">
+                            <img src="${item.image}" alt="${item.name_ar}">
+                            <div class="card-info">
+                                <h3>${item.name_ar}</h3>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            container.innerHTML += sectionHTML;
+        });
+    }
+
+    function openEpisodes(title, episodes) {
+        document.getElementById('modal-title').innerText = title;
+        const list = document.getElementById('modal-episodes');
+        list.innerHTML = episodes.map(ep => `
+            <a href="${ep.url}" target="_blank" class="episode-item">${ep.title}</a>
+        `).join('');
+        document.getElementById('episode-modal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('episode-modal').style.display = 'none';
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>
