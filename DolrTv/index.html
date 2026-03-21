@@ -2,144 +2,333 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة المشاهدة - Dolr Plus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dolr Plus - دولر بلس</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* --- المتغيرات الأساسية (الثيم) --- */
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --accent-color: #3b82f6;
+            --bg-dark: #07090f; /* خلفية التطبيق شديدة السواد */
+            --bg-card: #11141d; /* خلفية البطاقات والأقسام */
+            --accent-gold: #cfa864; /* اللون الذهبي الخاص بشعار Dolr */
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --font-family: 'Tajawal', sans-serif;
+            --app-bar-height: 60px;
+            --shimmer-bg: #1a1e2e;
+            --shimmer-hl: #252a3f;
+        }
+
+        /* --- التنسيقات العامة للموبايل --- */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* إزالة لون التحديد عند اللمس */
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: var(--font-family);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            padding-top: var(--app-bar-height); /* مساحة للبار العلوي */
+            padding-bottom: 70px; /* مساحة للبار السفلي */
+            overflow-x: hidden;
+            user-select: none; /* منع تحديد النص لمحاكاة التطبيق */
         }
 
-        header {
-            text-align: center;
-            padding: 40px 0;
-            background: linear-gradient(to bottom, #1e293b, #0f172a);
-            margin-bottom: 30px;
-            border-radius: 15px;
+        /* --- البار العلوي (App Bar) - محاكاة التطبيق --- */
+        .app-bar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            height: var(--app-bar-height);
+            background-color: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-logo img {
+            height: 35px; /* حجم الشعار */
+        }
+
+        .app-title {
+            color: var(--accent-gold);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* --- القائمة السفلية (Bottom Navigation) - محاكاة التطبيق --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            height: 65px;
+            background-color: var(--bg-card);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #222;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 12px;
+            gap: 4px;
+        }
+
+        .nav-item.active {
+            color: var(--accent-gold);
+        }
+
+        .nav-item i {
+            font-size: 22px;
+        }
+
+        /* --- حاوي المحتوى الرئيسي --- */
+        .content-container {
+            padding: 15px;
+        }
+
+        /* --- تنسيق الأقسام والعناوين --- */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            margin-top: 10px;
         }
 
         .section-title {
-            border-right: 4px solid var(--accent-color);
-            padding-right: 15px;
-            margin: 40px 0 20px;
-            font-size: 1.5rem;
+            font-size: 18px;
+            font-weight: 700;
+            border-right: 3px solid var(--accent-gold);
+            padding-right: 10px;
         }
 
-        .grid-container {
+        .view-all {
+            color: var(--accent-gold);
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        /* --- شبكة العرض (Grid) - مماثلة للتطبيق --- */
+        .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(3, 1fr); /* 3 أعمدة مثل الموبايل */
+            gap: 10px;
         }
 
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
+        /* --- بطاقة المحتوى (Poster Card) --- */
+        .item-card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
             overflow: hidden;
-            transition: transform 0.3s ease;
+            position: relative;
+            transition: transform 0.2s ease;
             cursor: pointer;
-            border: 1px solid #334155;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-color);
+        .item-card:active {
+            transform: scale(0.95); /* تأثير عند الضغط */
         }
 
-        .card img {
+        .poster-wrapper {
             width: 100%;
-            height: 280px;
+            padding-top: 145%; /* نسبة طول البوستر الاحترافية */
+            position: relative;
+            background-color: #1a1e2e;
+        }
+
+        .item-poster {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover;
         }
 
-        .card-info {
-            padding: 12px;
+        .item-info {
+            padding: 8px 5px;
             text-align: center;
         }
 
-        .card-info h3 {
+        .item-name {
+            font-size: 12px;
+            font-weight: 500;
             margin: 0;
-            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* قطع النص الطويل */
+            color: var(--text-primary);
         }
 
-        /* نافذة الحلقات */
-        #episode-modal {
+        /* --- ثيم التحميل (Shimmer Effect) - مماثل للتطبيق --- */
+        .skeleton {
+            background: var(--shimmer-bg);
+            background-image: linear-gradient(
+                90deg,
+                var(--shimmer-bg) 0px,
+                var(--shimmer-hl) 40px,
+                var(--shimmer-bg) 80px
+            );
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -100px 0; }
+            100% { background-position: 100px 0; }
+        }
+
+        /* --- نافذة الحلقات المنبثقة (Modal) --- */
+        .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            padding: 20px;
-            overflow-y: auto;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.open {
+            display: block;
+            opacity: 1;
         }
 
         .modal-content {
-            background: var(--card-bg);
-            max-width: 800px;
-            margin: 50px auto;
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            background-color: var(--bg-card);
+            border-radius: 20px 20px 0 0;
             padding: 20px;
-            border-radius: 15px;
+            max-height: 80%;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
         }
 
-        .episode-list {
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin: 0;
+        }
+
+        .episodes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            margin-top: 20px;
         }
 
-        .episode-item {
-            background: #334155;
-            padding: 10px;
+        .episode-btn {
+            background-color: #1a1e2e;
+            color: var(--text-primary);
+            border: 1px solid #333;
+            padding: 12px 0;
             text-align: center;
             border-radius: 8px;
             text-decoration: none;
-            color: white;
-            font-size: 0.9rem;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
         }
 
-        .episode-item:hover {
-            background: var(--accent-color);
+        .episode-btn:active {
+            background-color: var(--accent-gold);
+            border-color: var(--accent-gold);
+            transform: scale(0.95);
         }
 
-        .close-btn {
-            float: left;
-            cursor: pointer;
-            color: #ef4444;
-            font-weight: bold;
-        }
+        /* --- FontAwesome لرموز التطبيق --- */
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
     </style>
 </head>
 <body>
 
-<header>
-    <h1>منصة المشاهدة الرقمية</h1>
-    <p>استمتع بمشاهدة أحدث المسلسلات والأفلام</p>
-</header>
+<div class="app-bar">
+    <div class="app-logo">
+        <i class="fas fa-dollar-sign" style="color: var(--accent-gold); font-size: 28px;"></i>
+        <span class="app-title">Plus</span>
+    </div>
+    <div class="app-actions">
+        <button class="icon-btn"><i class="fas fa-search"></i></button>
+        <button class="icon-btn"><i class="fas fa-bell"></i></button>
+    </div>
+</div>
 
-<div id="main-content">
+<div class="content-container" id="main-content">
     </div>
 
-<div id="episode-modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">إغلاق X</span>
-        <h2 id="modal-title"></h2>
-        <div class="episode-list" id="modal-episodes"></div>
+<div class="bottom-nav">
+    <a href="#" class="nav-item active">
+        <i class="fas fa-home"></i>
+        <span>الرئيسية</span>
+    </a>
+    <a href="#" class="nav-item">
+        <i class="fas fa-tv"></i>
+        <span>مسلسلات</span>
+    </a>
+    <a href="#" class="nav-item">
+        <i class="fas fa-film"></i>
+        <span>أفلام</span>
+    </a>
+    <a href="#" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span>حسابي</span>
+    </a>
+</div>
+
+<div class="modal" id="episodeModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">اسم المسلسل</h3>
+            <button class="icon-btn" onclick="toggleModal()"><i class="fas fa-times" style="color: #ef4444;"></i></button>
+        </div>
+        <div class="episodes-grid" id="episodesGrid">
+            </div>
     </div>
 </div>
 
 <script>
-    // البيانات (الجسن الخاص بك)
-    const data = {
+    // بيانات الجسن الخاصة بك (مدمجة هنا للسهولة)
+    const appData = {
         "sections": [
             {
                 "id": 1,
@@ -149,62 +338,129 @@
                     {
                         "id": 105,
                         "name_ar": "شارع الأعشى - الموسم الأول",
-                        "image": "https://via.placeholder.com/200x280?text=شارع+الأعشى+1",
-                        "episodes": Array.from({length: 30}, (_, i) => ({
-                            "title": `الحلقة ${String(i+1).padStart(2, '0')}`,
-                            "url": `https://vid4.zvde-dsn-03.site/ramadan-2025/kleeji/Sharee-Al-Asha/${String(i+1).padStart(2, '0')}.mp4`
-                        }))
+                        "image": "https://vid4.zvde-dsn-03.site/ramadan-2025/kleeji/Sharee-Al-Asha/Sharee_Al_Asha_S1.jpg", // رابط افتراضي للبوستر
+                        "episodes": Array.from({length: 30}, (_, i) => {
+                            const num = String(i+1).padStart(2, '0');
+                            return { "title": `${num}`, "url": `https://vid4.zvde-dsn-03.site/ramadan-2025/kleeji/Sharee-Al-Asha/${num}.mp4` };
+                        })
                     },
                     {
                         "id": 106,
                         "name_ar": "شارع الأعشى - الموسم الثاني",
-                        "image": "https://via.placeholder.com/200x280?text=شارع+الأعشى+2",
-                        "episodes": Array.from({length: 30}, (_, i) => ({
-                            "title": `الحلقة ${String(i+1).padStart(2, '0')}`,
-                            "url": `https://vid4.klj-5lkik-wdnd.space/Sharee-Al-Asha-2/${String(i+1).padStart(2, '0')}.mp4`
-                        }))
+                        "image": "https://vid4.klj-5lkik-wdnd.space/Sharee-Al-Asha-2/Sharee_Al_Asha_S2.jpg", // رابط افتراضي للبوستر
+                        "episodes": Array.from({length: 30}, (_, i) => {
+                            const num = String(i+1).padStart(2, '0');
+                            return { "title": `${num}`, "url": `https://vid4.klj-5lkik-wdnd.space/Sharee-Al-Asha-2/${num}.mp4` };
+                        })
                     }
                 ]
             }
-            // يمكنك إضافة باقي الأقسام هنا بنفس الطريقة
         ]
     };
 
-    function init() {
-        const container = document.getElementById('main-content');
-        
-        data.sections.forEach(section => {
-            const sectionHTML = `
-                <h2 class="section-title">${section.title_ar}</h2>
-                <div class="grid-container">
-                    ${section.channels.map(item => `
-                        <div class="card" onclick="openEpisodes('${item.name_ar}', ${JSON.stringify(item.episodes).replace(/"/g, '&quot;')})">
-                            <img src="${item.image}" alt="${item.name_ar}">
-                            <div class="card-info">
-                                <h3>${item.name_ar}</h3>
+    const contentContainer = document.getElementById('main-content');
+
+    // --- وظيفة عرض ثيم التحميل (Shimmer) ---
+    function showShimmer() {
+        let shimmerHTML = '';
+        for (let s = 0; s < 1; s++) { // عرض قسمن كتحميل
+            shimmerHTML += `
+                <div class="section-header">
+                    <div class="section-title skeleton" style="width: 120px; height: 20px; border:none;"></div>
+                </div>
+                <div class="items-grid">
+                    ${Array(3).fill(0).map(() => `
+                        <div class="item-card">
+                            <div class="poster-wrapper skeleton"></div>
+                            <div class="item-info">
+                                <div class="item-name skeleton" style="width: 80%; height: 12px; margin: 0 auto;"></div>
                             </div>
                         </div>
                     `).join('')}
                 </div>
             `;
-            container.innerHTML += sectionHTML;
+        }
+        contentContainer.innerHTML = shimmerHTML;
+    }
+
+    // --- وظيفة جلب وعرض البيانات الحقيقية ---
+    function renderContent() {
+        // محاكاة وقت التحميل (1.5 ثانية) لرؤية تأثير الـ Shimmer
+        setTimeout(() => {
+            contentContainer.innerHTML = ''; // تفريغ التحميل
+
+            appData.sections.forEach(section => {
+                const sectionHTML = `
+                    <div class="section-wrapper">
+                        <div class="section-header">
+                            <h2 class="section-title">${section.title_ar}</h2>
+                            <a href="#" class="view-all">الكل <i class="fas fa-chevron-left"></i></a>
+                        </div>
+                        <div class="items-grid">
+                            ${section.channels.map(item => `
+                                <div class="item-card" onclick="openEpisodes('${item.name_ar}', ${item.id})">
+                                    <div class="poster-wrapper">
+                                        <img src="${item.image}" alt="${item.name_ar}" class="item-poster" onerror="this.src='https://via.placeholder.com/200x290?text=Dolr+Plus'">
+                                    </div>
+                                    <div class="item-info">
+                                        <h3 class="item-name">${item.name_ar}</h3>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                contentContainer.innerHTML += sectionHTML;
+            });
+        }, 1500); 
+    }
+
+    // --- إدارة النافذة المنبثقة (Modal) ---
+    const modal = document.getElementById('episodeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const episodesGrid = document.getElementById('episodesGrid');
+
+    function openEpisodes(name, itemId) {
+        // البحث عن المسلسل في البيانات باستخدام الـ ID
+        let selectedItem = null;
+        appData.sections.forEach(sec => {
+            const found = sec.channels.find(c => c.id === itemId);
+            if(found) selectedItem = found;
         });
-    }
 
-    function openEpisodes(title, episodes) {
-        document.getElementById('modal-title').innerText = title;
-        const list = document.getElementById('modal-episodes');
-        list.innerHTML = episodes.map(ep => `
-            <a href="${ep.url}" target="_blank" class="episode-item">${ep.title}</a>
+        if(!selectedItem) return;
+
+        modalTitle.innerText = name;
+        episodesGrid.innerHTML = selectedItem.episodes.map(ep => `
+            <a href="${ep.url}" target="_blank" class="episode-btn" onclick="toggleModal()">${ep.title}</a>
         `).join('');
-        document.getElementById('episode-modal').style.display = 'block';
+        
+        toggleModal();
     }
 
-    function closeModal() {
-        document.getElementById('episode-modal').style.display = 'none';
+    function toggleModal() {
+        if(modal.classList.contains('open')) {
+            modal.classList.remove('open');
+            // تأخير الإخفاء التام حتى تنتهي الحركة
+            setTimeout(() => modal.style.display = 'none', 300);
+        } else {
+            modal.style.display = 'block';
+            // تأخير بسيط لتفعيل الـ transition
+            setTimeout(() => modal.classList.add('open'), 10);
+        }
     }
 
-    window.onload = init;
+    function closeModal(event) {
+        // إغلاق عند الضغط خارج المحتوى
+        if(event.target === modal) toggleModal();
+    }
+
+    // --- التشغيل عند تحميل الصفحة ---
+    window.onload = () => {
+        showShimmer(); // إظهار التحميل أولاً
+        renderContent(); // ثم جلب البيانات
+    };
+
 </script>
 
 </body>
