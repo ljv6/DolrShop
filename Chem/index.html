@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Chem AI Plus</title>
+<title>Chem AI Ultimate</title>
 
 <style>
 body{
@@ -13,8 +13,8 @@ body{
 }
 
 .box{
-  width:370px;
-  margin:40px auto;
+  width:380px;
+  margin:30px auto;
   background:#0f172a;
   padding:20px;
   border-radius:15px;
@@ -35,17 +35,9 @@ button{
   width:0%;
 }
 
-.small{
-  font-size:12px;
-  color:#94a3b8;
-}
-
-.achievement{
-  background:#f59e0b;
-  margin-top:5px;
-  padding:5px;
-  border-radius:8px;
-}
+.small{font-size:13px;color:#94a3b8;}
+.ar{color:#38bdf8;margin-top:10px;}
+.ach{background:#f59e0b;margin-top:5px;padding:5px;border-radius:8px;}
 </style>
 </head>
 
@@ -64,17 +56,19 @@ button{
   <button onclick="answer(1)" id="b1"></button>
   <button onclick="answer(2)" id="b2"></button>
 
-  <button onclick="speak()">🔊 Pronounce</button>
+  <button onclick="speak()">🔊 Speak</button>
+  <button onclick="toggleMode()">🔁 Switch Mode</button>
+  <button onclick="toggleArabic()">🇸🇦 Arabic Explain</button>
 
   <p id="feedback"></p>
   <p id="explain" class="small"></p>
+  <p id="arabicExplain" class="ar"></p>
 
   <div id="achievements"></div>
 
   <p class="small" id="stats"></p>
 
   <button onclick="next()">Next</button>
-  <button onclick="reset()">Reset</button>
 </div>
 
 <script>
@@ -82,46 +76,75 @@ let xp = parseInt(localStorage.getItem("xp")) || 0;
 let combo = 0;
 let correct = parseInt(localStorage.getItem("correct")) || 0;
 let wrong = parseInt(localStorage.getItem("wrong")) || 0;
+let showArabic = false;
+let mode = localStorage.getItem("mode") || "en_to_ar"; // or ar_to_en
 let achievements = JSON.parse(localStorage.getItem("ach")) || [];
-let weak = JSON.parse(localStorage.getItem("weak")) || {};
 
 const data = [
-{word:"Acid",def:"Donates H+",type:"def"},
-{word:"Base",def:"Accepts H+",type:"def"},
-{word:"Evaporation",def:"Liquid to Gas",type:"def"},
-{word:"Exothermic",def:"Releases heat",type:"def"},
-{word:"NaCl",def:"Salt",type:"def"}
+{
+  en:"Acid",
+  ar:"حمض",
+  def:"Donates H+",
+  arExp:"الحمض مادة تعطي +H"
+},
+{
+  en:"Base",
+  ar:"قاعدة",
+  def:"Accepts H+",
+  arExp:"القاعدة تستقبل +H"
+},
+{
+  en:"Evaporation",
+  ar:"تبخر",
+  def:"Liquid to Gas",
+  arExp:"تحول السائل إلى غاز"
+},
+{
+  en:"Exothermic",
+  ar:"طارد للحرارة",
+  def:"Releases heat",
+  arExp:"تفاعل يطلق حرارة"
+},
+{
+  en:"NaCl",
+  ar:"ملح",
+  def:"Salt",
+  arExp:"كلوريد الصوديوم"
+}
 ];
 
 let currentQ;
 
-// 🤖 توليد سؤال ذكي
 function generateQuestion(){
-  let item;
+  let item = data[Math.floor(Math.random()*data.length)];
 
-  // 30% يجيب من نقاط ضعفك
-  if(Math.random() < 0.3 && Object.keys(weak).length > 0){
-    let keys = Object.keys(weak);
-    item = data.find(d => d.word === keys[Math.floor(Math.random()*keys.length)]);
+  let questionText, correctAnswer, wrongAnswers, explainText, arabicExplain;
+
+  if(mode === "en_to_ar"){
+    questionText = "What is " + item.en + " in Arabic?";
+    correctAnswer = item.ar;
+    wrongAnswers = data.filter(d=>d.ar!==item.ar).map(d=>d.ar);
+    explainText = item.en + " = " + item.def;
+    arabicExplain = item.arExp;
   } else {
-    item = data[Math.floor(Math.random()*data.length)];
+    questionText = "ما معنى: " + item.ar + " ؟";
+    correctAnswer = item.en;
+    wrongAnswers = data.filter(d=>d.en!==item.en).map(d=>d.en);
+    explainText = item.ar + " = " + item.def;
+    arabicExplain = item.arExp;
   }
 
-  let wrongAnswers = data
-    .filter(d => d.word !== item.word)
-    .map(d => d.def)
-    .sort(()=>Math.random()-0.5)
-    .slice(0,2);
+  wrongAnswers = wrongAnswers.sort(()=>Math.random()-0.5).slice(0,2);
 
-  let options = [item.def, ...wrongAnswers];
+  let options = [correctAnswer, ...wrongAnswers];
   options.sort(()=>Math.random()-0.5);
 
   currentQ = {
-    q: "What is " + item.word + "?",
+    q: questionText,
     options: options,
-    answer: options.indexOf(item.def),
-    explain: item.word + " = " + item.def,
-    word: item.word
+    answer: options.indexOf(correctAnswer),
+    explain: explainText,
+    ar: arabicExplain
   };
 }
 
@@ -129,7 +152,7 @@ function load(){
   generateQuestion();
 
   document.getElementById("info").innerText =
-    "XP: " + xp + " | Combo 🔥 " + combo;
+    "XP: " + xp + " | Combo 🔥 " + combo + " | Mode: " + mode;
 
   document.getElementById("question").innerText = currentQ.q;
 
@@ -139,6 +162,7 @@ function load(){
 
   document.getElementById("feedback").innerText="";
   document.getElementById("explain").innerText="";
+  document.getElementById("arabicExplain").innerText="";
 
   document.getElementById("stats").innerText =
     "Correct: " + correct + " | Wrong: " + wrong;
@@ -146,11 +170,21 @@ function load(){
   updateXP();
 }
 
-// 🔊 نطق
 function speak(){
   let msg = new SpeechSynthesisUtterance(currentQ.q);
   msg.lang = "en-US";
   speechSynthesis.speak(msg);
+}
+
+function toggleArabic(){
+  showArabic = !showArabic;
+  alert(showArabic ? "Arabic ON 🇸🇦" : "Arabic OFF");
+}
+
+function toggleMode(){
+  mode = (mode === "en_to_ar") ? "ar_to_en" : "en_to_ar";
+  localStorage.setItem("mode", mode);
+  load();
 }
 
 function answer(i){
@@ -163,11 +197,14 @@ function answer(i){
     combo = 0;
     xp -= 5;
     wrong++;
-    weak[currentQ.word] = true;
     document.getElementById("feedback").innerText="❌ Wrong!";
   }
 
   document.getElementById("explain").innerText = currentQ.explain;
+
+  if(showArabic || i !== currentQ.answer){
+    document.getElementById("arabicExplain").innerText = currentQ.ar;
+  }
 
   checkAchievements();
   save();
@@ -178,19 +215,14 @@ function updateXP(){
   document.getElementById("xpFill").style.width = (xp % 100) + "%";
 }
 
-function next(){
-  load();
-}
-
-// 🏆 إنجازات
 function checkAchievements(){
-  if(correct >= 5 && !achievements.includes("Beginner")){
-    addAch("🎉 Beginner");
+  if(correct >= 5 && !achievements.includes("Starter")){
+    addAch("🎉 Starter");
   }
-  if(combo >= 4 && !achievements.includes("Combo")){
-    addAch("🔥 Combo Beast");
+  if(combo >= 5 && !achievements.includes("Combo Master")){
+    addAch("🔥 Combo Master");
   }
-  if(correct >= 20 && !achievements.includes("Pro")){
+  if(correct >= 20 && !achievements.includes("Chem Pro")){
     addAch("🧪 Chem Pro");
   }
 }
@@ -198,24 +230,20 @@ function checkAchievements(){
 function addAch(text){
   achievements.push(text);
   let div = document.createElement("div");
-  div.className="achievement";
+  div.className="ach";
   div.innerText=text;
   document.getElementById("achievements").appendChild(div);
 }
 
-// 💾 حفظ
+function next(){
+  load();
+}
+
 function save(){
   localStorage.setItem("xp", xp);
   localStorage.setItem("correct", correct);
   localStorage.setItem("wrong", wrong);
   localStorage.setItem("ach", JSON.stringify(achievements));
-  localStorage.setItem("weak", JSON.stringify(weak));
-}
-
-// 🔄 إعادة
-function reset(){
-  localStorage.clear();
-  location.reload();
 }
 
 load();
