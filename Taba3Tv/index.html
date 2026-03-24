@@ -3,280 +3,313 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>TABA3 TV</title>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+
 <style>
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #0f0f0f;
-    color: #fff;
+:root{
+  --primary:#ffd700;
+  --bg:#0f0f0f;
+  --card:rgba(255,255,255,0.06);
+  --text:#fff;
+  --glass:rgba(255,255,255,0.08);
+}
+
+.light{
+  --bg:#f5f5f5;
+  --card:#fff;
+  --text:#000;
+  --glass:rgba(0,0,0,0.05);
+}
+
+body{
+  margin:0;
+  font-family:-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* Splash */
+#splash{
+  position:fixed;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:var(--bg);
+  z-index:999;
 }
 
 /* Header */
-header {
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+header{
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-header h2 {
-    margin: 0;
-    font-weight: 800;
+/* Controls */
+.controls{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 15px;
 }
 
-/* Search */
-.search {
-    padding: 0 20px;
+.controls button{
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  background:var(--glass);
+  color:var(--text);
 }
-.search input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    outline: none;
-    background: #1c1c1c;
-    color: #fff;
+
+.controls button.active{
+  background:var(--primary);
+  color:#000;
 }
 
 /* Player */
-.player {
-    width: 100%;
-    height: 220px;
-    background: black;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+.player{
+  width:100%;
+  height:220px;
+  background:black;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+/* Search */
+.search{
+  padding:10px 15px;
+}
+
+.search input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  background:var(--card);
+  color:var(--text);
 }
 
 /* Sections */
-.section {
-    margin-top: 25px;
-}
-
-.section-title {
-    font-size: 18px;
-    font-weight: bold;
-    padding: 0 20px;
-    margin-bottom: 10px;
+.section-title{
+  padding:10px 15px;
+  font-weight:bold;
 }
 
 /* Row */
-.row {
-    display: flex;
-    overflow-x: auto;
-    padding: 0 15px;
+.row{
+  display:flex;
+  overflow-x:auto;
+  padding:0 10px;
 }
 
 /* Card */
-.card {
-    min-width: 150px;
-    margin: 10px;
-    cursor: pointer;
-    transition: 0.3s;
+.card{
+  min-width:150px;
+  margin:10px;
+  padding:10px;
+  background:var(--glass);
+  border-radius:16px;
+  backdrop-filter:blur(10px);
+  cursor:pointer;
 }
 
-.card:hover {
-    transform: scale(1.05);
+.card img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+  border-radius:12px;
 }
 
-.card img {
-    width: 150px;
-    height: 210px;
-    object-fit: cover;
-    border-radius: 16px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-}
-
-.card-title {
-    margin-top: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.card-title{
+  margin-top:6px;
+  font-size:13px;
 }
 
 /* Episode */
-.episode {
-    padding: 12px;
-    margin: 6px 20px;
-    background: #1c1c1c;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
+.episode{
+  margin:8px 15px;
+  padding:12px;
+  background:var(--glass);
+  border-radius:10px;
+  cursor:pointer;
 }
 
-.episode:hover {
-    background: #2a2a2a;
-}
-
-.active {
-    border-left: 4px solid #ffd700;
-    padding-left: 8px;
-}
-
-/* Badge */
-.badge {
-    background: red;
-    padding: 3px 7px;
-    font-size: 11px;
-    border-radius: 6px;
-    margin-left: 5px;
+.active{
+  border-left:4px solid var(--primary);
 }
 </style>
 </head>
 
 <body>
 
+<!-- Splash -->
+<div id="splash">
+  <h2>تابع</h2>
+</div>
+
 <header>
-    <h2>تابع</h2>
-    <button onclick="loadData()">🔄</button>
+  <div>تابع</div>
+  <button onclick="loadData()">🔄</button>
 </header>
 
+<div class="controls">
+  <div>
+    <button onclick="setTheme('dark')" id="darkBtn">Dark</button>
+    <button onclick="setTheme('light')" id="lightBtn">Light</button>
+  </div>
+
+  <div>
+    <button onclick="setColor('#ffd700')">Gold</button>
+    <button onclick="setColor('#007bff')">Blue</button>
+    <button onclick="setColor('#ff3b30')">Red</button>
+    <button onclick="setColor('#a020f0')">Purple</button>
+  </div>
+</div>
+
 <div class="search">
-    <input id="search" placeholder="ابحث..." oninput="render()" />
+  <input id="search" placeholder="ابحث..." oninput="render()">
 </div>
 
 <div id="playerContainer" class="player"></div>
-
 <div id="content"></div>
 
 <script>
-const API = "https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json";
+const API="https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json";
 
-let data = null;
-let favorites = JSON.parse(localStorage.getItem("fav") || "[]");
-let continueWatching = JSON.parse(localStorage.getItem("cw") || "[]");
-let currentEpisode = null;
+let data=null;
+let cards=[];
+let focusIndex=0;
 
-async function loadData() {
-    const res = await fetch(API);
-    data = await res.json();
-    render();
+/* Theme */
+function setTheme(t){
+  document.body.classList.toggle("light",t==="light");
+  localStorage.setItem("theme",t);
+  updateUI();
 }
 
-function saveFav() {
-    localStorage.setItem("fav", JSON.stringify(favorites));
+function setColor(c){
+  document.documentElement.style.setProperty("--primary",c);
+  localStorage.setItem("color",c);
 }
 
-function saveCW() {
-    localStorage.setItem("cw", JSON.stringify(continueWatching));
+function updateUI(){
+  const t=localStorage.getItem("theme")||"dark";
+  document.getElementById("darkBtn").classList.toggle("active",t==="dark");
+  document.getElementById("lightBtn").classList.toggle("active",t==="light");
 }
 
-function playVideo(url, item, epTitle="") {
-    currentEpisode = epTitle;
-
-    document.getElementById("playerContainer").innerHTML = `
-        <video controls autoplay width="100%" height="220">
-            <source src="${url}" type="video/mp4">
-        </video>
-    `;
-
-    if (!continueWatching.find(i => i.id === item.id)) {
-        continueWatching.unshift(item);
-        if (continueWatching.length > 10) continueWatching.pop();
-        saveCW();
-    }
-
-    render();
+/* Load JSON with no cache */
+async function loadData(){
+  const url = API + "?t=" + new Date().getTime();
+  const res = await fetch(url,{cache:"no-store"});
+  data=await res.json();
+  render();
 }
 
-function toggleFav(id) {
-    if (favorites.includes(id)) {
-        favorites = favorites.filter(f => f !== id);
-    } else {
-        favorites.push(id);
-    }
-    saveFav();
-    render();
+/* Player */
+function playVideo(url){
+  document.getElementById("playerContainer").innerHTML=`
+    <video controls autoplay width="100%" height="220">
+      <source src="${url}" type="video/mp4">
+    </video>
+  `;
 }
 
-function render() {
-    if (!data) return;
+/* Render */
+function render(){
+  if(!data)return;
 
-    const search = document.getElementById("search").value.toLowerCase();
-    let html = "";
+  const search=document.getElementById("search").value.toLowerCase();
+  let html="";
 
-    // Continue Watching
-    if (continueWatching.length > 0) {
-        html += `<div class="section">
-            <div class="section-title">استئناف المشاهدة</div>
-            <div class="row">`;
+  data.sections.forEach(section=>{
+    html+=`<div class="section-title">${section.title_ar}</div>
+    <div class="row">`;
 
-        continueWatching.forEach(item => {
-            html += cardHTML(item);
-        });
-
-        html += `</div></div>`;
-    }
-
-    data.sections.forEach(section => {
-
-        html += `<div class="section">
-            <div class="section-title">${section.title_ar}</div>
-            <div class="row">`;
-
-        section.channels
-        .filter(i => i.name_ar.includes(search) || (i.name_en || "").toLowerCase().includes(search))
-        .forEach(item => {
-            html += cardHTML(item);
-        });
-
-        html += `</div></div>`;
+    section.channels
+    .filter(i=>i.name_ar.includes(search))
+    .forEach(item=>{
+      html+=`
+      <div class="card">
+        <img src="${item.image}">
+        <div class="card-title">${item.name_ar}</div>
+      </div>`;
     });
 
-    document.getElementById("content").innerHTML = html;
+    html+="</div>";
+  });
+
+  document.getElementById("content").innerHTML=html;
+  initRemote();
 }
 
-function cardHTML(item) {
-    const isFav = favorites.includes(item.id);
-
-    return `
-    <div class="card" onclick='openItem(${JSON.stringify(item)})'>
-        <img src="${item.image}">
-        <div class="card-title">
-            ${item.name_ar}
-            ${isFav ? '<span class="badge">❤</span>' : ''}
-        </div>
-    </div>
-    `;
+/* Remote control */
+function initRemote(){
+  cards=document.querySelectorAll(".card");
+  focusIndex=0;
+  highlight();
 }
 
-function openItem(item) {
-
-    let html = `<div style="padding:20px;font-size:20px;font-weight:bold">${item.name_ar}</div>`;
-
-    if (item.episodes && item.episodes.length > 0) {
-
-        item.episodes.forEach(ep => {
-
-            const active = ep.title === currentEpisode;
-
-            html += `
-            <div class="episode ${active ? "active" : ""}"
-                 onclick='playVideo("${ep.url}", ${JSON.stringify(item)}, "${ep.title}")'>
-                 ${active ? "▶ " : ""} ${ep.title}
-            </div>`;
-        });
-
-    } else {
-        html += `<div style="padding:20px">
-            <button onclick='playVideo("${item.stream_url}", ${JSON.stringify(item)})'
-            style="padding:12px;width:100%;border:none;border-radius:10px;background:#ffd700;color:#000;font-weight:bold;">
-            تشغيل الآن
-            </button>
-        </div>`;
-    }
-
-    document.getElementById("content").innerHTML = html;
+function highlight(){
+  cards.forEach(c=>c.style.outline="none");
+  if(cards[focusIndex]){
+    cards[focusIndex].style.outline="3px solid var(--primary)";
+    cards[focusIndex].scrollIntoView({behavior:"smooth",block:"center"});
+  }
 }
 
-// Auto refresh
-setInterval(loadData, 60000);
+document.addEventListener("keydown",(e)=>{
+  if(cards.length===0) return;
 
+  if(e.key==="ArrowRight"||e.key==="ArrowDown"){
+    focusIndex=(focusIndex+1)%cards.length;
+    highlight();
+  }
+
+  if(e.key==="ArrowLeft"||e.key==="ArrowUp"){
+    focusIndex=(focusIndex-1+cards.length)%cards.length;
+    highlight();
+  }
+
+  if(e.key==="Enter"){
+    cards[focusIndex].click();
+  }
+});
+
+/* Init */
+setTheme(localStorage.getItem("theme")||"dark");
+setColor(localStorage.getItem("color")||"#ffd700");
+updateUI();
 loadData();
+
+/* Auto refresh JSON */
+setInterval(loadData,30000);
+
+/* Splash */
+setTimeout(()=>document.getElementById("splash").style.display="none",1500);
+
+/* PWA Service Worker */
+if("serviceWorker" in navigator){
+  const swCode=`
+  self.addEventListener('install',e=>{
+    e.waitUntil(caches.open('app').then(c=>c.add('/')));
+  });
+  self.addEventListener('fetch',e=>{
+    e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+  });
+  `;
+  const blob=new Blob([swCode],{type:"text/javascript"});
+  const swURL=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swURL);
+}
 </script>
 
 </body>
