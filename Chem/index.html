@@ -2,248 +2,189 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Chem AI Ultimate</title>
+<title>Chem Duolingo Style</title>
 
 <style>
 body{
-  background:#020617;
+  font-family: Arial;
+  background:#0b1320;
   color:white;
   text-align:center;
-  font-family:Arial;
 }
 
-.box{
-  width:380px;
-  margin:30px auto;
-  background:#0f172a;
+.container{
+  max-width:400px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:#111827;
   padding:20px;
   border-radius:15px;
+  margin-top:20px;
 }
 
 button{
   width:100%;
-  margin:6px 0;
   padding:12px;
-  border-radius:10px;
+  margin:8px 0;
   border:none;
+  border-radius:10px;
   cursor:pointer;
+  font-size:16px;
 }
 
-#xpFill{
-  height:10px;
-  background:#22c55e;
+.option{
+  background:#1f2937;
+  color:white;
+}
+
+.option:hover{
+  background:#374151;
+}
+
+.correct{
+  background:#22c55e !important;
+}
+
+.wrong{
+  background:#ef4444 !important;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.progress{
+  height:8px;
+  background:#1e293b;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.progress-bar{
+  height:100%;
   width:0%;
+  background:#22c55e;
 }
-
-.small{font-size:13px;color:#94a3b8;}
-.ar{color:#38bdf8;margin-top:10px;}
-.ach{background:#f59e0b;margin-top:5px;padding:5px;border-radius:8px;}
 </style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2 id="info"></h2>
+<div class="container">
 
-  <div style="background:#1e293b;">
-    <div id="xpFill"></div>
+  <div class="top">
+    <div>🔥 Streak: <span id="streak">0</span></div>
+    <div>⭐ XP: <span id="xp">0</span></div>
   </div>
 
-  <h3 id="question"></h3>
+  <div class="progress">
+    <div class="progress-bar" id="bar"></div>
+  </div>
 
-  <button onclick="answer(0)" id="b0"></button>
-  <button onclick="answer(1)" id="b1"></button>
-  <button onclick="answer(2)" id="b2"></button>
+  <div class="card">
+    <h2 id="question"></h2>
 
-  <button onclick="speak()">🔊 Speak</button>
-  <button onclick="toggleMode()">🔁 Switch Mode</button>
-  <button onclick="toggleArabic()">🇸🇦 Arabic Explain</button>
+    <div id="options"></div>
 
-  <p id="feedback"></p>
-  <p id="explain" class="small"></p>
-  <p id="arabicExplain" class="ar"></p>
+    <p id="feedback"></p>
+    <p id="explain" style="color:#38bdf8;"></p>
 
-  <div id="achievements"></div>
+    <button onclick="next()">Next</button>
+  </div>
 
-  <p class="small" id="stats"></p>
-
-  <button onclick="next()">Next</button>
 </div>
 
 <script>
-let xp = parseInt(localStorage.getItem("xp")) || 0;
-let combo = 0;
-let correct = parseInt(localStorage.getItem("correct")) || 0;
-let wrong = parseInt(localStorage.getItem("wrong")) || 0;
-let showArabic = false;
-let mode = localStorage.getItem("mode") || "en_to_ar"; // or ar_to_en
-let achievements = JSON.parse(localStorage.getItem("ach")) || [];
+let xp = 0;
+let streak = 0;
 
-const data = [
+const questions = [
 {
-  en:"Acid",
-  ar:"حمض",
-  def:"Donates H+",
-  arExp:"الحمض مادة تعطي +H"
+  type:"en_to_ar",
+  q:"What is Acid?",
+  correct:"حمض",
+  options:["حمض","قاعدة","ملح"],
+  explain:"Acid = مادة تعطي +H"
 },
 {
-  en:"Base",
-  ar:"قاعدة",
-  def:"Accepts H+",
-  arExp:"القاعدة تستقبل +H"
+  type:"en_to_ar",
+  q:"What is Base?",
+  correct:"قاعدة",
+  options:["حمض","قاعدة","غاز"],
+  explain:"Base = تستقبل +H"
 },
 {
-  en:"Evaporation",
-  ar:"تبخر",
-  def:"Liquid to Gas",
-  arExp:"تحول السائل إلى غاز"
+  type:"ar_to_en",
+  q:"ما معنى: تبخر؟",
+  correct:"Evaporation",
+  options:["Evaporation","Condensation","Melting"],
+  explain:"Evaporation = liquid → gas"
 },
 {
-  en:"Exothermic",
-  ar:"طارد للحرارة",
-  def:"Releases heat",
-  arExp:"تفاعل يطلق حرارة"
-},
-{
-  en:"NaCl",
-  ar:"ملح",
-  def:"Salt",
-  arExp:"كلوريد الصوديوم"
+  type:"en_to_ar",
+  q:"What is NaCl?",
+  correct:"ملح",
+  options:["حمض","ملح","قاعدة"],
+  explain:"NaCl = salt"
 }
 ];
 
-let currentQ;
-
-function generateQuestion(){
-  let item = data[Math.floor(Math.random()*data.length)];
-
-  let questionText, correctAnswer, wrongAnswers, explainText, arabicExplain;
-
-  if(mode === "en_to_ar"){
-    questionText = "What is " + item.en + " in Arabic?";
-    correctAnswer = item.ar;
-    wrongAnswers = data.filter(d=>d.ar!==item.ar).map(d=>d.ar);
-    explainText = item.en + " = " + item.def;
-    arabicExplain = item.arExp;
-  } else {
-    questionText = "ما معنى: " + item.ar + " ؟";
-    correctAnswer = item.en;
-    wrongAnswers = data.filter(d=>d.en!==item.en).map(d=>d.en);
-    explainText = item.ar + " = " + item.def;
-    arabicExplain = item.arExp;
-  }
-
-  wrongAnswers = wrongAnswers.sort(()=>Math.random()-0.5).slice(0,2);
-
-  let options = [correctAnswer, ...wrongAnswers];
-  options.sort(()=>Math.random()-0.5);
-
-  currentQ = {
-    q: questionText,
-    options: options,
-    answer: options.indexOf(correctAnswer),
-    explain: explainText,
-    ar: arabicExplain
-  };
-}
+let current;
 
 function load(){
-  generateQuestion();
+  current = questions[Math.floor(Math.random()*questions.length)];
 
-  document.getElementById("info").innerText =
-    "XP: " + xp + " | Combo 🔥 " + combo + " | Mode: " + mode;
+  document.getElementById("question").innerText = current.q;
 
-  document.getElementById("question").innerText = currentQ.q;
+  let container = document.getElementById("options");
+  container.innerHTML = "";
 
-  for(let i=0;i<3;i++){
-    document.getElementById("b"+i).innerText = currentQ.options[i];
-  }
+  current.options.sort(()=>Math.random()-0.5).forEach(opt=>{
+    let btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.className = "option";
+    btn.onclick = ()=>check(btn, opt);
+    container.appendChild(btn);
+  });
 
   document.getElementById("feedback").innerText="";
   document.getElementById("explain").innerText="";
-  document.getElementById("arabicExplain").innerText="";
-
-  document.getElementById("stats").innerText =
-    "Correct: " + correct + " | Wrong: " + wrong;
-
-  updateXP();
 }
 
-function speak(){
-  let msg = new SpeechSynthesisUtterance(currentQ.q);
-  msg.lang = "en-US";
-  speechSynthesis.speak(msg);
-}
+function check(btn, answer){
+  let buttons = document.querySelectorAll(".option");
 
-function toggleArabic(){
-  showArabic = !showArabic;
-  alert(showArabic ? "Arabic ON 🇸🇦" : "Arabic OFF");
-}
+  buttons.forEach(b=>b.disabled=true);
 
-function toggleMode(){
-  mode = (mode === "en_to_ar") ? "ar_to_en" : "en_to_ar";
-  localStorage.setItem("mode", mode);
-  load();
-}
-
-function answer(i){
-  if(i === currentQ.answer){
-    combo++;
-    xp += 10 + combo;
-    correct++;
+  if(answer === current.correct){
+    btn.classList.add("correct");
     document.getElementById("feedback").innerText="✅ Correct!";
+    xp += 10;
+    streak++;
   } else {
-    combo = 0;
-    xp -= 5;
-    wrong++;
+    btn.classList.add("wrong");
     document.getElementById("feedback").innerText="❌ Wrong!";
+    streak = 0;
   }
 
-  document.getElementById("explain").innerText = currentQ.explain;
+  document.getElementById("explain").innerText = current.explain;
 
-  if(showArabic || i !== currentQ.answer){
-    document.getElementById("arabicExplain").innerText = currentQ.ar;
-  }
-
-  checkAchievements();
-  save();
-  updateXP();
+  updateUI();
 }
 
-function updateXP(){
-  document.getElementById("xpFill").style.width = (xp % 100) + "%";
-}
-
-function checkAchievements(){
-  if(correct >= 5 && !achievements.includes("Starter")){
-    addAch("🎉 Starter");
-  }
-  if(combo >= 5 && !achievements.includes("Combo Master")){
-    addAch("🔥 Combo Master");
-  }
-  if(correct >= 20 && !achievements.includes("Chem Pro")){
-    addAch("🧪 Chem Pro");
-  }
-}
-
-function addAch(text){
-  achievements.push(text);
-  let div = document.createElement("div");
-  div.className="ach";
-  div.innerText=text;
-  document.getElementById("achievements").appendChild(div);
+function updateUI(){
+  document.getElementById("xp").innerText = xp;
+  document.getElementById("streak").innerText = streak;
+  document.getElementById("bar").style.width = (xp % 100) + "%";
 }
 
 function next(){
   load();
-}
-
-function save(){
-  localStorage.setItem("xp", xp);
-  localStorage.setItem("correct", correct);
-  localStorage.setItem("wrong", wrong);
-  localStorage.setItem("ach", JSON.stringify(achievements));
 }
 
 load();
