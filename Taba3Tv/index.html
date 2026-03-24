@@ -32,16 +32,15 @@ body{
   color:var(--text);
 }
 
-/* Splash */
 #splash{
   position:fixed;
   inset:0;
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
   background:var(--bg);
   z-index:999;
+  font-size:22px;
 }
 
 /* Header */
@@ -49,7 +48,6 @@ header{
   padding:15px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 
 /* Controls */
@@ -80,7 +78,6 @@ header{
   background:black;
   position:sticky;
   top:0;
-  z-index:10;
 }
 
 /* Search */
@@ -117,7 +114,6 @@ header{
   padding:10px;
   background:var(--glass);
   border-radius:16px;
-  backdrop-filter:blur(10px);
   cursor:pointer;
 }
 
@@ -141,19 +137,12 @@ header{
   border-radius:10px;
   cursor:pointer;
 }
-
-.active{
-  border-left:4px solid var(--primary);
-}
 </style>
 </head>
 
 <body>
 
-<!-- Splash -->
-<div id="splash">
-  <h2>تابع</h2>
-</div>
+<div id="splash">جاري التحميل...</div>
 
 <header>
   <div>تابع</div>
@@ -170,7 +159,6 @@ header{
     <button onclick="setColor('#ffd700')">Gold</button>
     <button onclick="setColor('#007bff')">Blue</button>
     <button onclick="setColor('#ff3b30')">Red</button>
-    <button onclick="setColor('#a020f0')">Purple</button>
   </div>
 </div>
 
@@ -206,12 +194,16 @@ function updateUI(){
   document.getElementById("lightBtn").classList.toggle("active",t==="light");
 }
 
-/* Load JSON with no cache */
+/* Load JSON */
 async function loadData(){
-  const url = API + "?t=" + new Date().getTime();
-  const res = await fetch(url,{cache:"no-store"});
-  data=await res.json();
-  render();
+  try{
+    const url = API + "?t=" + new Date().getTime();
+    const res = await fetch(url,{cache:"no-store"});
+    data = await res.json();
+    render();
+  }catch(e){
+    console.error(e);
+  }
 }
 
 /* Player */
@@ -221,6 +213,35 @@ function playVideo(url){
       <source src="${url}" type="video/mp4">
     </video>
   `;
+}
+
+/* فتح عنصر */
+function openItem(item){
+
+  let html = `<div style="padding:15px;font-size:20px;font-weight:bold">
+                ${item.name_ar}
+              </div>`;
+
+  if(item.episodes && item.episodes.length){
+    item.episodes.forEach(ep=>{
+      html += `
+        <div class="episode" onclick="playVideo('${ep.url}')">
+          ▶ ${ep.title}
+        </div>
+      `;
+    });
+  }else{
+    html += `
+      <div style="padding:15px">
+        <button onclick="playVideo('${item.stream_url}')"
+        style="padding:12px;width:100%;background:var(--primary);border:none;border-radius:10px;">
+          تشغيل
+        </button>
+      </div>
+    `;
+  }
+
+  document.getElementById("content").innerHTML = html;
 }
 
 /* Render */
@@ -238,7 +259,7 @@ function render(){
     .filter(i=>i.name_ar.includes(search))
     .forEach(item=>{
       html+=`
-      <div class="card">
+      <div class="card" onclick='openItem(${JSON.stringify(item).replace(/"/g,"&quot;")})'>
         <img src="${item.image}">
         <div class="card-title">${item.name_ar}</div>
       </div>`;
@@ -248,40 +269,26 @@ function render(){
   });
 
   document.getElementById("content").innerHTML=html;
-  initRemote();
 }
 
-/* Remote control */
-function initRemote(){
-  cards=document.querySelectorAll(".card");
-  focusIndex=0;
-  highlight();
-}
-
-function highlight(){
-  cards.forEach(c=>c.style.outline="none");
-  if(cards[focusIndex]){
-    cards[focusIndex].style.outline="3px solid var(--primary)";
-    cards[focusIndex].scrollIntoView({behavior:"smooth",block:"center"});
-  }
-}
-
+/* Remote */
 document.addEventListener("keydown",(e)=>{
-  if(cards.length===0) return;
+  const items=document.querySelectorAll(".card");
+  if(!items.length)return;
 
   if(e.key==="ArrowRight"||e.key==="ArrowDown"){
-    focusIndex=(focusIndex+1)%cards.length;
-    highlight();
+    focusIndex=(focusIndex+1)%items.length;
   }
 
   if(e.key==="ArrowLeft"||e.key==="ArrowUp"){
-    focusIndex=(focusIndex-1+cards.length)%cards.length;
-    highlight();
+    focusIndex=(focusIndex-1+items.length)%items.length;
   }
 
   if(e.key==="Enter"){
-    cards[focusIndex].click();
+    items[focusIndex].click();
   }
+
+  items[focusIndex].scrollIntoView({behavior:"smooth",block:"center"});
 });
 
 /* Init */
@@ -290,13 +297,13 @@ setColor(localStorage.getItem("color")||"#ffd700");
 updateUI();
 loadData();
 
-/* Auto refresh JSON */
+/* Auto refresh */
 setInterval(loadData,30000);
 
 /* Splash */
-setTimeout(()=>document.getElementById("splash").style.display="none",1500);
+setTimeout(()=>document.getElementById("splash").style.display="none",1200);
 
-/* PWA Service Worker */
+/* PWA */
 if("serviceWorker" in navigator){
   const swCode=`
   self.addEventListener('install',e=>{
