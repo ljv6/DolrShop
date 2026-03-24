@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TABA3 TV</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #111;
+    color: #fff;
+}
+
+header {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+input {
+    padding: 10px;
+    width: 90%;
+    border-radius: 8px;
+    border: none;
+}
+
+.section {
+    margin: 20px 0;
+}
+
+.row {
+    display: flex;
+    overflow-x: auto;
+}
+
+.card {
+    min-width: 140px;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.card img {
+    width: 140px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.player {
+    width: 100%;
+    height: 300px;
+    background: black;
+}
+
+.badge {
+    background: red;
+    padding: 3px 6px;
+    font-size: 12px;
+    border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h2>تابع</h2>
+    <button onclick="loadData()">🔄</button>
+</header>
+
+<div style="padding:10px;">
+    <input id="search" placeholder="ابحث..." oninput="render()" />
+</div>
+
+<div id="playerContainer" class="player"></div>
+
+<div id="content"></div>
+
+<script>
+const API = "https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json";
+
+let data = null;
+let favorites = JSON.parse(localStorage.getItem("fav") || "[]");
+let continueWatching = JSON.parse(localStorage.getItem("cw") || "[]");
+
+let currentEpisode = null;
+
+async function loadData() {
+    const res = await fetch(API);
+    data = await res.json();
+    render();
+}
+
+function saveFav() {
+    localStorage.setItem("fav", JSON.stringify(favorites));
+}
+
+function saveCW() {
+    localStorage.setItem("cw", JSON.stringify(continueWatching));
+}
+
+function playVideo(url, item, epTitle="") {
+    currentEpisode = epTitle;
+
+    document.getElementById("playerContainer").innerHTML = `
+        <video controls autoplay width="100%" height="300">
+            <source src="${url}" type="video/mp4">
+        </video>
+    `;
+
+    // حفظ استئناف المشاهدة
+    if (!continueWatching.find(i => i.id === item.id)) {
+        continueWatching.unshift(item);
+        if (continueWatching.length > 10) continueWatching.pop();
+        saveCW();
+    }
+}
+
+function toggleFav(id) {
+    if (favorites.includes(id)) {
+        favorites = favorites.filter(f => f !== id);
+    } else {
+        favorites.push(id);
+    }
+    saveFav();
+    render();
+}
+
+function render() {
+    if (!data) return;
+
+    const search = document.getElementById("search").value.toLowerCase();
+
+    let html = "";
+
+    // Continue Watching
+    if (continueWatching.length > 0) {
+        html += `<div class="section"><h3>استئناف المشاهدة</h3><div class="row">`;
+        continueWatching.forEach(item => {
+            html += cardHTML(item);
+        });
+        html += `</div></div>`;
+    }
+
+    data.sections.forEach(section => {
+
+        html += `<div class="section">
+            <h3>${section.title_ar}</h3>
+            <div class="row">`;
+
+        section.channels
+        .filter(i => i.name_ar.includes(search) || (i.name_en || "").toLowerCase().includes(search))
+        .forEach(item => {
+            html += cardHTML(item);
+        });
+
+        html += `</div></div>`;
+    });
+
+    document.getElementById("content").innerHTML = html;
+}
+
+function cardHTML(item) {
+    const isFav = favorites.includes(item.id);
+
+    return `
+    <div class="card" onclick='openItem(${JSON.stringify(item)})'>
+        <img src="${item.image}">
+        <div>
+            ${item.name_ar}
+            ${isFav ? '<span class="badge">❤</span>' : ''}
+        </div>
+    </div>
+    `;
+}
+
+function openItem(item) {
+    let html = `<h2 style="padding:10px">${item.name_ar}</h2>`;
+
+    if (item.episodes && item.episodes.length > 0) {
+        html += `<div style="padding:10px">`;
+
+        item.episodes.forEach((ep, index) => {
+
+            const active = ep.title === currentEpisode;
+
+            html += `
+            <div onclick='playVideo("${ep.url}", ${JSON.stringify(item)}, "${ep.title}")'
+                 style="padding:10px;margin:5px;background:${active ? "#444" : "#222"};cursor:pointer;">
+                 ${active ? "▶ " : ""} ${ep.title}
+            </div>`;
+        });
+
+        html += `</div>`;
+    } else {
+        html += `<button onclick='playVideo("${item.stream_url}", ${JSON.stringify(item)})'
+            style="padding:10px;width:100%">تشغيل</button>`;
+    }
+
+    document.getElementById("content").innerHTML = html;
+}
+
+// تحديث تلقائي (كل 60 ثانية)
+setInterval(loadData, 60000);
+
+loadData();
+</script>
+
+</body>
+</html>
