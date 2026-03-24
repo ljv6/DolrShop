@@ -1,92 +1,476 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YouTube Vinyl Player</title>
-
 <style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
 body{
-  background:#0b1320;
+  background:#1a1a2e;
   color:white;
-  text-align:center;
-  font-family:Arial;
+  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  overflow-x:hidden;
 }
 
-.container{
-  max-width:400px;
-  margin:auto;
-  padding:20px;
-}
-
-.vinyl{
-  width:200px;
-  height:200px;
-  border-radius:50%;
-  background:#111;
-  margin:20px auto;
-  overflow:hidden;
+.player-wrapper{
   display:flex;
   align-items:center;
   justify-content:center;
+  gap:0;
+  margin:30px auto;
+  position:relative;
+  max-width:750px;
+  width:90%;
 }
 
-.vinyl img{
+/* Album Art Side */
+.album-side{
+  width:320px;
+  height:320px;
+  border-radius:16px;
+  overflow:hidden;
+  position:relative;
+  flex-shrink:0;
+  z-index:2;
+  box-shadow:0 10px 40px rgba(0,0,0,0.5);
+}
+
+.album-side img{
   width:100%;
   height:100%;
   object-fit:cover;
 }
 
-button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-size:16px;
+.album-overlay{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  padding:20px;
+  background:linear-gradient(transparent,rgba(0,0,0,0.85));
 }
 
-.play{background:#22c55e;}
-.pause{background:#ef4444;}
-.open{background:#3b82f6;}
+.song-title{
+  font-size:28px;
+  font-weight:bold;
+  margin-bottom:6px;
+  text-shadow:0 2px 8px rgba(0,0,0,0.6);
+}
 
-input{
+.artist-name{
+  font-size:16px;
+  opacity:0.85;
+  text-shadow:0 2px 8px rgba(0,0,0,0.6);
+}
+
+/* Vinyl Side */
+.vinyl-side{
+  position:relative;
+  width:300px;
+  height:320px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-right:-60px;
+  z-index:1;
+}
+
+.vinyl-disc{
+  width:280px;
+  height:280px;
+  border-radius:50%;
+  position:relative;
+  background:
+    radial-gradient(circle, #f5f0e8 0%, #f5f0e8 18%, transparent 18.5%),
+    radial-gradient(circle, transparent 18.5%, #e8e0d0 19%, #e8e0d0 19.5%, transparent 19.5%),
+    repeating-radial-gradient(
+      circle,
+      transparent 20%,
+      transparent 20.8%,
+      rgba(0,0,0,0.03) 20.8%,
+      rgba(0,0,0,0.03) 21%,
+      transparent 21%,
+      transparent 21.8%,
+      rgba(0,0,0,0.03) 21.8%,
+      rgba(0,0,0,0.03) 22%,
+      transparent 22%,
+      transparent 22.8%,
+      rgba(0,0,0,0.03) 22.8%,
+      rgba(0,0,0,0.03) 23%,
+      transparent 23%,
+      transparent 23.8%,
+      rgba(0,0,0,0.03) 23.8%,
+      rgba(0,0,0,0.03) 24%
+    );
+  background-color:#f0e8d8;
+  box-shadow:
+    0 0 0 4px #d4c9b5,
+    0 8px 30px rgba(0,0,0,0.4),
+    inset 0 0 60px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+}
+
+.vinyl-disc.spinning{
+  animation:spin 3s linear infinite;
+}
+
+@keyframes spin{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
+}
+
+/* Vinyl grooves */
+.vinyl-disc::before{
+  content:'';
+  position:absolute;
+  top:10%;left:10%;right:10%;bottom:10%;
+  border-radius:50%;
+  background:
+    repeating-radial-gradient(
+      circle,
+      transparent 0px,
+      transparent 3px,
+      rgba(0,0,0,0.04) 3px,
+      rgba(0,0,0,0.04) 4px,
+      transparent 4px,
+      transparent 7px,
+      rgba(0,0,0,0.03) 7px,
+      rgba(0,0,0,0.03) 8px
+    );
+  pointer-events:none;
+}
+
+/* Center label */
+.vinyl-label{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#f8f4ee,#efe8dc);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 2px 10px rgba(0,0,0,0.1);
+  border:2px solid #e0d5c5;
+  z-index:2;
+}
+
+.vinyl-label .label-title{
+  font-size:10px;
+  font-weight:bold;
+  color:#333;
+  text-align:center;
+  line-height:1.3;
+}
+
+.vinyl-label .label-artist{
+  font-size:7px;
+  color:#777;
+  margin-top:3px;
+  text-align:center;
+}
+
+.vinyl-label .label-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#d4c9b5;
+  margin-bottom:5px;
+  border:1px solid #bbb;
+}
+
+/* Tonearm */
+.tonearm-container{
+  position:absolute;
+  top:-15px;
+  left:-20px;
+  z-index:5;
+  width:160px;
+  height:160px;
+  pointer-events:none;
+}
+
+.tonearm{
+  position:absolute;
+  top:0;
+  left:60px;
+  width:4px;
+  height:130px;
+  transform-origin:top center;
+  transform:rotate(-30deg);
+  transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+.tonearm.active{
+  transform:rotate(0deg);
+}
+
+.tonearm-base{
+  position:absolute;
+  top:-8px;
+  left:50%;
+  transform:translateX(-50%);
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#888,#aaa);
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  z-index:3;
+}
+
+.tonearm-arm{
+  position:absolute;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:3px;
+  height:100px;
+  background:linear-gradient(to bottom,#999,#bbb);
+  border-radius:2px;
+}
+
+.tonearm-head{
+  position:absolute;
+  bottom:-15px;
+  left:50%;
+  transform:translateX(-50%) rotate(20deg);
+  width:10px;
+  height:18px;
+  background:#888;
+  border-radius:2px 2px 1px 1px;
+}
+
+/* Controls */
+.controls{
+  max-width:750px;
+  width:90%;
+  margin:10px auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+
+.input-row{
+  display:flex;
+  gap:10px;
   width:100%;
-  padding:10px;
-  border-radius:8px;
+  max-width:500px;
+  direction:ltr;
+}
+
+.input-row input{
+  flex:1;
+  padding:12px 16px;
+  border-radius:12px;
+  border:2px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.08);
+  color:white;
+  font-size:14px;
+  outline:none;
+  transition:border 0.3s;
+}
+
+.input-row input::placeholder{
+  color:rgba(255,255,255,0.4);
+}
+
+.input-row input:focus{
+  border-color:rgba(255,255,255,0.3);
+}
+
+.input-row button{
+  padding:12px 20px;
+  border-radius:12px;
   border:none;
-  margin-top:10px;
+  background:#6c5ce7;
+  color:white;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:bold;
+  transition:background 0.3s;
+  white-space:nowrap;
+}
+
+.input-row button:hover{
+  background:#5a4bd1;
+}
+
+.btn-row{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.btn-row button{
+  padding:12px 28px;
+  border-radius:50px;
+  border:none;
+  cursor:pointer;
+  font-size:15px;
+  font-weight:bold;
+  transition:all 0.3s;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.btn-play{
+  background:#22c55e;
+  color:white;
+  box-shadow:0 4px 15px rgba(34,197,94,0.3);
+}
+.btn-play:hover{background:#1db84d;}
+
+.btn-pause{
+  background:#ef4444;
+  color:white;
+  box-shadow:0 4px 15px rgba(239,68,68,0.3);
+}
+.btn-pause:hover{background:#dc3535;}
+
+.btn-open{
+  background:rgba(255,255,255,0.1);
+  color:white;
+  border:1px solid rgba(255,255,255,0.2) !important;
+}
+.btn-open:hover{background:rgba(255,255,255,0.2);}
+
+/* Song info text below */
+.now-playing{
+  font-size:13px;
+  opacity:0.5;
+  margin-top:5px;
+}
+
+/* Responsive */
+@media(max-width:700px){
+  .player-wrapper{
+    flex-direction:column;
+    gap:0;
+  }
+  .album-side{
+    width:280px;
+    height:280px;
+    border-radius:16px 16px 0 0;
+  }
+  .vinyl-side{
+    margin-right:0;
+    margin-top:-50px;
+    width:250px;
+    height:260px;
+  }
+  .vinyl-disc{
+    width:230px;
+    height:230px;
+  }
+  .vinyl-label{
+    width:75px;
+    height:75px;
+  }
+  .tonearm-container{
+    top:-10px;
+    left:-15px;
+  }
+}
+
+#player{
+  position:absolute;
+  top:-9999px;
+  left:-9999px;
+}
+
+/* Shine effect on vinyl */
+.vinyl-disc::after{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  border-radius:50%;
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,0.15) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(255,255,255,0.05) 100%
+  );
+  pointer-events:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="player-wrapper">
 
-  <h2>🎵 YouTube Vinyl Player</h2>
-
-  <div class="vinyl">
-    <img id="thumb" src="https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg">
+  <!-- Album Art -->
+  <div class="album-side">
+    <img id="thumb" src="https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg" alt="Album Art">
+    <div class="album-overlay">
+      <div class="song-title" id="songTitle">اسم الأغنية</div>
+      <div class="artist-name" id="artistName">اسم الفنان</div>
+    </div>
   </div>
 
-  <input id="url" placeholder="Paste YouTube URL here">
-
-  <button onclick="loadVideo()">Load Video</button>
-
-  <div id="player"></div>
-
-  <button class="play" onclick="playVideo()">▶️ Play</button>
-  <button class="pause" onclick="pauseVideo()">⏸ Pause</button>
-  <button class="open" onclick="openYT()">🔗 Open YouTube</button>
+  <!-- Vinyl -->
+  <div class="vinyl-side">
+    <div class="vinyl-disc" id="vinylDisc">
+      <div class="vinyl-label">
+        <div class="label-dot"></div>
+        <div class="label-title" id="labelTitle">انتحل<br>شخصيتك</div>
+        <div class="label-artist" id="labelArtist">YouTube Vinyl</div>
+      </div>
+    </div>
+    <div class="tonearm-container">
+      <div class="tonearm" id="tonearm">
+        <div class="tonearm-base"></div>
+        <div class="tonearm-arm">
+          <div class="tonearm-head"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
+<div class="controls">
 
+  <div class="input-row">
+    <input id="url" placeholder="Paste YouTube URL here...">
+    <button onclick="loadVideo()">تحميل</button>
+  </div>
+
+  <div class="input-row" style="max-width:500px;">
+    <input id="songInput" placeholder="Song title (اسم الأغنية)" style="flex:1;">
+    <input id="artistInput" placeholder="Artist (الفنان)" style="flex:1;">
+    <button onclick="updateInfo()">تحديث</button>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-play" onclick="playVideo()">▶ تشغيل</button>
+    <button class="btn-pause" onclick="pauseVideo()">⏸ إيقاف</button>
+    <button class="btn-open" onclick="openYT()">🔗 يوتيوب</button>
+  </div>
+
+  <div class="now-playing" id="status">في انتظار التشغيل...</div>
+
+</div>
+
+<div id="player"></div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
 let player;
 let currentVideoId = "dQw4w9WgXcQ";
+let isPlaying = false;
 
 function extractVideoId(url){
   let match = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
@@ -96,46 +480,72 @@ function extractVideoId(url){
 function loadVideo(){
   let url = document.getElementById("url").value;
   let id = extractVideoId(url);
-
-  if(!id){
-    alert("Invalid YouTube URL");
-    return;
-  }
-
+  if(!id){ alert("رابط يوتيوب غير صحيح"); return; }
   currentVideoId = id;
-
-  document.getElementById("thumb").src =
-    "https://img.youtube.com/vi/" + id + "/0.jpg";
-
-  if(player){
+  document.getElementById("thumb").src = "https://img.youtube.com/vi/" + id + "/hqdefault.jpg";
+  if(player && player.loadVideoById){
     player.loadVideoById(id);
+    startVinyl();
   } else {
-    player = new YT.Player('player', {
-      height: '0',
-      width: '0',
-      videoId: id
+    player = new YT.Player('player',{
+      height:'0', width:'0', videoId:id,
+      events:{ onReady:function(e){ e.target.playVideo(); startVinyl(); },
+               onStateChange:onPlayerStateChange }
     });
   }
+  document.getElementById("status").textContent = "جاري التشغيل...";
 }
 
 function onYouTubeIframeAPIReady(){
-  player = new YT.Player('player', {
-    height: '0',
-    width: '0',
-    videoId: currentVideoId
+  player = new YT.Player('player',{
+    height:'0', width:'0', videoId:currentVideoId,
+    events:{ onStateChange:onPlayerStateChange }
   });
 }
 
+function onPlayerStateChange(e){
+  if(e.data === YT.PlayerState.PLAYING){
+    startVinyl();
+  } else if(e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED){
+    stopVinyl();
+  }
+}
+
 function playVideo(){
-  if(player) player.playVideo();
+  if(player && player.playVideo) player.playVideo();
+  startVinyl();
+  document.getElementById("status").textContent = "جاري التشغيل ♫";
 }
 
 function pauseVideo(){
-  if(player) player.pauseVideo();
+  if(player && player.pauseVideo) player.pauseVideo();
+  stopVinyl();
+  document.getElementById("status").textContent = "متوقف مؤقتاً";
+}
+
+function startVinyl(){
+  isPlaying = true;
+  document.getElementById("vinylDisc").classList.add("spinning");
+  document.getElementById("tonearm").classList.add("active");
+}
+
+function stopVinyl(){
+  isPlaying = false;
+  document.getElementById("vinylDisc").classList.remove("spinning");
+  document.getElementById("tonearm").classList.remove("active");
 }
 
 function openYT(){
-  window.open("https://www.youtube.com/watch?v=" + currentVideoId, "_blank");
+  window.open("https://www.youtube.com/watch?v=" + currentVideoId,"_blank");
+}
+
+function updateInfo(){
+  let song = document.getElementById("songInput").value || "اسم الأغنية";
+  let artist = document.getElementById("artistInput").value || "اسم الفنان";
+  document.getElementById("songTitle").textContent = song;
+  document.getElementById("artistName").textContent = artist;
+  document.getElementById("labelTitle").textContent = song;
+  document.getElementById("labelArtist").textContent = artist;
 }
 </script>
 
