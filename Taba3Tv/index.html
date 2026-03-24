@@ -8,58 +8,122 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial;
-    background: #111;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0f0f0f;
     color: #fff;
 }
 
+/* Header */
 header {
-    padding: 15px;
+    padding: 15px 20px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 }
 
-input {
-    padding: 10px;
-    width: 90%;
-    border-radius: 8px;
+header h2 {
+    margin: 0;
+    font-weight: 800;
+}
+
+/* Search */
+.search {
+    padding: 0 20px;
+}
+.search input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
     border: none;
+    outline: none;
+    background: #1c1c1c;
+    color: #fff;
 }
 
+/* Player */
+.player {
+    width: 100%;
+    height: 220px;
+    background: black;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Sections */
 .section {
-    margin: 20px 0;
+    margin-top: 25px;
 }
 
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 0 20px;
+    margin-bottom: 10px;
+}
+
+/* Row */
 .row {
     display: flex;
     overflow-x: auto;
+    padding: 0 15px;
 }
 
+/* Card */
 .card {
-    min-width: 140px;
+    min-width: 150px;
     margin: 10px;
     cursor: pointer;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.05);
 }
 
 .card img {
-    width: 140px;
-    height: 200px;
+    width: 150px;
+    height: 210px;
     object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+}
+
+.card-title {
+    margin-top: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Episode */
+.episode {
+    padding: 12px;
+    margin: 6px 20px;
+    background: #1c1c1c;
     border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-.player {
-    width: 100%;
-    height: 300px;
-    background: black;
+.episode:hover {
+    background: #2a2a2a;
 }
 
+.active {
+    border-left: 4px solid #ffd700;
+    padding-left: 8px;
+}
+
+/* Badge */
 .badge {
     background: red;
-    padding: 3px 6px;
-    font-size: 12px;
-    border-radius: 5px;
+    padding: 3px 7px;
+    font-size: 11px;
+    border-radius: 6px;
+    margin-left: 5px;
 }
 </style>
 </head>
@@ -71,7 +135,7 @@ input {
     <button onclick="loadData()">🔄</button>
 </header>
 
-<div style="padding:10px;">
+<div class="search">
     <input id="search" placeholder="ابحث..." oninput="render()" />
 </div>
 
@@ -85,7 +149,6 @@ const API = "https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json";
 let data = null;
 let favorites = JSON.parse(localStorage.getItem("fav") || "[]");
 let continueWatching = JSON.parse(localStorage.getItem("cw") || "[]");
-
 let currentEpisode = null;
 
 async function loadData() {
@@ -106,17 +169,18 @@ function playVideo(url, item, epTitle="") {
     currentEpisode = epTitle;
 
     document.getElementById("playerContainer").innerHTML = `
-        <video controls autoplay width="100%" height="300">
+        <video controls autoplay width="100%" height="220">
             <source src="${url}" type="video/mp4">
         </video>
     `;
 
-    // حفظ استئناف المشاهدة
     if (!continueWatching.find(i => i.id === item.id)) {
         continueWatching.unshift(item);
         if (continueWatching.length > 10) continueWatching.pop();
         saveCW();
     }
+
+    render();
 }
 
 function toggleFav(id) {
@@ -133,22 +197,25 @@ function render() {
     if (!data) return;
 
     const search = document.getElementById("search").value.toLowerCase();
-
     let html = "";
 
     // Continue Watching
     if (continueWatching.length > 0) {
-        html += `<div class="section"><h3>استئناف المشاهدة</h3><div class="row">`;
+        html += `<div class="section">
+            <div class="section-title">استئناف المشاهدة</div>
+            <div class="row">`;
+
         continueWatching.forEach(item => {
             html += cardHTML(item);
         });
+
         html += `</div></div>`;
     }
 
     data.sections.forEach(section => {
 
         html += `<div class="section">
-            <h3>${section.title_ar}</h3>
+            <div class="section-title">${section.title_ar}</div>
             <div class="row">`;
 
         section.channels
@@ -169,7 +236,7 @@ function cardHTML(item) {
     return `
     <div class="card" onclick='openItem(${JSON.stringify(item)})'>
         <img src="${item.image}">
-        <div>
+        <div class="card-title">
             ${item.name_ar}
             ${isFav ? '<span class="badge">❤</span>' : ''}
         </div>
@@ -178,32 +245,35 @@ function cardHTML(item) {
 }
 
 function openItem(item) {
-    let html = `<h2 style="padding:10px">${item.name_ar}</h2>`;
+
+    let html = `<div style="padding:20px;font-size:20px;font-weight:bold">${item.name_ar}</div>`;
 
     if (item.episodes && item.episodes.length > 0) {
-        html += `<div style="padding:10px">`;
 
-        item.episodes.forEach((ep, index) => {
+        item.episodes.forEach(ep => {
 
             const active = ep.title === currentEpisode;
 
             html += `
-            <div onclick='playVideo("${ep.url}", ${JSON.stringify(item)}, "${ep.title}")'
-                 style="padding:10px;margin:5px;background:${active ? "#444" : "#222"};cursor:pointer;">
+            <div class="episode ${active ? "active" : ""}"
+                 onclick='playVideo("${ep.url}", ${JSON.stringify(item)}, "${ep.title}")'>
                  ${active ? "▶ " : ""} ${ep.title}
             </div>`;
         });
 
-        html += `</div>`;
     } else {
-        html += `<button onclick='playVideo("${item.stream_url}", ${JSON.stringify(item)})'
-            style="padding:10px;width:100%">تشغيل</button>`;
+        html += `<div style="padding:20px">
+            <button onclick='playVideo("${item.stream_url}", ${JSON.stringify(item)})'
+            style="padding:12px;width:100%;border:none;border-radius:10px;background:#ffd700;color:#000;font-weight:bold;">
+            تشغيل الآن
+            </button>
+        </div>`;
     }
 
     document.getElementById("content").innerHTML = html;
 }
 
-// تحديث تلقائي (كل 60 ثانية)
+// Auto refresh
 setInterval(loadData, 60000);
 
 loadData();
