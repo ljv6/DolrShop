@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chem AI Plus</title>
+
+<style>
+body{
+  background:#020617;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+.box{
+  width:370px;
+  margin:40px auto;
+  background:#0f172a;
+  padding:20px;
+  border-radius:15px;
+}
+
+button{
+  width:100%;
+  margin:6px 0;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+}
+
+#xpFill{
+  height:10px;
+  background:#22c55e;
+  width:0%;
+}
+
+.small{
+  font-size:12px;
+  color:#94a3b8;
+}
+
+.achievement{
+  background:#f59e0b;
+  margin-top:5px;
+  padding:5px;
+  border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2 id="info"></h2>
+
+  <div style="background:#1e293b;">
+    <div id="xpFill"></div>
+  </div>
+
+  <h3 id="question"></h3>
+
+  <button onclick="answer(0)" id="b0"></button>
+  <button onclick="answer(1)" id="b1"></button>
+  <button onclick="answer(2)" id="b2"></button>
+
+  <button onclick="speak()">🔊 Pronounce</button>
+
+  <p id="feedback"></p>
+  <p id="explain" class="small"></p>
+
+  <div id="achievements"></div>
+
+  <p class="small" id="stats"></p>
+
+  <button onclick="next()">Next</button>
+  <button onclick="reset()">Reset</button>
+</div>
+
+<script>
+let xp = parseInt(localStorage.getItem("xp")) || 0;
+let combo = 0;
+let correct = parseInt(localStorage.getItem("correct")) || 0;
+let wrong = parseInt(localStorage.getItem("wrong")) || 0;
+let achievements = JSON.parse(localStorage.getItem("ach")) || [];
+let weak = JSON.parse(localStorage.getItem("weak")) || {};
+
+const data = [
+{word:"Acid",def:"Donates H+",type:"def"},
+{word:"Base",def:"Accepts H+",type:"def"},
+{word:"Evaporation",def:"Liquid to Gas",type:"def"},
+{word:"Exothermic",def:"Releases heat",type:"def"},
+{word:"NaCl",def:"Salt",type:"def"}
+];
+
+let currentQ;
+
+// 🤖 توليد سؤال ذكي
+function generateQuestion(){
+  let item;
+
+  // 30% يجيب من نقاط ضعفك
+  if(Math.random() < 0.3 && Object.keys(weak).length > 0){
+    let keys = Object.keys(weak);
+    item = data.find(d => d.word === keys[Math.floor(Math.random()*keys.length)]);
+  } else {
+    item = data[Math.floor(Math.random()*data.length)];
+  }
+
+  let wrongAnswers = data
+    .filter(d => d.word !== item.word)
+    .map(d => d.def)
+    .sort(()=>Math.random()-0.5)
+    .slice(0,2);
+
+  let options = [item.def, ...wrongAnswers];
+  options.sort(()=>Math.random()-0.5);
+
+  currentQ = {
+    q: "What is " + item.word + "?",
+    options: options,
+    answer: options.indexOf(item.def),
+    explain: item.word + " = " + item.def,
+    word: item.word
+  };
+}
+
+function load(){
+  generateQuestion();
+
+  document.getElementById("info").innerText =
+    "XP: " + xp + " | Combo 🔥 " + combo;
+
+  document.getElementById("question").innerText = currentQ.q;
+
+  for(let i=0;i<3;i++){
+    document.getElementById("b"+i).innerText = currentQ.options[i];
+  }
+
+  document.getElementById("feedback").innerText="";
+  document.getElementById("explain").innerText="";
+
+  document.getElementById("stats").innerText =
+    "Correct: " + correct + " | Wrong: " + wrong;
+
+  updateXP();
+}
+
+// 🔊 نطق
+function speak(){
+  let msg = new SpeechSynthesisUtterance(currentQ.q);
+  msg.lang = "en-US";
+  speechSynthesis.speak(msg);
+}
+
+function answer(i){
+  if(i === currentQ.answer){
+    combo++;
+    xp += 10 + combo;
+    correct++;
+    document.getElementById("feedback").innerText="✅ Correct!";
+  } else {
+    combo = 0;
+    xp -= 5;
+    wrong++;
+    weak[currentQ.word] = true;
+    document.getElementById("feedback").innerText="❌ Wrong!";
+  }
+
+  document.getElementById("explain").innerText = currentQ.explain;
+
+  checkAchievements();
+  save();
+  updateXP();
+}
+
+function updateXP(){
+  document.getElementById("xpFill").style.width = (xp % 100) + "%";
+}
+
+function next(){
+  load();
+}
+
+// 🏆 إنجازات
+function checkAchievements(){
+  if(correct >= 5 && !achievements.includes("Beginner")){
+    addAch("🎉 Beginner");
+  }
+  if(combo >= 4 && !achievements.includes("Combo")){
+    addAch("🔥 Combo Beast");
+  }
+  if(correct >= 20 && !achievements.includes("Pro")){
+    addAch("🧪 Chem Pro");
+  }
+}
+
+function addAch(text){
+  achievements.push(text);
+  let div = document.createElement("div");
+  div.className="achievement";
+  div.innerText=text;
+  document.getElementById("achievements").appendChild(div);
+}
+
+// 💾 حفظ
+function save(){
+  localStorage.setItem("xp", xp);
+  localStorage.setItem("correct", correct);
+  localStorage.setItem("wrong", wrong);
+  localStorage.setItem("ach", JSON.stringify(achievements));
+  localStorage.setItem("weak", JSON.stringify(weak));
+}
+
+// 🔄 إعادة
+function reset(){
+  localStorage.clear();
+  location.reload();
+}
+
+load();
+</script>
+
+</body>
+</html>
