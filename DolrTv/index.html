@@ -20,17 +20,19 @@ body {
     background: var(--bg-dark);
     color: white;
     margin: 0;
+    padding-top: 60px;
 }
 .app-bar {
     position: fixed;
     top: 0;
     width: 100%;
+    height: 60px;
     background: var(--bg-card);
-    padding: 15px;
+    display: flex;
+    align-items: center;
+    padding: 10px;
 }
-.content-container {
-    padding: 70px 15px;
-}
+.content-container { padding: 15px; }
 .items-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -55,11 +57,27 @@ body {
     background: #1a1e2e;
     padding: 10px;
     margin: 5px;
+    text-align: center;
     cursor: pointer;
 }
 video {
     width: 100%;
     margin-bottom: 10px;
+}
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+}
+.modal-content {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: var(--bg-card);
+    padding: 15px;
 }
 </style>
 </head>
@@ -69,8 +87,8 @@ video {
 <div class="app-bar">Dolr Tv</div>
 <div class="content-container" id="main-content"></div>
 
-<div id="episodeModal" style="display:none; position:fixed; top:0; width:100%; height:100%; background:#000c;">
-    <div style="background:#111; position:absolute; bottom:0; width:100%; padding:10px;">
+<div class="modal" id="episodeModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
         <h3 id="modalTitle"></h3>
         <video id="videoPlayer" controls style="display:none;"></video>
         <div id="episodesGrid"></div>
@@ -80,71 +98,49 @@ video {
 <script>
 
 // 🔥 بيانات البوت
-const TELEGRAM_BOT_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
-const TELEGRAM_CHAT_ID = "591768998";
+const TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+const CHAT_ID = "591768998";
 
 let appData = null;
 let currentEpisodes = [];
 let currentEpisodeIndex = null;
 
-// ✅ جلب معلومات الجهاز
-function getDeviceInfo() {
-    const ua = navigator.userAgent;
-
-    let deviceType = "كمبيوتر";
-    if (/mobile/i.test(ua)) deviceType = "جوال";
-    if (/tablet/i.test(ua)) deviceType = "تابلت";
-
-    return {
-        deviceType,
-        ua,
-        platform: navigator.platform,
-        lang: navigator.language,
-        screen: screen.width + "x" + screen.height
-    };
-}
-
-// ✅ إرسال تيليجرام
-async function sendToTelegram(message) {
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text: message
-        })
-    });
-}
-
-// تحميل البيانات
+// ✅ تحميل البيانات
 async function loadData() {
-    const res = await fetch('https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json?t=' + Date.now());
-    appData = await res.json();
-    renderContent();
+    try {
+        const res = await fetch('https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json?t=' + Date.now());
+        appData = await res.json();
+        renderContent();
+    } catch (err) {
+        console.error("خطأ تحميل البيانات:", err);
+    }
 }
 
+// ✅ عرض المحتوى
 function renderContent() {
     const container = document.getElementById('main-content');
     container.innerHTML = '';
 
     appData.sections.forEach(section => {
         container.innerHTML += `
-        <h2>${section.title_ar}</h2>
-        <div class="items-grid">
-        ${section.channels.map(item => `
-            <div class="item-card" onclick="openEpisodes('${item.name_ar}', ${item.id})">
-                <div class="poster-wrapper">
-                    <img src="${item.image}" class="item-poster">
-                </div>
-                <div>${item.name_ar}</div>
+            <h2>${section.title_ar}</h2>
+            <div class="items-grid">
+                ${section.channels.map(item => `
+                    <div class="item-card" onclick="openEpisodes('${item.name_ar}', ${item.id})">
+                        <div class="poster-wrapper">
+                            <img src="${item.image}" class="item-poster">
+                        </div>
+                        <div>${item.name_ar}</div>
+                    </div>
+                `).join('')}
             </div>
-        `).join('')}
-        </div>`;
+        `;
     });
 }
 
+// ✅ فتح الحلقات
 function openEpisodes(name, id) {
-    let selected;
+    let selected = null;
 
     appData.sections.forEach(sec => {
         const found = sec.channels.find(c => c.id === id);
@@ -164,39 +160,78 @@ function openEpisodes(name, id) {
     document.getElementById('episodeModal').style.display = 'block';
 }
 
-// 🔥 تشغيل الحلقة + إرسال إشعار
+// ✅ معلومات الجهاز
+function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    return {
+        type: /mobile/i.test(ua) ? "جوال" : "كمبيوتر",
+        platform: navigator.platform,
+        lang: navigator.language,
+        screen: screen.width + "x" + screen.height,
+        ua: ua
+    };
+}
+
+// ✅ إرسال تيليجرام (مضبوط بدون تعليق الموقع)
+function sendToTelegram(msg) {
+    fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: msg
+        })
+    }).catch(() => {});
+}
+
+// ✅ تشغيل الحلقة (مستقر)
 function playEpisode(index) {
     const ep = currentEpisodes[index];
     currentEpisodeIndex = index;
 
     const video = document.getElementById('videoPlayer');
+
     video.src = ep.url;
     video.style.display = 'block';
-    video.play();
 
-    const device = getDeviceInfo();
-    const now = new Date().toLocaleString('ar-SA');
+    // 🔥 حل مشكلة التشغيل
+    video.load();
+    video.play().catch(() => {});
 
-    const series = document.getElementById('modalTitle').innerText;
+    // 🔥 إرسال الإشعار بدون ما يخرب التشغيل
+    setTimeout(() => {
+        const device = getDeviceInfo();
+        const time = new Date().toLocaleString('ar-SA');
+        const series = document.getElementById('modalTitle').innerText;
 
-    const message = `
-🚀 تشغيل جديد
+        const message = `
+📺 تشغيل جديد
 
-🎬 المسلسل: ${series}
-🎞️ الحلقة: ${ep.title}
+🎬 ${series}
+🎞️ ${ep.title}
 
-⏰ الوقت: ${now}
+⏰ ${time}
 
-📱 الجهاز: ${device.deviceType}
-🖥️ النظام: ${device.platform}
-🌍 اللغة: ${device.lang}
-📺 الشاشة: ${device.screen}
+📱 ${device.type}
+💻 ${device.platform}
+📺 ${device.screen}
+🌍 ${device.lang}
 
-🧠 UA:
 ${device.ua}
 `;
 
-    sendToTelegram(message);
+        sendToTelegram(message);
+    }, 500);
+}
+
+// إغلاق
+function closeModal(e) {
+    if (e.target.id === 'episodeModal') {
+        const video = document.getElementById('videoPlayer');
+        video.pause();
+        video.src = '';
+        document.getElementById('episodeModal').style.display = 'none';
+    }
 }
 
 window.onload = loadData;
