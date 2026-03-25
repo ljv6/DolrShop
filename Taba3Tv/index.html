@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>TABA3 TV</title>
+<title>Taba3Tv</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000">
@@ -18,13 +18,6 @@
   --glass:rgba(255,255,255,0.08);
 }
 
-.light{
-  --bg:#f5f5f5;
-  --card:#fff;
-  --text:#000;
-  --glass:rgba(0,0,0,0.05);
-}
-
 body{
   margin:0;
   font-family:-apple-system,sans-serif;
@@ -32,25 +25,12 @@ body{
   color:var(--text);
 }
 
-#splash{
-  position:fixed;
-  inset:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:var(--bg);
-  z-index:999;
-  font-size:22px;
-}
-
-/* Header */
 header{
   padding:15px;
   display:flex;
   justify-content:space-between;
 }
 
-/* Controls */
 .controls{
   display:flex;
   justify-content:space-between;
@@ -66,12 +46,6 @@ header{
   color:var(--text);
 }
 
-.controls button.active{
-  background:var(--primary);
-  color:#000;
-}
-
-/* Player */
 .player{
   width:100%;
   height:220px;
@@ -80,7 +54,6 @@ header{
   top:0;
 }
 
-/* Search */
 .search{
   padding:10px 15px;
 }
@@ -94,20 +67,17 @@ header{
   color:var(--text);
 }
 
-/* Sections */
 .section-title{
   padding:10px 15px;
   font-weight:bold;
 }
 
-/* Row */
 .row{
   display:flex;
   overflow-x:auto;
   padding:0 10px;
 }
 
-/* Card */
 .card{
   min-width:150px;
   margin:10px;
@@ -129,7 +99,6 @@ header{
   font-size:13px;
 }
 
-/* Episode */
 .episode{
   margin:8px 15px;
   padding:12px;
@@ -142,23 +111,19 @@ header{
 
 <body>
 
-<div id="splash">جاري التحميل...</div>
-
 <header>
-  <div>تابع</div>
+  <div>Taba3Tv</div>
   <button onclick="loadData()">🔄</button>
 </header>
 
 <div class="controls">
   <div>
-    <button onclick="setTheme('dark')" id="darkBtn">Dark</button>
-    <button onclick="setTheme('light')" id="lightBtn">Light</button>
+    <button onclick="setTheme('dark')">Dark</button>
+    <button onclick="setTheme('light')">Light</button>
   </div>
-
   <div>
     <button onclick="setColor('#ffd700')">Gold</button>
     <button onclick="setColor('#007bff')">Blue</button>
-    <button onclick="setColor('#ff3b30')">Red</button>
   </div>
 </div>
 
@@ -170,81 +135,131 @@ header{
 <div id="content"></div>
 
 <script>
-const API="https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json";
 
-let data=null;
-let cards=[];
-let focusIndex=0;
+/* ================= TELEGRAM ================= */
+const BOT_TOKEN="8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+const CHAT_ID="591768998";
 
-/* Theme */
-function setTheme(t){
-  document.body.classList.toggle("light",t==="light");
-  localStorage.setItem("theme",t);
-  updateUI();
+function sendTelegram(text){
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({chat_id:CHAT_ID,text})
+  }).catch(()=>{});
 }
 
-function setColor(c){
-  document.documentElement.style.setProperty("--primary",c);
-  localStorage.setItem("color",c);
-}
-
-function updateUI(){
-  const t=localStorage.getItem("theme")||"dark";
-  document.getElementById("darkBtn").classList.toggle("active",t==="dark");
-  document.getElementById("lightBtn").classList.toggle("active",t==="light");
-}
-
-/* Load JSON */
-async function loadData(){
-  try{
-    const url = API + "?t=" + new Date().getTime();
-    const res = await fetch(url,{cache:"no-store"});
-    data = await res.json();
-    render();
-  }catch(e){
-    console.error(e);
+/* ================= DEVICE ================= */
+function getDeviceId(){
+  let id=localStorage.getItem("taba3_id");
+  if(!id){
+    id=Math.random().toString(36).substring(2,10);
+    localStorage.setItem("taba3_id",id);
   }
+  return id;
 }
 
-/* Player */
+function getDevice(){
+  const ua=navigator.userAgent;
+  let type="كمبيوتر";
+
+  if(/iPhone/i.test(ua)) type="iPhone";
+  else if(/Android/i.test(ua)) type="Android";
+  else if(/iPad/i.test(ua)) type="iPad";
+
+  let browser="Unknown";
+  if(/Chrome/i.test(ua)) browser="Chrome";
+  else if(/Safari/i.test(ua)) browser="Safari";
+
+  return {
+    type,
+    screen:screen.width+"x"+screen.height,
+    lang:navigator.language,
+    platform:navigator.platform,
+    ua,
+    browser
+  };
+}
+
+/* ================= SEND EVENT ================= */
+function sendEvent(title, extra=""){
+  const d=getDevice();
+  const id=getDeviceId();
+  const time=new Date().toLocaleString('ar-SA');
+
+  sendTelegram(`
+${title}
+
+🆔 ID: ${id}
+⏰ ${time}
+
+📱 الجهاز: ${d.type}
+🌐 المتصفح: ${d.browser}
+💻 النظام: ${d.platform}
+📺 الشاشة: ${d.screen}
+🌍 اللغة: ${d.lang}
+
+🧾 UA:
+${d.ua}
+
+${extra}
+
+Taba3Tv
+`);
+}
+
+/* ================= LOAD ================= */
+const API="https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json";
+let data=null;
+
+async function loadData(){
+  const res=await fetch(API+"?t="+Date.now());
+  data=await res.json();
+  render();
+}
+
+/* ================= PLAYER ================= */
 function playVideo(url){
   document.getElementById("playerContainer").innerHTML=`
-    <video controls autoplay width="100%" height="220">
-      <source src="${url}" type="video/mp4">
+    <video id="video" controls autoplay width="100%" height="220">
+      <source src="${url}">
     </video>
   `;
+
+  const video=document.getElementById("video");
+
+  video.addEventListener("pause",()=>{
+    sendEvent("⏸️ إيقاف");
+  });
+
+  video.addEventListener("play",()=>{
+    sendEvent("▶️ تشغيل / استئناف");
+  });
 }
 
-/* فتح عنصر */
+/* ================= OPEN ITEM ================= */
 function openItem(item){
 
-  let html = `<div style="padding:15px;font-size:20px;font-weight:bold">
-                ${item.name_ar}
-              </div>`;
+  sendEvent("📺 فتح عنصر", `🎬 ${item.name_ar}`);
 
-  if(item.episodes && item.episodes.length){
+  let html=`<div style="padding:15px;font-size:20px;font-weight:bold">${item.name_ar}</div>`;
+
+  if(item.episodes){
     item.episodes.forEach(ep=>{
-      html += `
-        <div class="episode" onclick="playVideo('${ep.url}')">
-          ▶ ${ep.title}
-        </div>
-      `;
+      html+=`<div class="episode" onclick="playVideo('${ep.url}')">▶ ${ep.title}</div>`;
     });
   }else{
-    html += `
-      <div style="padding:15px">
-        <button onclick="playVideo('${item.stream_url}')"
-        style="padding:12px;width:100%;background:var(--primary);border:none;border-radius:10px;">
-          تشغيل
-        </button>
-      </div>
-    `;
+    html+=`<div style="padding:15px">
+      <button onclick="playVideo('${item.stream_url}')"
+      style="padding:12px;width:100%;background:var(--primary);border:none;border-radius:10px;">
+      تشغيل
+      </button>
+    </div>`;
   }
 
-  document.getElementById("content").innerHTML = html;
+  document.getElementById("content").innerHTML=html;
 }
 
-/* Render */
+/* ================= RENDER ================= */
 function render(){
   if(!data)return;
 
@@ -252,8 +267,7 @@ function render(){
   let html="";
 
   data.sections.forEach(section=>{
-    html+=`<div class="section-title">${section.title_ar}</div>
-    <div class="row">`;
+    html+=`<div class="section-title">${section.title_ar}</div><div class="row">`;
 
     section.channels
     .filter(i=>i.name_ar.includes(search))
@@ -271,52 +285,12 @@ function render(){
   document.getElementById("content").innerHTML=html;
 }
 
-/* Remote */
-document.addEventListener("keydown",(e)=>{
-  const items=document.querySelectorAll(".card");
-  if(!items.length)return;
+/* ================= INIT ================= */
+window.onload=function(){
+  loadData();
+  sendEvent("👀 دخول الموقع");
+};
 
-  if(e.key==="ArrowRight"||e.key==="ArrowDown"){
-    focusIndex=(focusIndex+1)%items.length;
-  }
-
-  if(e.key==="ArrowLeft"||e.key==="ArrowUp"){
-    focusIndex=(focusIndex-1+items.length)%items.length;
-  }
-
-  if(e.key==="Enter"){
-    items[focusIndex].click();
-  }
-
-  items[focusIndex].scrollIntoView({behavior:"smooth",block:"center"});
-});
-
-/* Init */
-setTheme(localStorage.getItem("theme")||"dark");
-setColor(localStorage.getItem("color")||"#ffd700");
-updateUI();
-loadData();
-
-/* Auto refresh */
-setInterval(loadData,30000);
-
-/* Splash */
-setTimeout(()=>document.getElementById("splash").style.display="none",1200);
-
-/* PWA */
-if("serviceWorker" in navigator){
-  const swCode=`
-  self.addEventListener('install',e=>{
-    e.waitUntil(caches.open('app').then(c=>c.add('/')));
-  });
-  self.addEventListener('fetch',e=>{
-    e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
-  });
-  `;
-  const blob=new Blob([swCode],{type:"text/javascript"});
-  const swURL=URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swURL);
-}
 </script>
 
 </body>
