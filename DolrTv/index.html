@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dolr Tv</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg-dark: #07090f;
+    --bg-card: #11141d;
+    --accent-gold: #cfa864;
+}
+body {
+    font-family: 'Tajawal', sans-serif;
+    background: var(--bg-dark);
+    color: white;
+    margin: 0;
+    padding-top: 60px;
+}
+.app-bar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 60px;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+.content-container { padding: 15px; }
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+.item-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    cursor: pointer;
+}
+.poster-wrapper { padding-top: 140%; position: relative; }
+.item-poster {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.episode-btn {
+    background: #1a1e2e;
+    padding: 10px;
+    margin: 5px;
+    text-align: center;
+    cursor: pointer;
+}
+video { width: 100%; margin-bottom: 10px; }
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+}
+.modal-content {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: var(--bg-card);
+    padding: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app-bar">Dolr Tv</div>
+<div class="content-container" id="main-content"></div>
+
+<div class="modal" id="episodeModal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 id="modalTitle"></h3>
+        <video id="videoPlayer" controls style="display:none;"></video>
+        <div id="episodesGrid"></div>
+    </div>
+</div>
+
+<script>
+
+// 🔥 بيانات البوت
+const TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+const CHAT_ID = "591768998";
+
+// 🔥 معلومات الجهاز
+function getDevice() {
+    return {
+        type: /mobile/i.test(navigator.userAgent) ? "جوال" : "كمبيوتر",
+        platform: navigator.platform,
+        screen: screen.width + "x" + screen.height,
+        ua: navigator.userAgent
+    };
+}
+
+// 🌐 IP
+async function getIP() {
+    try {
+        const r = await fetch("https://ipapi.co/json/");
+        return await r.json();
+    } catch { return {}; }
+}
+
+// 📩 إرسال
+function send(msg) {
+    fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({chat_id: CHAT_ID, text: msg})
+    }).catch(()=>{});
+}
+
+let appData = null;
+let currentEpisodes = [];
+let currentEpisodeIndex = null;
+
+// 🔥 إشعار دخول
+async function sendVisit() {
+    const device = getDevice();
+    const ip = await getIP();
+    const time = new Date().toLocaleString('ar-SA');
+
+    send(`
+👀 دخول جديد
+
+⏰ ${time}
+
+📱 ${device.type}
+💻 ${device.platform}
+📺 ${device.screen}
+
+🌐 ${ip.ip || ""}
+🌍 ${ip.country_name || ""} - ${ip.city || ""}
+
+${device.ua}
+`);
+}
+
+// تحميل
+async function loadData() {
+    const res = await fetch('https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json?t=' + Date.now());
+    appData = await res.json();
+    renderContent();
+
+    sendVisit(); // 🔥 هنا إشعار الدخول
+}
+
+const contentContainer = document.getElementById('main-content');
+
+function renderContent() {
+    contentContainer.innerHTML = '';
+
+    appData.sections.forEach(section => {
+        contentContainer.innerHTML += `
+        <h2>${section.title_ar}</h2>
+        <div class="items-grid">
+        ${section.channels.map(item => `
+            <div class="item-card" onclick="openEpisodes('${item.name_ar}', ${item.id})">
+                <div class="poster-wrapper">
+                    <img src="${item.image}" class="item-poster">
+                </div>
+                <div>${item.name_ar}</div>
+            </div>
+        `).join('')}
+        </div>`;
+    });
+}
+
+function openEpisodes(name, id) {
+    let selected;
+
+    appData.sections.forEach(sec => {
+        const found = sec.channels.find(c => c.id === id);
+        if (found) selected = found;
+    });
+
+    if (!selected) return;
+
+    document.getElementById('modalTitle').innerText = name;
+    currentEpisodes = selected.episodes;
+
+    document.getElementById('episodesGrid').innerHTML =
+        currentEpisodes.map((ep, i) =>
+            `<div class="episode-btn" onclick="playEpisode(${i})">${ep.title}</div>`
+        ).join('');
+
+    document.getElementById('episodeModal').style.display = 'block';
+}
+
+// 🔥 تشغيل
+async function playEpisode(index) {
+    const ep = currentEpisodes[index];
+    currentEpisodeIndex = index;
+
+    const video = document.getElementById('videoPlayer');
+    video.src = ep.url;
+    video.style.display = 'block';
+    video.play();
+
+    const time = new Date().toLocaleString('ar-SA');
+
+    send(`
+▶️ تشغيل
+
+🎬 ${modalTitle.innerText}
+🎞️ ${ep.title}
+
+⏰ ${time}
+`);
+}
+
+// 🔥 تتبع إيقاف وتشغيل
+const video = document.getElementById('videoPlayer');
+
+video.addEventListener('pause', () => {
+    send(`
+⏸️ إيقاف
+
+🎬 ${modalTitle.innerText}
+⏱️ عند: ${Math.floor(video.currentTime)} ثانية
+`);
+});
+
+video.addEventListener('play', () => {
+    send(`
+▶️ استئناف
+
+🎬 ${modalTitle.innerText}
+⏱️ عند: ${Math.floor(video.currentTime)} ثانية
+`);
+});
+
+function closeModal(e) {
+    if (e.target.id === 'episodeModal') {
+        const v = document.getElementById('videoPlayer');
+        v.pause();
+        v.src = '';
+        document.getElementById('episodeModal').style.display = 'none';
+    }
+}
+
+window.onload = loadData;
+
+</script>
+
+</body>
+</html>
