@@ -1,36 +1,57 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Taba3Tv</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --primary:#ffd700;
-  --bg:#0f0f0f;
-  --card:rgba(255,255,255,0.06);
-  --text:#fff;
-  --glass:rgba(255,255,255,0.08);
+:root {
+  --bg-dark: #07090f;
+  --bg-card: #11141d;
+  --accent-gold: #cfa864;
+  --text-primary: #ffffff;
+  --glass: rgba(255,255,255,0.05);
+}
+
+.light{
+  --bg-dark:#f5f5f5;
+  --bg-card:#ffffff;
+  --text-primary:#000;
+  --glass:rgba(0,0,0,0.05);
 }
 
 body{
   margin:0;
-  font-family:-apple-system,sans-serif;
-  background:var(--bg);
-  color:var(--text);
+  font-family:'Tajawal',sans-serif;
+  background:var(--bg-dark);
+  color:var(--text-primary);
+  padding-top:60px;
 }
 
+/* Header (Dolr style) */
 header{
-  padding:15px;
+  position:fixed;
+  top:0;
+  width:100%;
+  height:60px;
+  background:var(--bg-card);
   display:flex;
+  align-items:center;
   justify-content:space-between;
+  padding:0 15px;
+  z-index:10;
 }
 
+header div{
+  color:var(--accent-gold);
+  font-weight:bold;
+}
+
+/* Controls */
 .controls{
   display:flex;
   justify-content:space-between;
@@ -38,22 +59,20 @@ header{
 }
 
 .controls button{
-  padding:6px 10px;
+  background:#1a1e2e;
+  color:white;
   border:none;
   border-radius:8px;
+  padding:6px 10px;
   cursor:pointer;
-  background:var(--glass);
-  color:var(--text);
 }
 
-.player{
-  width:100%;
-  height:220px;
-  background:black;
-  position:sticky;
-  top:0;
+.controls button.active{
+  background:var(--accent-gold);
+  color:black;
 }
 
+/* Search */
 .search{
   padding:10px 15px;
 }
@@ -61,49 +80,63 @@ header{
 .search input{
   width:100%;
   padding:12px;
-  border-radius:12px;
+  border-radius:10px;
   border:none;
-  background:var(--card);
-  color:var(--text);
+  background:var(--bg-card);
+  color:var(--text-primary);
 }
 
+/* Sections */
 .section-title{
-  padding:10px 15px;
+  margin:10px 15px;
+  padding-right:10px;
+  border-right:3px solid var(--accent-gold);
   font-weight:bold;
 }
 
+/* Grid like Dolr */
 .row{
-  display:flex;
-  overflow-x:auto;
-  padding:0 10px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:10px;
 }
 
+/* Cards */
 .card{
-  min-width:150px;
-  margin:10px;
-  padding:10px;
-  background:var(--glass);
-  border-radius:16px;
+  background:var(--bg-card);
+  border-radius:10px;
+  overflow:hidden;
   cursor:pointer;
 }
 
 .card img{
   width:100%;
-  height:200px;
+  height:180px;
   object-fit:cover;
-  border-radius:12px;
 }
 
 .card-title{
-  margin-top:6px;
+  text-align:center;
+  padding:6px;
   font-size:13px;
 }
 
+/* Player */
+.player{
+  width:100%;
+  height:220px;
+  background:black;
+  position:sticky;
+  top:60px;
+}
+
+/* Episode */
 .episode{
   margin:8px 15px;
   padding:12px;
-  background:var(--glass);
-  border-radius:10px;
+  background:var(--bg-card);
+  border-radius:8px;
   cursor:pointer;
 }
 </style>
@@ -118,12 +151,14 @@ header{
 
 <div class="controls">
   <div>
-    <button onclick="setTheme('dark')">Dark</button>
-    <button onclick="setTheme('light')">Light</button>
+    <button onclick="setTheme('dark')" id="darkBtn">Dark</button>
+    <button onclick="setTheme('light')" id="lightBtn">Light</button>
   </div>
+
   <div>
     <button onclick="setColor('#ffd700')">Gold</button>
     <button onclick="setColor('#007bff')">Blue</button>
+    <button onclick="setColor('#ff3b30')">Red</button>
   </div>
 </div>
 
@@ -135,122 +170,63 @@ header{
 <div id="content"></div>
 
 <script>
-
-/* ================= TELEGRAM ================= */
-const BOT_TOKEN="8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
-const CHAT_ID="591768998";
-
-function sendTelegram(text){
-  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({chat_id:CHAT_ID,text})
-  }).catch(()=>{});
-}
-
-/* ================= DEVICE ================= */
-function getDeviceId(){
-  let id=localStorage.getItem("taba3_id");
-  if(!id){
-    id=Math.random().toString(36).substring(2,10);
-    localStorage.setItem("taba3_id",id);
-  }
-  return id;
-}
-
-function getDevice(){
-  const ua=navigator.userAgent;
-  let type="كمبيوتر";
-
-  if(/iPhone/i.test(ua)) type="iPhone";
-  else if(/Android/i.test(ua)) type="Android";
-  else if(/iPad/i.test(ua)) type="iPad";
-
-  let browser="Unknown";
-  if(/Chrome/i.test(ua)) browser="Chrome";
-  else if(/Safari/i.test(ua)) browser="Safari";
-
-  return {
-    type,
-    screen:screen.width+"x"+screen.height,
-    lang:navigator.language,
-    platform:navigator.platform,
-    ua,
-    browser
-  };
-}
-
-/* ================= SEND EVENT ================= */
-function sendEvent(title, extra=""){
-  const d=getDevice();
-  const id=getDeviceId();
-  const time=new Date().toLocaleString('ar-SA');
-
-  sendTelegram(`
-${title}
-
-🆔 ID: ${id}
-⏰ ${time}
-
-📱 الجهاز: ${d.type}
-🌐 المتصفح: ${d.browser}
-💻 النظام: ${d.platform}
-📺 الشاشة: ${d.screen}
-🌍 اللغة: ${d.lang}
-
-🧾 UA:
-${d.ua}
-
-${extra}
-
-Taba3Tv
-`);
-}
-
-/* ================= LOAD ================= */
 const API="https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json";
-let data=null;
 
-async function loadData(){
-  const res=await fetch(API+"?t="+Date.now());
-  data=await res.json();
-  render();
+let data=null;
+let focusIndex=0;
+
+/* Theme */
+function setTheme(t){
+  document.body.classList.toggle("light",t==="light");
+  localStorage.setItem("theme",t);
+  updateUI();
 }
 
-/* ================= PLAYER ================= */
+function setColor(c){
+  document.documentElement.style.setProperty("--accent-gold",c);
+  localStorage.setItem("color",c);
+}
+
+function updateUI(){
+  const t=localStorage.getItem("theme")||"dark";
+  document.getElementById("darkBtn").classList.toggle("active",t==="dark");
+  document.getElementById("lightBtn").classList.toggle("active",t==="light");
+}
+
+/* Load */
+async function loadData(){
+  try{
+    const res=await fetch(API+"?t="+Date.now(),{cache:"no-store"});
+    data=await res.json();
+    render();
+  }catch(e){console.error(e);}
+}
+
+/* Player */
 function playVideo(url){
   document.getElementById("playerContainer").innerHTML=`
-    <video id="video" controls autoplay width="100%" height="220">
+    <video controls autoplay width="100%" height="220">
       <source src="${url}">
     </video>
   `;
-
-  const video=document.getElementById("video");
-
-  video.addEventListener("pause",()=>{
-    sendEvent("⏸️ إيقاف");
-  });
-
-  video.addEventListener("play",()=>{
-    sendEvent("▶️ تشغيل / استئناف");
-  });
 }
 
-/* ================= OPEN ITEM ================= */
+/* Open Item */
 function openItem(item){
+  let html=`<div style="padding:15px;font-weight:bold;font-size:18px">
+    ${item.name_ar}
+  </div>`;
 
-  sendEvent("📺 فتح عنصر", `🎬 ${item.name_ar}`);
-
-  let html=`<div style="padding:15px;font-size:20px;font-weight:bold">${item.name_ar}</div>`;
-
-  if(item.episodes){
+  if(item.episodes && item.episodes.length){
     item.episodes.forEach(ep=>{
-      html+=`<div class="episode" onclick="playVideo('${ep.url}')">▶ ${ep.title}</div>`;
+      html+=`<div class="episode" onclick="playVideo('${ep.url}')">
+        ▶ ${ep.title}
+      </div>`;
     });
   }else{
     html+=`<div style="padding:15px">
       <button onclick="playVideo('${item.stream_url}')"
-      style="padding:12px;width:100%;background:var(--primary);border:none;border-radius:10px;">
+      style="width:100%;padding:12px;background:var(--accent-gold);border:none;border-radius:10px;">
       تشغيل
       </button>
     </div>`;
@@ -259,7 +235,7 @@ function openItem(item){
   document.getElementById("content").innerHTML=html;
 }
 
-/* ================= RENDER ================= */
+/* Render */
 function render(){
   if(!data)return;
 
@@ -267,7 +243,8 @@ function render(){
   let html="";
 
   data.sections.forEach(section=>{
-    html+=`<div class="section-title">${section.title_ar}</div><div class="row">`;
+    html+=`<div class="section-title">${section.title_ar}</div>
+    <div class="row">`;
 
     section.channels
     .filter(i=>i.name_ar.includes(search))
@@ -285,12 +262,14 @@ function render(){
   document.getElementById("content").innerHTML=html;
 }
 
-/* ================= INIT ================= */
-window.onload=function(){
-  loadData();
-  sendEvent("👀 دخول الموقع");
-};
+/* Init */
+setTheme(localStorage.getItem("theme")||"dark");
+setColor(localStorage.getItem("color")||"#cfa864");
+updateUI();
+loadData();
 
+/* Auto refresh */
+setInterval(loadData,30000);
 </script>
 
 </body>
