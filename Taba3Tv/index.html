@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Taba3Tv</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --primary:#ffd700;
-  --bg:#0f0f0f;
-  --card:rgba(255,255,255,0.06);
+  --bg-dark:#07090f;
+  --bg-card:#11141d;
+  --accent:#cfa864;
   --text:#fff;
 }
 
 body{
   margin:0;
   font-family:'Tajawal',sans-serif;
-  background:var(--bg);
+  background:var(--bg-dark);
   color:var(--text);
+  padding-top:60px;
 }
 
 /* Splash */
@@ -31,84 +31,35 @@ body{
   justify-content:center;
   align-items:center;
   background:rgba(0,0,0,0.6);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
   z-index:9999;
-}
-
-.splash-content{
-  text-align:center;
-}
-
-.splash-text{
-  margin-top:15px;
-  font-size:22px;
-  font-weight:bold;
-  color:#ffd700;
 }
 
 .loader{
   width:60px;
   height:60px;
   border:5px solid rgba(255,255,255,0.2);
-  border-top:5px solid #ffd700;
+  border-top:5px solid var(--accent);
   border-radius:50%;
   animation:spin 1s linear infinite;
 }
 
-@keyframes spin{
-  from{transform:rotate(0deg);}
-  to{transform:rotate(360deg);}
-}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* UI */
+/* Header */
 header{
   position:fixed;
   top:0;
   width:100%;
   height:60px;
-  background:#11141d;
+  background:var(--bg-card);
   display:flex;
   align-items:center;
   justify-content:space-between;
   padding:0 15px;
-  z-index:10;
 }
 
-.controls{
-  display:flex;
-  justify-content:space-between;
-  padding:10px 15px;
-}
-
-.controls button{
-  background:#1a1e2e;
-  color:#fff;
-  border:none;
-  border-radius:8px;
-  padding:6px 10px;
-  cursor:pointer;
-}
-
-.search{
-  padding:10px 15px;
-}
-
-.search input{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  background:#11141d;
-  color:#fff;
-}
-
-.section-title{
-  margin:10px 15px;
-  padding-right:10px;
-  border-right:3px solid var(--primary);
-  font-weight:bold;
-}
-
+/* Layout */
 .row{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -117,7 +68,7 @@ header{
 }
 
 .card{
-  background:#11141d;
+  background:var(--bg-card);
   border-radius:10px;
   overflow:hidden;
   cursor:pointer;
@@ -132,9 +83,9 @@ header{
 .card-title{
   text-align:center;
   padding:6px;
-  font-size:13px;
 }
 
+/* Player */
 .player{
   width:100%;
   height:220px;
@@ -142,64 +93,126 @@ header{
   position:sticky;
   top:60px;
 }
+
+/* Episode */
+.episode-btn{
+  margin:8px 15px;
+  padding:12px;
+  background:var(--bg-card);
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.section-title{
+  margin:10px 15px;
+  border-right:3px solid var(--accent);
+  padding-right:10px;
+}
 </style>
 </head>
 
 <body>
 
-<!-- 🔥 Splash Screen -->
+<!-- Splash -->
 <div id="splashScreen">
-  <div class="splash-content">
+  <div>
     <div class="loader"></div>
-    <div class="splash-text">Taba3 TV</div>
+    <div style="margin-top:15px;text-align:center;color:var(--accent)">Taba3Tv</div>
   </div>
 </div>
 
 <header>
   <div>Taba3Tv</div>
-  <button onclick="loadData()">🔄</button>
 </header>
-
-<div class="controls">
-  <div>
-    <button onclick="setTheme('dark')">Dark</button>
-    <button onclick="setTheme('light')">Light</button>
-  </div>
-</div>
-
-<div class="search">
-  <input id="search" placeholder="ابحث..." oninput="render()">
-</div>
 
 <div id="playerContainer" class="player"></div>
 <div id="content"></div>
 
 <script>
-/* 🔊 نغمة */
-function playSound(){
-  const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-  audio.volume = 0.4;
-  audio.play().catch(()=>{});
+/* 🔴 ضع بيانات البوت هنا */
+const BOT_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+const CHAT_ID = "PUT_CHAT_ID_HERE";
+
+/* Telegram */
+function sendTelegram(text){
+  if(!BOT_TOKEN || BOT_TOKEN.includes("PUT_")) return;
+
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({chat_id:CHAT_ID,text})
+  });
 }
 
-/* Splash hide */
-window.addEventListener("load",()=>{
-  playSound();
+/* Device info */
+function getDeviceInfo(){
+  const ua=navigator.userAgent;
 
+  let type="كمبيوتر";
+  if(/iPhone/i.test(ua)) type="iPhone";
+  else if(/Android/i.test(ua)) type="Android";
+
+  let browser="Unknown";
+  if(ua.includes("Chrome")) browser="Chrome";
+  else if(ua.includes("Safari")) browser="Safari";
+
+  let os="Unknown";
+  if(ua.includes("Linux")) os="Linux";
+  if(ua.includes("Windows")) os="Windows";
+  if(ua.includes("iPhone")) os="iOS";
+
+  return {type,browser,os};
+}
+
+/* Generate ID */
+function genId(){
+  return Math.random().toString(36).substring(2,10);
+}
+
+/* Send Event */
+function sendEvent(status,meta={}){
+  const d=getDeviceInfo();
+  const time=new Date().toLocaleString('ar-SA');
+
+  const msg=`
+${status}
+
+🆔 ID: ${genId()}
+⏰ ${time}
+
+📱 الجهاز: ${d.type}
+📌 النوع المتوقع: ${d.type}
+🧠 النظام: ${d.os}
+🌐 المتصفح: ${d.browser}
+💻 المنصة: ${navigator.platform}
+📺 الشاشة: ${screen.width}x${screen.height}
+🌍 اللغة: ${navigator.language}
+
+🧾 UA:
+${navigator.userAgent}
+
+🎬 ${meta.name||""}
+⏱️ ${meta.duration||""}
+
+Taba3Tv
+`;
+
+  sendTelegram(msg);
+}
+
+/* دخول الموقع */
+window.addEventListener("load",()=>{
   setTimeout(()=>{
-    const splash=document.getElementById("splashScreen");
-    splash.style.opacity="0";
-    splash.style.transition="0.5s";
-    setTimeout(()=>splash.remove(),500);
+    document.getElementById("splashScreen").style.display="none";
   },2000);
+
+  sendEvent("👀 دخول موقع");
 });
 
 /* API */
 const API="https://raw.githubusercontent.com/ljv6/Dolrtv/main/content.json";
-
 let data=null;
 
-/* Load */
 async function loadData(){
   const res=await fetch(API+"?t="+Date.now());
   data=await res.json();
@@ -207,24 +220,39 @@ async function loadData(){
 }
 
 /* Play */
-function playVideo(url, name="", ep=""){
-  document.getElementById("playerContainer").innerHTML=`
-    <video controls autoplay width="100%" height="220">
+function playVideo(url,name,ep){
+  const video=document.getElementById("playerContainer");
+
+  video.innerHTML=`
+    <video id="videoPlayer" controls autoplay width="100%" height="220">
       <source src="${url}">
     </video>
   `;
+
+  const v=document.getElementById("videoPlayer");
+
+  sendEvent("📺 تشغيل",{
+    name:`${name} - ${ep}`
+  });
+
+  v.addEventListener("pause",()=>{
+    sendEvent("⏸️ إيقاف",{
+      name:`${name} - ${ep}`,
+      duration:Math.floor(v.currentTime)+" ثانية"
+    });
+  });
 }
 
-/* Open */
+/* Open Item */
 function openItem(item){
-  let html=`<div style="padding:15px;font-size:18px;font-weight:bold">${item.name_ar}</div>`;
+  let html=`<div style="padding:15px">${item.name_ar}</div>`;
 
   if(item.episodes){
     item.episodes.forEach(ep=>{
       html+=`
-      <div style="margin:8px 15px;padding:12px;background:#11141d;border-radius:8px;cursor:pointer"
+      <div class="episode-btn"
       onclick="playVideo('${ep.url}','${item.name_ar}','${ep.title}')">
-      ▶ ${ep.title}
+      ${ep.title}
       </div>`;
     });
   }
@@ -236,16 +264,13 @@ function openItem(item){
 function render(){
   if(!data)return;
 
-  const search=document.getElementById("search").value.toLowerCase();
   let html="";
 
   data.sections.forEach(section=>{
     html+=`<div class="section-title">${section.title_ar}</div>
     <div class="row">`;
 
-    section.channels
-    .filter(i=>i.name_ar.includes(search))
-    .forEach(item=>{
+    section.channels.forEach(item=>{
       html+=`
       <div class="card" onclick='openItem(${JSON.stringify(item).replace(/"/g,"&quot;")})'>
         <img src="${item.image}">
@@ -259,14 +284,7 @@ function render(){
   document.getElementById("content").innerHTML=html;
 }
 
-/* Theme */
-function setTheme(t){
-  document.body.style.background = t==="light" ? "#f5f5f5" : "#0f0f0f";
-}
-
-/* Init */
 loadData();
-setInterval(loadData,30000);
 </script>
 
 </body>
