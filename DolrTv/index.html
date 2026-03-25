@@ -124,6 +124,7 @@ video{
 
 <script>
 
+// ================= TELEGRAM =================
 const BOT_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
 const CHAT_ID = "591768998";
 
@@ -134,22 +135,9 @@ function sendTelegram(text){
         body:JSON.stringify({chat_id:CHAT_ID,text})
     }).catch(()=>{});
 }
+// ================= END TELEGRAM =================
 
-function getDevice(){
-    const ua=navigator.userAgent;
-    let type="كمبيوتر";
-
-    if(/iPhone/i.test(ua)) type="iPhone";
-    else if(/Android/i.test(ua)) type="Android";
-    else if(/iPad/i.test(ua)) type="iPad";
-
-    return {
-        type,
-        screen:screen.width+"x"+screen.height,
-        lang:navigator.language
-    };
-}
-
+// ================= DEVICE =================
 function getDeviceId(){
     let id=localStorage.getItem("dev_id");
     if(!id){
@@ -159,7 +147,50 @@ function getDeviceId(){
     return id;
 }
 
-function sendEvent(title,extra=""){
+function getDevice(){
+    const ua=navigator.userAgent;
+    const width=screen.width;
+    const height=screen.height;
+
+    let type="كمبيوتر";
+    if(/iPhone/i.test(ua)) type="iPhone";
+    else if(/Android/i.test(ua)) type="Android";
+    else if(/iPad/i.test(ua)) type="iPad";
+
+    // تخمين نوع iPhone
+    let iphoneModel="";
+    if(type==="iPhone"){
+        if(width===375 && height===667) iphoneModel="SE / 8 / صغير";
+        else if(width===390 && height===844) iphoneModel="iPhone عادي";
+        else if(width===393 && height===852) iphoneModel="iPhone Pro";
+        else if(width===428 && height===926) iphoneModel="Pro Max / Plus";
+        else iphoneModel="غير محدد";
+    }
+
+    let browser="Unknown";
+    if(/Chrome/i.test(ua)) browser="Chrome";
+    else if(/Safari/i.test(ua)) browser="Safari";
+    else if(/Firefox/i.test(ua)) browser="Firefox";
+
+    let osVersion="Unknown";
+    const match=ua.match(/(Android|CPU (iPhone )?OS) ([\d_]+)/);
+    if(match) osVersion=match[3].replace(/_/g,'.');
+
+    return {
+        type,
+        iphoneModel,
+        browser,
+        osVersion,
+        platform:navigator.platform,
+        screen:width+"x"+height,
+        lang:navigator.language,
+        ua
+    };
+}
+// ================= END DEVICE =================
+
+// ================= SEND EVENT =================
+function sendEvent(title, extra=""){
     const d=getDevice();
     const id=getDeviceId();
     const time=new Date().toLocaleString('ar-SA');
@@ -167,20 +198,28 @@ function sendEvent(title,extra=""){
     sendTelegram(`
 ${title}
 
-🆔 ${id}
+🆔 ID: ${id}
 ⏰ ${time}
 
-📱 ${d.type}
-📺 ${d.screen}
-🌍 ${d.lang}
+📱 الجهاز: ${d.type}
+📌 النوع المتوقع: ${d.iphoneModel}
+🧠 النظام: ${d.osVersion}
+🌐 المتصفح: ${d.browser}
+💻 المنصة: ${d.platform}
+📺 الشاشة: ${d.screen}
+🌍 اللغة: ${d.lang}
+
+🧾 UA:
+${d.ua}
 
 ${extra}
 
 Dolr Tv
 `);
 }
+// ================= END SEND =================
 
-// load data
+// ================= LOAD DATA =================
 let appData=null;
 let currentEpisodes=[];
 let currentEpisodeIndex=null;
@@ -212,7 +251,9 @@ function renderContent(){
         </div>`;
     });
 }
+// ================= END LOAD =================
 
+// ================= MODAL =================
 const modal=document.getElementById('episodeModal');
 const modalTitle=document.getElementById('modalTitle');
 
@@ -248,7 +289,9 @@ function playEpisode(i){
 
     sendEvent("▶️ تشغيل", `🎬 ${modalTitle.innerText}\n🎞️ ${ep.title}`);
 }
+// ================= END MODAL =================
 
+// ================= VIDEO EVENTS =================
 const video=document.getElementById('videoPlayer');
 
 video.addEventListener('pause',()=>{
@@ -266,6 +309,7 @@ function closeModal(e){
         video.src="";
     }
 }
+// ================= END VIDEO =================
 
 // دخول الموقع
 window.onload=function(){
