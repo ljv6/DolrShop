@@ -97,6 +97,12 @@ body{
     cursor:pointer;
 }
 
+/* 🔥 الزر الذهبي للحلقة الحالية */
+.episode-btn.active{
+    background: var(--accent-gold);
+    color: #000;
+}
+
 video{
     width:100%;
     border-radius:8px;
@@ -157,7 +163,6 @@ function getDevice(){
     else if(/Android/i.test(ua)) type="Android";
     else if(/iPad/i.test(ua)) type="iPad";
 
-    // تخمين نوع iPhone
     let iphoneModel="";
     if(type==="iPhone"){
         if(width===375 && height===667) iphoneModel="SE / 8 / صغير";
@@ -267,6 +272,7 @@ function openEpisodes(name,id){
 
     modalTitle.innerText=name;
     currentEpisodes=selected.episodes;
+    currentEpisodeIndex=null;
     renderEpisodes();
     modal.style.display='block';
 }
@@ -274,7 +280,9 @@ function openEpisodes(name,id){
 function renderEpisodes(){
     const g=document.getElementById('episodesGrid');
     g.innerHTML=currentEpisodes.map((ep,i)=>`
-        <div class="episode-btn" onclick="playEpisode(${i})">${ep.title}</div>
+        <div class="episode-btn ${i === currentEpisodeIndex ? 'active' : ''}" onclick="playEpisode(${i})">
+            ${ep.title}
+        </div>
     `).join("");
 }
 
@@ -286,6 +294,8 @@ function playEpisode(i){
     video.src=ep.url;
     video.style.display='block';
     video.play();
+
+    renderEpisodes();
 
     sendEvent("▶️ تشغيل", `🎬 ${modalTitle.innerText}\n🎞️ ${ep.title}`);
 }
