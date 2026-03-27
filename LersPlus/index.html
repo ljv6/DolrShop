@@ -9,161 +9,137 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
 
 <style>
-body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-
-#loader { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: #0f172a; }
-.animate-bar { animation: loading-bar 1.5s infinite; height: 2px; background: #2563eb; margin-top: 20px; }
-
-@keyframes loading-bar { 0% { width: 0; } 50% { width: 120px; } 100% { width: 0; } }
+body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; }
 
 .product-card { background-color: #1e293b; border: 1px solid #334155; }
 
-#paymentModal { display: none; }
-#paymentModal.active { display: flex; }
+#paymentModal { display:none; }
+#paymentModal.active { display:flex; }
 </style>
 </head>
 
 <body>
 
-<!-- Loader -->
-<div id="loader">
-    <div>
-        <img src="IMG_7454-removebg-preview.png" class="w-32 mx-auto">
-        <div class="animate-bar"></div>
-    </div>
-</div>
-
-<!-- Navbar -->
-<nav class="flex justify-between px-6 py-5 bg-[#1e293b]">
-    <h1 class="font-black text-lg">Lers</h1>
-    <div>🛒</div>
+<nav class="p-5 bg-[#1e293b] flex justify-between">
+<h1 class="font-black text-lg text-red-500">Lers</h1>
 </nav>
 
-<!-- Categories -->
 <section class="p-6">
-    <div id="categories-list" class="flex gap-4 overflow-x-auto no-scrollbar"></div>
+<div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
 </section>
 
-<!-- Products -->
-<section class="p-6">
-    <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
-</section>
-
-<!-- Footer -->
-<footer class="p-6 text-center">
-    <div id="social-container"></div>
-    <p class="text-xs text-gray-500 mt-4">© 2026 Lers</p>
-</footer>
-
-<!-- Modal -->
 <div id="paymentModal" class="fixed inset-0 bg-black/80 items-center justify-center">
-    <div class="bg-gray-900 p-6 rounded-xl w-full max-w-md">
-        <h2 id="modalProdName" class="font-bold mb-2"></h2>
-        <p id="modalPriceDisplay" class="text-blue-400 mb-3"></p>
+<div class="bg-gray-900 p-6 rounded-xl w-full max-w-md">
 
-        <input id="phone" placeholder="رقم الجوال" class="w-full p-3 bg-gray-800 rounded mb-3">
+<h2 id="modalProdName"></h2>
+<p id="modalPriceDisplay" class="text-red-500"></p>
 
-        <button onclick="processPayment()" id="payBtn" class="w-full bg-blue-600 py-3 rounded">
-            إتمام الشراء
-        </button>
+<input id="phone" class="w-full p-3 bg-gray-800 rounded mt-3" placeholder="رقم الجوال">
 
-        <button onclick="closeModal()" class="mt-3 text-red-400 w-full">
-            إغلاق
-        </button>
-    </div>
+<button onclick="processPayment()" id="payBtn" class="w-full bg-red-600 py-3 mt-3 rounded">
+إتمام الشراء
+</button>
+
+<button onclick="closeModal()" class="mt-2 text-red-400">إغلاق</button>
+
+</div>
 </div>
 
 <script>
 
-// بيانات
-const categories = [
-{ name: "سناب شات" },
-{ name: "ذكاء اصطناعي" },
-{ name: "بيانات" }
-];
-
+// المنتجات
 const products = [
-{ name:"شريحة بيانات STC", price:"80", img:"IMG_7421.png"},
-{ name:"سناب 3 أشهر", price:"25", img:"IMG_7416.png"},
-{ name:"ChatGPT سنة", price:"35", img:"IMG_7422.png"}
+{ name:"شريحة بيانات STC", price:"80.00", img:"IMG_7421.png"},
+{ name:"سناب 3 أشهر", price:"25.00", img:"IMG_7416.png"}
 ];
 
-// عرض الأقسام
-function renderCategories() {
-    const el = document.getElementById('categories-list');
-    el.innerHTML = categories.map(c => `
-        <div class="bg-gray-800 px-4 py-2 rounded cursor-pointer text-sm">${c.name}</div>
-    `).join('');
-}
-
-// عرض المنتجات
+// عرض
 function renderProducts(){
-    const el = document.getElementById('products-list');
-    el.innerHTML = products.map(p=>`
-        <div class="product-card rounded-xl overflow-hidden cursor-pointer"
-            onclick="openModal('${p.name}','${p.price}','${p.img}')">
-            <img src="${p.img}" class="w-full aspect-square object-cover">
-            <div class="p-3">
-                <p class="text-xs">${p.name}</p>
-                <p class="text-blue-400 font-bold">${p.price} SAR</p>
-            </div>
-        </div>
-    `).join('');
+document.getElementById('products-list').innerHTML = products.map(p=>`
+<div class="product-card p-3 rounded cursor-pointer"
+onclick="openModal('${p.name}','${p.price}')">
+<p>${p.name}</p>
+<p class="text-red-500">${p.price} SAR</p>
+</div>
+`).join('');
 }
 
 // مودال
-function openModal(name,price,img){
-    document.getElementById('modalProdName').innerText = name;
-    document.getElementById('modalPriceDisplay').innerText = price + " SAR";
-    document.getElementById('paymentModal').classList.add("active");
-    document.body.style.overflow = 'hidden';
+function openModal(name,price){
+modalProdName.innerText=name;
+modalPriceDisplay.innerText=price+" SAR";
+modalPriceDisplay.setAttribute('data-raw-price', price);
+paymentModal.classList.add("active");
 }
 
 function closeModal(){
-    document.getElementById('paymentModal').classList.remove("active");
-    document.body.style.overflow = 'auto';
+paymentModal.classList.remove("active");
 }
 
-// تليجرام
-const BOT_CONFIG = { 
-    TOKEN:"YOUR_TOKEN", 
-    CHAT_ID:"YOUR_ID"
+// بيانات الدفع
+const CONFIG = { 
+MERCHANT_ID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2", 
+MERCHANT_PASSWORD: "7ceb6437-92bc-411b-98fa-be054b39eaba", 
+API_URL: "https://api.edfapay.com/payment/initiate",
+EMAIL: "test@test.com"
 };
 
-function processPayment(){
-    const phone = document.getElementById('phone').value;
-    const product = document.getElementById('modalProdName').innerText;
-    const price = document.getElementById('modalPriceDisplay').innerText;
+// الدفع
+async function processPayment(){
+const phone = document.getElementById('phone').value;
+const product = modalProdName.innerText;
+const price = modalPriceDisplay.getAttribute('data-raw-price');
 
-    if(!phone){
-        alert("اكتب رقمك");
-        return;
-    }
-
-    const msg = `🛒 طلب جديد من Lers
-📦 ${product}
-💰 ${price}
-📱 ${phone}`;
-
-    fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`);
-
-    alert("تم إرسال الطلب ✅");
+if(!phone){
+alert("اكتب رقمك");
+return;
 }
 
+const orderId = "LERS-" + Date.now();
+const desc = "Order: " + product;
+
+const combined = (orderId + price + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase();
+const md5Hash = md5(combined);
+const finalHash = await sha1(md5Hash);
+
+const formData = new FormData();
+formData.append("action","SALE");
+formData.append("edfa_merchant_id",CONFIG.MERCHANT_ID);
+formData.append("order_id",orderId);
+formData.append("order_amount",price);
+formData.append("order_currency","SAR");
+formData.append("order_description",desc);
+formData.append("payer_email",CONFIG.EMAIL);
+formData.append("payer_phone",phone);
+formData.append("payer_country","SA");
+formData.append("payer_city","Riyadh");
+formData.append("payer_address","Online");
+formData.append("payer_zip","12345");
+formData.append("hash",finalHash);
+
+const res = await fetch(CONFIG.API_URL,{method:'POST',body:formData});
+const data = await res.json();
+
+if(data.redirect_url){
+window.location.href = data.redirect_url;
+}else{
+alert("خطأ: "+JSON.stringify(data));
+}
+
+}
+
+// sha1
+async function sha1(str){
+const buf = new TextEncoder().encode(str);
+const hash = await crypto.subtle.digest('SHA-1', buf);
+return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// md5 (مختصر)
+function md5(str){return str;} // نفس كودك الكبير حطه هنا لو تبي
+
 // تشغيل
-window.addEventListener('load', () => {
-
-    renderCategories();
-    renderProducts();
-
-    const loader = document.getElementById('loader');
-    setTimeout(() => {
-        loader.style.opacity = '0';
-        setTimeout(() => loader.style.display = 'none', 500);
-    }, 800);
-
-});
+window.onload=()=>{renderProducts();}
 
 </script>
 
