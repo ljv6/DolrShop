@@ -1,108 +1,96 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lers | المتجر المطوّر</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
-
-<style>
-body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-
-#loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; }
-.loader-logo { width: 140px; }
-
-@keyframes loading-bar { 0% { width: 0; } 50% { width: 120px; } 100% { width: 0; } }
-.animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 2px; background-color: #2563eb; margin-top: 20px; }
-
-nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
-.product-card { background-color: #1e293b; border: 1px solid #334155; }
-
-#banner-slider { display: flex; transition: transform 0.5s; }
-.banner-slide { min-width: 100%; height: 40vh; }
-
-#paymentModal { display: none; }
-#paymentModal.active { display: flex; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lers | المتجر المطوّر</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease-in-out; background: #0f172a; }
+        .loader-logo { width: 140px; height: auto; position: relative; z-index: 10; }
+        @keyframes loading-bar { 0% { width: 0; } 50% { width: 120px; } 100% { width: 0; } }
+        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 2px; background-color: #2563eb; margin-top: 20px; }
+        nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
+        .product-card { background-color: #1e293b; border: 1px solid #334155; }
+        .bg-gray-50 { background-color: #111827 !important; }
+        #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
+        .banner-slide { min-width: 100%; position: relative; height: 40vh; background-color: #000; }
+        .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; background-color: rgba(255,255,255,0.3); }
+        .dot-item.active { width: 24px; background-color: white !important; }
+        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #paymentModal.active { display: flex; opacity: 1; }
+        .modal-content { background-color: #1e293b; color: white; }
+    </style>
 </head>
-
-<body>
+<body class="antialiased">
 
 <div id="loader">
-<img src="IMG_7454-removebg-preview.png" class="loader-logo">
-<div class="animate-bar"></div>
+    <img src="IMG_7454-removebg-preview.png" class="loader-logo">
+    <div class="animate-bar"></div>
 </div>
 
-<nav class="flex justify-between p-5">
-<h1 class="font-black text-xl">Lers</h1>
-<div>🛒</div>
+<nav class="flex items-center justify-between px-6 py-5">
+    <img src="IMG_7454-removebg-preview.png" class="h-10 cursor-pointer" onclick="location.reload()">
+    <div>🛒</div>
 </nav>
 
 <section>
-<div id="banner-slider"></div>
+    <div id="banner-slider"></div>
 </section>
 
 <section class="p-6">
-<div id="categories-list" class="flex gap-4 overflow-x-auto"></div>
+    <div id="categories-list" class="flex gap-4 overflow-x-auto"></div>
 </section>
 
 <section class="p-6">
-<div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
 </section>
 
 <footer class="p-6 text-center">
-<div id="social-container"></div>
-<p class="text-xs text-gray-500">© 2026 Lers</p>
+    <div id="social-container"></div>
+    <p class="text-xs text-gray-500">© 2026 Lers</p>
 </footer>
 
-<!-- مودال الدفع -->
-<div id="paymentModal" class="fixed inset-0 bg-black/80 justify-center items-center">
-<div class="bg-gray-900 p-6 rounded-xl w-full max-w-md">
-
-<h2 id="modalProdName"></h2>
-<p id="modalPriceDisplay"></p>
-
-<input id="phone" placeholder="رقم الجوال" class="w-full p-3 mt-3 bg-gray-800 rounded">
-
-<button onclick="processPayment()" id="payBtn" class="w-full mt-3 bg-blue-600 p-3 rounded">
-إتمام الشراء
-</button>
-
-<button onclick="closeModal()" class="mt-2 text-red-400">إغلاق</button>
-
-</div>
+<div id="paymentModal" class="fixed inset-0 bg-black/80 items-center justify-center">
+    <div class="modal-content p-6 rounded-xl w-full max-w-md">
+        <h2 id="modalProdName"></h2>
+        <p id="modalPriceDisplay"></p>
+        <input id="phone" class="w-full p-3 mt-3 bg-gray-800 rounded" placeholder="رقم الجوال">
+        <button onclick="processPayment()" id="payBtn" class="w-full mt-3 bg-blue-600 p-3 rounded">إتمام الشراء</button>
+        <button onclick="closeModal()" class="mt-2 text-red-400">إغلاق</button>
+    </div>
 </div>
 
 <script>
 
-// بيانات
-const products = [
-{ name:"شريحة بيانات", price:"80", img:"IMG_7421.png"},
-{ name:"سناب 3 شهور", price:"25", img:"IMG_7416.png"},
-{ name:"ChatGPT سنة", price:"35", img:"IMG_7422.png"}
-];
-
+// categories
 const categories = [
-{ name:"سناب شات"},
-{ name:"ذكاء اصطناعي"}
+{ name: "سناب شات"},
+{ name: "ذكاء اصطناعي"},
+{ name: "بيانات"}
 ];
 
-// عرض المنتجات
+// products
+const products = [
+{ name:"شريحة بيانات STC", price:"80", img:"IMG_7421.png"},
+{ name:"اشتراك سناب 3 أشهر", price:"25", img:"IMG_7416.png"},
+{ name:"اشتراك شات جي بي تي", price:"35", img:"IMG_7422.png"}
+];
+
+// render
 function renderProducts(){
-const container = document.getElementById('products-list');
-container.innerHTML = products.map(p=>`
-<div onclick="openModal('${p.name}','${p.price}','${p.img}')" class="product-card p-2 rounded">
+productsList.innerHTML = products.map(p=>`
+<div class="product-card p-2 rounded" onclick="openModal('${p.name}','${p.price}','${p.img}')">
 <img src="${p.img}">
 <p>${p.name}</p>
 <p>${p.price} SAR</p>
-</div>
-`).join('');
+</div>`).join('');
 }
 
-// مودال
+// modal
 function openModal(name,price,img){
 modalProdName.innerText=name;
 modalPriceDisplay.innerText=price+" SAR";
@@ -113,28 +101,28 @@ function closeModal(){
 paymentModal.classList.remove("active");
 }
 
-// الدفع
+// telegram
 const BOT_CONFIG = { 
 TOKEN:"8254444681:AAHY...", 
 CHAT_ID:"591768998"
 };
 
-async function processPayment(){
+function processPayment(){
 const phone=document.getElementById('phone').value;
 const product=document.getElementById('modalProdName').innerText;
 const price=document.getElementById('modalPriceDisplay').innerText;
 
-const msg = `🛒 *طلب جديد من Lers* 
-📦 المنتج: ${product}
-💰 السعر: ${price}
-📱 الجوال: ${phone}`;
+const msg = `🛒 طلب جديد من Lers
+📦 ${product}
+💰 ${price}
+📱 ${phone}`;
 
-fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
+fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`);
 
-alert("تم إرسال الطلب ✅");
+alert("تم الإرسال");
 }
 
-// تشغيل
+// start
 window.onload=()=>{
 renderProducts();
 setTimeout(()=>loader.style.display="none",1000);
