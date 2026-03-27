@@ -29,115 +29,108 @@
 
     #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
     #paymentModal.active { display: flex; opacity: 1; }
+    .modal-content { background-color: #1e293b; color: white; }
 
-    /* Modal styled exactly like the login screen in the image */
-    .modal-login-box {
-        background-color: #ffffff;
+    /* ---- شكل الـ modal الجديد - bottom sheet أبيض صغير ---- */
+    .login-sheet {
+        background: #ffffff;
         color: #1e293b;
         width: 100%;
-        max-width: 420px;
-        border-radius: 1.5rem;
-        padding: 2rem 1.5rem 2rem 1.5rem;
+        border-radius: 1.5rem 1.5rem 0 0;
+        padding: 1.2rem 1.4rem 2rem 1.4rem;
         position: relative;
         direction: rtl;
     }
-    .modal-login-box .modal-title {
-        font-size: 1.6rem;
-        font-weight: 900;
-        color: #1e293b;
-        text-align: right;
-        margin-bottom: 1.8rem;
-    }
-    .modal-login-box .modal-label {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #1e293b;
-        text-align: right;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-    .modal-login-box .phone-input-wrap {
-        display: flex;
-        flex-direction: row-reverse;
-        align-items: center;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 0.75rem;
-        overflow: hidden;
-        background: #fff;
-        margin-bottom: 1.2rem;
-    }
-    .modal-login-box .phone-country {
-        padding: 0 1rem;
-        font-weight: 700;
-        font-size: 1rem;
-        color: #1e293b;
-        border-left: 1.5px solid #e2e8f0;
-        background: #fff;
-        height: 56px;
-        display: flex;
-        align-items: center;
-        flex-shrink: 0;
-    }
-    .modal-login-box .phone-field {
-        flex: 1;
-        border: none;
-        outline: none;
-        padding: 0 1rem;
-        font-size: 1rem;
-        color: #94a3b8;
-        background: transparent;
-        height: 56px;
-        text-align: right;
-        font-family: 'Tajawal', sans-serif;
-    }
-    .modal-login-box .phone-field::placeholder {
-        color: #94a3b8;
-    }
-    .modal-login-box .login-btn {
-        width: 100%;
-        background-color: #1d4ed8;
-        color: #fff;
-        font-size: 1.1rem;
-        font-weight: 900;
-        border: none;
-        border-radius: 0.75rem;
-        height: 56px;
-        cursor: pointer;
-        transition: background 0.2s;
-        font-family: 'Tajawal', sans-serif;
-    }
-    .modal-login-box .login-btn:active {
-        background-color: #1e40af;
-    }
-    .modal-close-btn {
+    .login-sheet .sheet-close {
         position: absolute;
-        top: 1.1rem;
-        left: 1.1rem;
+        top: 0.9rem;
+        left: 1rem;
         background: none;
         border: none;
-        cursor: pointer;
         color: #ef4444;
-        font-size: 1.4rem;
+        font-size: 1.25rem;
+        cursor: pointer;
+        font-family: 'Tajawal', sans-serif;
         line-height: 1;
-        padding: 0;
     }
-    .modal-avatar {
+    .login-sheet .sheet-avatar {
         position: absolute;
-        top: 1.1rem;
-        right: 1.5rem;
-        width: 52px;
-        height: 52px;
+        top: 0.9rem;
+        right: 1.4rem;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         background: #f1f5f9;
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    .modal-avatar svg {
-        width: 28px;
-        height: 28px;
-        color: #94a3b8;
+    .login-sheet .sheet-avatar svg { width: 22px; height: 22px; color: #94a3b8; }
+    .login-sheet .sheet-title {
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: #1e293b;
+        margin-top: 3.2rem;
+        margin-bottom: 1rem;
+        text-align: right;
     }
+    .login-sheet .sheet-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #1e293b;
+        display: block;
+        text-align: right;
+        margin-bottom: 0.4rem;
+    }
+    .login-sheet .phone-wrap {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 0.7rem;
+        overflow: hidden;
+        background: #fff;
+        margin-bottom: 0.9rem;
+    }
+    .login-sheet .phone-code {
+        padding: 0 0.9rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #1e293b;
+        border-left: 1.5px solid #e2e8f0;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        font-family: 'Tajawal', sans-serif;
+    }
+    .login-sheet .phone-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 0 0.9rem;
+        font-size: 0.9rem;
+        color: #94a3b8;
+        background: transparent;
+        height: 48px;
+        text-align: right;
+        font-family: 'Tajawal', sans-serif;
+    }
+    .login-sheet .phone-input::placeholder { color: #94a3b8; }
+    .login-sheet .submit-btn {
+        width: 100%;
+        background-color: #1d4ed8;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 900;
+        border: none;
+        border-radius: 0.7rem;
+        height: 48px;
+        cursor: pointer;
+        font-family: 'Tajawal', sans-serif;
+        transition: all 0.2s;
+    }
+    .login-sheet .submit-btn:active { background-color: #1e40af; transform: scale(0.98); }
 </style>
 ```
 
@@ -190,28 +183,23 @@
     </div>
 </footer>
 
-<!-- Modal بشكل تسجيل الدخول بالضبط -->
-<div id="paymentModal" class="fixed inset-0 z-[100] bg-black/70 items-center justify-center backdrop-blur-sm p-4">
-    <div class="modal-login-box">
-        <!-- زر الإغلاق (X بالأحمر يسار) -->
-        <button onclick="closeModal()" class="modal-close-btn">✕</button>
-        <!-- أيقونة المستخدم (يمين) -->
-        <div class="modal-avatar">
+<!-- Modal -->
+<div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
+    <div class="login-sheet w-full md:max-w-md md:rounded-[1.5rem]">
+        <button onclick="closeModal()" class="sheet-close">✕</button>
+        <div class="sheet-avatar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="8" r="4"/>
                 <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
             </svg>
         </div>
-        <!-- العنوان -->
-        <div style="padding-top: 3.5rem;">
-            <h2 class="modal-title">تسجيل الدخول</h2>
-            <span class="modal-label">رقم الجوال</span>
-            <div class="phone-input-wrap">
-                <span class="phone-country">+966</span>
-                <input type="tel" id="phone" class="phone-field" placeholder="051 234 5678">
-            </div>
-            <button class="login-btn" onclick="processPayment()">دخول</button>
+        <h2 class="sheet-title">تسجيل الدخول</h2>
+        <span class="sheet-label">رقم الجوال</span>
+        <div class="phone-wrap">
+            <span class="phone-code">+966</span>
+            <input type="tel" id="phone" class="phone-input" placeholder="051 234 5678">
         </div>
+        <button class="submit-btn" onclick="processPayment()">دخول</button>
     </div>
 </div>
 
@@ -233,6 +221,7 @@
         }, 1000);
     });
 
+    // --- السلايدر المطور لعرض اللوجو والنصوص ---
     let currentSlide = 0;
     function initSlider() {
         const slider = document.getElementById('banner-slider');
@@ -273,13 +262,14 @@
     }
 
     function openModal(name, price, img) {
+        document.getElementById('modalProdName') && (document.getElementById('modalProdName').innerText = name);
+        document.getElementById('modalPriceDisplay') && (document.getElementById('modalPriceDisplay').innerText = price + " SAR");
+        document.getElementById('modalPriceDisplay') && document.getElementById('modalPriceDisplay').setAttribute('data-raw-price', price);
+        document.getElementById('modalImg') && (document.getElementById('modalImg').src = img);
         document.getElementById('paymentModal').classList.add('active');
         document.body.style.overflow = 'hidden';
     }
-    function closeModal() {
-        document.getElementById('paymentModal').classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
+    function closeModal() { document.getElementById('paymentModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
 
     document.addEventListener('DOMContentLoaded', () => {
         initSlider();
