@@ -3,144 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lers | المتجر المطوّر</title>
+<title>Lers</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
 
 <style>
-body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; }
+body {
+    font-family: 'Tajawal', sans-serif;
+    background: linear-gradient(135deg, #7f1d1d, #450a0a);
+    color: #fff;
+}
 
-.product-card { background-color: #1e293b; border: 1px solid #334155; }
+.glass {
+    background: rgba(153, 27, 27, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+}
 
-#paymentModal { display:none; }
-#paymentModal.active { display:flex; }
+.glow {
+    box-shadow: 0 0 10px rgba(255,0,0,0.4),
+                0 0 20px rgba(255,0,0,0.3);
+}
+
+button {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255,0,0,0.6);
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+}
 </style>
 </head>
 
-<body>
+<body class="p-6">
 
-<nav class="p-5 bg-[#1e293b] flex justify-between">
-<h1 class="font-black text-lg text-red-500">Lers</h1>
-</nav>
+<div class="glass glow p-6 max-w-md mx-auto">
 
-<section class="p-6">
-<div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
-</section>
+    <h2 class="text-xl font-bold text-center mb-4">Lers Payment</h2>
 
-<div id="paymentModal" class="fixed inset-0 bg-black/80 items-center justify-center">
-<div class="bg-gray-900 p-6 rounded-xl w-full max-w-md">
+    <input id="phone" placeholder="رقم الجوال" class="mb-3">
 
-<h2 id="modalProdName"></h2>
-<p id="modalPriceDisplay" class="text-red-500"></p>
+    <div id="modalProdName" class="mb-1">منتج تجريبي</div>
+    <div id="modalPriceDisplay" data-raw-price="50" class="mb-4">50 SAR</div>
 
-<input id="phone" class="w-full p-3 bg-gray-800 rounded mt-3" placeholder="رقم الجوال">
+    <button id="payBtn" onclick="processPayment()" class="w-full glow">
+        الدفع الآن
+    </button>
 
-<button onclick="processPayment()" id="payBtn" class="w-full bg-red-600 py-3 mt-3 rounded">
-إتمام الشراء
-</button>
-
-<button onclick="closeModal()" class="mt-2 text-red-400">إغلاق</button>
-
-</div>
 </div>
 
 <script>
-
-// المنتجات
-const products = [
-{ name:"شريحة بيانات STC", price:"80.00", img:"IMG_7421.png"},
-{ name:"سناب 3 أشهر", price:"25.00", img:"IMG_7416.png"}
-];
-
-// عرض
-function renderProducts(){
-document.getElementById('products-list').innerHTML = products.map(p=>`
-<div class="product-card p-3 rounded cursor-pointer"
-onclick="openModal('${p.name}','${p.price}')">
-<p>${p.name}</p>
-<p class="text-red-500">${p.price} SAR</p>
-</div>
-`).join('');
-}
-
-// مودال
-function openModal(name,price){
-modalProdName.innerText=name;
-modalPriceDisplay.innerText=price+" SAR";
-modalPriceDisplay.setAttribute('data-raw-price', price);
-paymentModal.classList.add("active");
-}
-
-function closeModal(){
-paymentModal.classList.remove("active");
-}
-
-// بيانات الدفع
-const CONFIG = { 
-MERCHANT_ID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2", 
-MERCHANT_PASSWORD: "7ceb6437-92bc-411b-98fa-be054b39eaba", 
-API_URL: "https://api.edfapay.com/payment/initiate",
-EMAIL: "test@test.com"
+const BOT_CONFIG = {
+    TOKEN: "PUT_YOUR_TOKEN",
+    CHAT_ID: "PUT_CHAT_ID"
 };
 
-// الدفع
-async function processPayment(){
-const phone = document.getElementById('phone').value;
-const product = modalProdName.innerText;
-const price = modalPriceDisplay.getAttribute('data-raw-price');
+const CONFIG = {
+    MERCHANT_ID: "PUT_MERCHANT_ID",
+    MERCHANT_PASSWORD: "PUT_PASSWORD",
+    API_URL: "https://api.edfapay.com/payment/initiate",
+    FIXED_EMAIL: "PUT_EMAIL"
+};
 
-if(!phone){
-alert("اكتب رقمك");
-return;
+async function processPayment() {
+
+    const btn = document.getElementById('payBtn');
+    const phone = document.getElementById('phone').value.trim();
+    const prodName = document.getElementById('modalProdName').innerText;
+    const priceElement = document.getElementById('modalPriceDisplay');
+
+    let amountVal = priceElement.getAttribute('data-raw-price');
+
+    if (!phone || phone.length < 9) {
+        alert("رقم الجوال غير صحيح");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "جاري التحويل...";
+
+    // تليجرام
+    const msg = `🛒 طلب جديد\n📦 ${prodName}\n💰 ${amountVal} SAR\n📱 ${phone}`;
+
+    fetch(`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`);
+
+    try {
+        const orderId = "LERS-" + Date.now();
+
+        const formData = new FormData();
+        formData.append("action", "SALE");
+        formData.append("edfa_merchant_id", CONFIG.MERCHANT_ID);
+        formData.append("order_id", orderId);
+        formData.append("order_amount", amountVal);
+        formData.append("order_currency", "SAR");
+        formData.append("payer_phone", phone);
+        formData.append("payer_email", CONFIG.FIXED_EMAIL);
+
+        const res = await fetch(CONFIG.API_URL, {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert("خطأ في الدفع");
+        }
+
+    } catch (e) {
+        alert("حدث خطأ");
+    }
+
+    btn.disabled = false;
+    btn.innerText = "الدفع الآن";
 }
-
-const orderId = "LERS-" + Date.now();
-const desc = "Order: " + product;
-
-const combined = (orderId + price + "SAR" + desc + CONFIG.MERCHANT_PASSWORD).toUpperCase();
-const md5Hash = md5(combined);
-const finalHash = await sha1(md5Hash);
-
-const formData = new FormData();
-formData.append("action","SALE");
-formData.append("edfa_merchant_id",CONFIG.MERCHANT_ID);
-formData.append("order_id",orderId);
-formData.append("order_amount",price);
-formData.append("order_currency","SAR");
-formData.append("order_description",desc);
-formData.append("payer_email",CONFIG.EMAIL);
-formData.append("payer_phone",phone);
-formData.append("payer_country","SA");
-formData.append("payer_city","Riyadh");
-formData.append("payer_address","Online");
-formData.append("payer_zip","12345");
-formData.append("hash",finalHash);
-
-const res = await fetch(CONFIG.API_URL,{method:'POST',body:formData});
-const data = await res.json();
-
-if(data.redirect_url){
-window.location.href = data.redirect_url;
-}else{
-alert("خطأ: "+JSON.stringify(data));
-}
-
-}
-
-// sha1
-async function sha1(str){
-const buf = new TextEncoder().encode(str);
-const hash = await crypto.subtle.digest('SHA-1', buf);
-return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-// md5 (مختصر)
-function md5(str){return str;} // نفس كودك الكبير حطه هنا لو تبي
-
-// تشغيل
-window.onload=()=>{renderProducts();}
-
 </script>
 
 </body>
