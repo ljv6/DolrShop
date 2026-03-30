@@ -3,139 +3,345 @@
 <head>
 <meta charset="UTF-8">
 <title>Sustainability Quiz</title>
+
 <style>
 body {
     font-family: Arial;
-    direction: ltr;
     padding: 20px;
 }
 .ar {
     display: none;
     color: green;
 }
-button {
-    margin: 10px 0;
-    padding: 10px;
-}
+.correct { color: green; }
+.wrong { color: red; }
 .question {
     margin-bottom: 20px;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
 }
 </style>
+
 </head>
 
 <body>
 
 <h2>Environmental Sustainability Quiz</h2>
 
-<button onclick="toggleArabic()">Show/Hide Arabic</button>
+<button onclick="toggleArabic()">Show / Hide Arabic</button>
+
+<h3 id="score">Score: 0 / 30</h3>
 
 <div id="quiz"></div>
 
 <script>
+
+let score = 0;
+
 const questions = [
 {
-q: "Which statement best reflects how sustainable development is understood?",
-ar: "ما العبارة التي تعكس أفضل فهم للتنمية المستدامة؟",
-options: [
-"A) It is mainly concerned with increasing business profits",
-"B) It focuses only on protecting wildlife and forests",
-"C) It can mean economic growth or environmental protection",
-"D) It completely avoids issues related to development"
-]
+q:"Which statement best reflects how sustainable development is understood?",
+ar:"ما العبارة التي تعكس أفضل فهم للتنمية المستدامة؟",
+options:[
+["A) It is mainly concerned with increasing business profits","تهتم بشكل رئيسي بزيادة أرباح الشركات"],
+["B) It focuses only on protecting wildlife and forests","تركز فقط على حماية الحياة البرية والغابات"],
+["C) It can mean economic growth or environmental protection","يمكن أن تعني النمو الاقتصادي أو حماية البيئة"],
+["D) It completely avoids issues related to development","تتجنب تمامًا القضايا المتعلقة بالتنمية"]
+],
+correct:2
 },
 {
-q: "What is a key feature of environmental sustainability?",
-ar: "ما السمة الأساسية للاستدامة البيئية؟",
-options: [
-"A) Solving only present problems",
-"B) Conserving resources for the future",
-"C) Ignoring long-term impacts",
-"D) Promoting unlimited economic growth"
-]
+q:"What is a key feature of environmental sustainability?",
+ar:"ما السمة الأساسية للاستدامة البيئية؟",
+options:[
+["A) Solving only present problems","حل المشكلات الحالية فقط"],
+["B) Conserving resources for the future","الحفاظ على الموارد للمستقبل"],
+["C) Ignoring long-term impacts","تجاهل الآثار طويلة المدى"],
+["D) Promoting unlimited economic growth","تعزيز النمو الاقتصادي غير المحدود"]
+],
+correct:1
 },
 {
-q: "What is the main aim of sustainable development?",
-ar: "ما الهدف الرئيسي للتنمية المستدامة؟",
-options: [
-"A) Increase population quickly",
-"B) Focus only on growth",
-"C) Balance resources and environment",
-"D) Stop all development activities"
-]
+q:"What is the main aim of sustainable development?",
+ar:"ما الهدف الرئيسي للتنمية المستدامة؟",
+options:[
+["A) Increase population quickly","زيادة عدد السكان بسرعة"],
+["B) Focus only on growth","التركيز فقط على النمو"],
+["C) Balance resources and environment","تحقيق التوازن بين الموارد والبيئة"],
+["D) Stop all development activities","إيقاف جميع أنشطة التنمية"]
+],
+correct:2
 },
 {
-q: "Which of the following is one of the three aspects of sustainable development?",
-ar: "أي مما يلي يُعد أحد الجوانب الثلاثة للتنمية المستدامة؟",
-options: [
-"A) Economic stability and growth",
-"B) Ignoring social services",
-"C) Rapid depletion of resources",
-"D) Focusing only on profits"
-]
+q:"Which of the following is one of the three aspects of sustainable development?",
+ar:"أي مما يلي يُعد أحد الجوانب الثلاثة للتنمية المستدامة؟",
+options:[
+["A) Economic stability and growth","الاستقرار والنمو الاقتصادي"],
+["B) Ignoring social services","تجاهل الخدمات الاجتماعية"],
+["C) Rapid depletion of resources","الاستنزاف السريع للموارد"],
+["D) Focusing only on profits","التركيز فقط على الأرباح"]
+],
+correct:0
 },
 {
-q: "What supports a sustainable society according to the principles?",
-ar: "ما الذي يدعم المجتمع المستدام وفقًا للمبادئ؟",
-options: [
-"A) Health, education, and employment",
-"B) Only industrial expansion",
-"C) Ignoring social needs",
-"D) Rapid resource exploitation"
-]
+q:"What supports a sustainable society according to the principles?",
+ar:"ما الذي يدعم المجتمع المستدام وفقًا للمبادئ؟",
+options:[
+["A) Health, education, and employment","الصحة والتعليم والتوظيف"],
+["B) Only industrial expansion","التوسع الصناعي فقط"],
+["C) Ignoring social needs","تجاهل الاحتياجات الاجتماعية"],
+["D) Rapid resource exploitation","الاستغلال السريع للموارد"]
+],
+correct:0
 },
 {
-q: "What is essential for conserving biodiversity?",
-ar: "ما الأمر الأساسي للحفاظ على التنوع البيولوجي؟",
-options: [
-"A) Focusing only on human needs",
-"B) Exploiting natural resources",
-"C) Ignoring environmental programs",
-"D) Protecting all living beings"
-]
+q:"What is essential for conserving biodiversity?",
+ar:"ما الأمر الأساسي للحفاظ على التنوع البيولوجي؟",
+options:[
+["A) Focusing only on human needs","التركيز فقط على احتياجات الإنسان"],
+["B) Exploiting natural resources","استغلال الموارد الطبيعية"],
+["C) Ignoring environmental programs","تجاهل البرامج البيئية"],
+["D) Protecting all living beings","حماية جميع الكائنات الحية"]
+],
+correct:3
 },
 {
-q: "Why is public participation important in sustainable development?",
-ar: "لماذا تُعد المشاركة العامة مهمة في التنمية المستدامة؟",
-options: [
-"A) It replaces the need for policies",
-"B) It ensures individual efforts alone succeed",
-"C) It helps translate concepts into action",
-"D) It limits environmental conservation efforts"
-]
+q:"Why is public participation important in sustainable development?",
+ar:"لماذا تُعد المشاركة العامة مهمة في التنمية المستدامة؟",
+options:[
+["A) It replaces the need for policies","تستبدل الحاجة إلى السياسات"],
+["B) It ensures individual efforts alone succeed","تضمن نجاح الجهود الفردية فقط"],
+["C) It helps translate concepts into action","تساعد في تحويل المفاهيم إلى أفعال"],
+["D) It limits environmental conservation efforts","تحد من جهود الحفاظ على البيئة"]
+],
+correct:2
 },
 {
-q: "Why must development stay within the earth’s carrying capacity?",
-ar: "لماذا يجب أن تبقى التنمية ضمن القدرة الاستيعابية للأرض؟",
-options: [
-"A) To allow unlimited use of earth",
-"B) To prevent overuse of resources",
-"C) To ignore all environmental limits",
-"D) To focus only on economic gain"
-]
+q:"Why must development stay within the earth’s carrying capacity?",
+ar:"لماذا يجب أن تبقى التنمية ضمن القدرة الاستيعابية للأرض؟",
+options:[
+["A) To allow unlimited use of earth","للسماح باستخدام غير محدود للأرض"],
+["B) To prevent overuse of resources","لمنع الإفراط في استخدام الموارد"],
+["C) To ignore all environmental limits","لتجاهل جميع الحدود البيئية"],
+["D) To focus only on economic gain","للتركيز فقط على المكاسب الاقتصادية"]
+],
+correct:1
 },
 {
-q: "Which of the following is a major threat to sustainability?",
-ar: "أي مما يلي يُعد تهديدًا رئيسيًا للاستدامة؟",
-options: [
-"A) Climate change and deforestation",
-"B) Only economic expansion policies",
-"C) Ignoring social participation",
-"D) Promoting cultural heritage alone"
-]
+q:"Which of the following is a major threat to sustainability?",
+ar:"أي مما يلي يُعد تهديدًا رئيسيًا للاستدامة؟",
+options:[
+["A) Climate change and deforestation","تغير المناخ وإزالة الغابات"],
+["B) Only economic expansion policies","سياسات التوسع الاقتصادي فقط"],
+["C) Ignoring social participation","تجاهل المشاركة الاجتماعية"],
+["D) Promoting cultural heritage alone","تعزيز التراث الثقافي فقط"]
+],
+correct:0
 },
 {
-q: "What does population ecology study?",
-ar: "ماذا يدرس علم بيئة السكان؟",
-options: [
-"A) Human cultural traditions only",
-"B) Economic growth and profits",
-"C) Population size and its causes",
-"D) Industrial growth without limits"
-]
+q:"What does population ecology study?",
+ar:"ماذا يدرس علم بيئة السكان؟",
+options:[
+["A) Human cultural traditions only","التقاليد الثقافية البشرية فقط"],
+["B) Economic growth and profits","النمو الاقتصادي والأرباح"],
+["C) Population size and its causes","حجم السكان وأسبابه"],
+["D) Industrial growth without limits","النمو الصناعي غير المحدود"]
+],
+correct:2
+},
+{
+q:"Which feature best defines a population?",
+ar:"ما السمة التي تُعرّف السكان بشكل أفضل؟",
+options:[
+["A) Individuals of different species together","أفراد من أنواع مختلفة معًا"],
+["B) Group of individuals in same area","مجموعة من الأفراد في نفس المنطقة"],
+["C) Only organisms kept in captivity","كائنات محفوظة في الأسر فقط"],
+["D) Species living separately from others","أنواع تعيش منفصلة عن غيرها"]
+],
+correct:1
+},
+{
+q:"Which are two key characteristics of a population?",
+ar:"ما الخاصيتان الأساسيتان للسكان؟",
+options:[
+["A) Density and pattern of spacing","الكثافة ونمط التوزيع"],
+["B) Age and color of individuals","عمر ولون الأفراد"],
+["C) Size of the habitat only","حجم الموطن فقط"],
+["D) Type of food and water source","نوع الغذاء ومصدر الماء"]
+],
+correct:0
+},
+{
+q:"How do ecologists measure population density?",
+ar:"كيف يقيس علماء البيئة الكثافة السكانية؟",
+options:[
+["A) By counting all individuals directly","عد جميع الأفراد مباشرة"],
+["B) By measuring only the habitat size","قياس حجم الموطن فقط"],
+["C) By tracking food and water sources","تتبع مصادر الغذاء والماء"],
+["D) By estimating using sampling methods","التقدير باستخدام طرق أخذ العينات"]
+],
+correct:3
+},
+{
+q:"What is clumped dispersion?",
+ar:"ما هو التوزيع المتكتل؟",
+options:[
+["A) Individuals spaced evenly apart","أفراد متباعدون بالتساوي"],
+["B) Individuals gathered in groups","أفراد متجمعون في مجموعات"],
+["C) Individuals placed randomly","أفراد موزعون عشوائيًا"],
+["D) Individuals living separately","أفراد يعيشون منفصلين"]
+],
+correct:1
+},
+{
+q:"What does the concept of ecological footprint measure?",
+ar:"ماذا يقيس مفهوم البصمة البيئية؟",
+options:[
+["A) The land and water used by a nation","الأرض والمياه التي تستخدمها دولة ما"],
+["B) The number of people in a country","عدد السكان في بلد"],
+["C) The economic growth of a region","النمو الاقتصادي لمنطقة"],
+["D) The amount of waste produced only","كمية النفايات المنتجة فقط"]
+],
+correct:0
+},
+// TRUE/FALSE
+{
+q:"Sustainable development has never sparked debate in academic fields.",
+ar:"التنمية المستدامة لم تثر أي جدل في الأوساط الأكاديمية.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:1
+},
+{
+q:"The literature on sustainable development has four thematic areas.",
+ar:"الأدبيات حول التنمية المستدامة تحتوي على أربعة مجالات موضوعية.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:0
+},
+{
+q:"Critics believe the term sustainable development is always clear and precise.",
+ar:"يعتقد النقاد أن مصطلح التنمية المستدامة دائمًا واضح ودقيق.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:1
+},
+{
+q:"Balancing environmental, social, and economic goals is an ongoing ethical challenge.",
+ar:"تحقيق التوازن بين الأهداف البيئية والاجتماعية والاقتصادية يمثل تحديًا أخلاقيًا مستمرًا.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:0
+},
+{
+q:"Scientific explanations ignore human responsibility toward past and future.",
+ar:"التفسيرات العلمية تتجاهل مسؤولية الإنسان تجاه الماضي والمستقبل.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:1
+},
+{
+q:"Sustainable development is seen by some as extending Western economic models.",
+ar:"يرى البعض أن التنمية المستدامة امتداد للنماذج الاقتصادية الغربية.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:0
+},
+{
+q:"Integration policies should aim to protect resources for future generations.",
+ar:"يجب أن تهدف سياسات التكامل إلى حماية الموارد للأجيال القادمة.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:0
+},
+{
+q:"Sustainability principles only consider economic factors.",
+ar:"مبادئ الاستدامة تأخذ في الاعتبار العوامل الاقتصادية فقط.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:1
+},
+{
+q:"Sustainability indicators can be quantitative or qualitative.",
+ar:"يمكن أن تكون مؤشرات الاستدامة كمية أو نوعية.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:0
+},
+{
+q:"Social indicators only measure natural resources and ecosystems.",
+ar:"المؤشرات الاجتماعية تقيس الموارد الطبيعية والأنظمة البيئية فقط.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:1
+},
+{
+q:"Environmental indicators focus on human well-being and education.",
+ar:"المؤشرات البيئية تركز على رفاهية الإنسان والتعليم.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:1
+},
+{
+q:"City indicators may include air quality and transportation.",
+ar:"قد تشمل مؤشرات المدن جودة الهواء ووسائل النقل.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:0
+},
+{
+q:"Energy consumption and carbon emissions are examples of quantitative indicators.",
+ar:"يُعد استهلاك الطاقة وانبعاثات الكربون أمثلة على مؤشرات كمية.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:0
+},
+{
+q:"Indicators prevent any adjustments to achieve goals.",
+ar:"تمنع المؤشرات إجراء أي تعديلات لتحقيق الأهداف.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:1
+},
+{
+q:"Sustainability indicators are dynamic and can be refined over time.",
+ar:"مؤشرات الاستدامة ديناميكية ويمكن تحسينها بمرور الوقت.",
+options:[
+["True","صح"],
+["False","خطأ"]
+],
+correct:0
 }
 ];
 
-// generate quiz
 const quizDiv = document.getElementById("quiz");
 
 questions.forEach((item, index) => {
@@ -143,18 +349,41 @@ questions.forEach((item, index) => {
     div.classList.add("question");
 
     div.innerHTML = `
-        <p><b>Q${index+1}: ${item.q}</b></p>
-        <p class="ar">${item.ar}</p>
-        ${item.options.map(opt => `<label><input type="radio" name="q${index}"> ${opt}</label><br>`).join("")}
+    <p><b>Q${index+1}: ${item.q}</b></p>
+    <p class="ar">${item.ar}</p>
+    ${item.options.map((opt,i)=>`
+    <label>
+    <input type="radio" name="q${index}" onclick="checkAnswer(${index},${i},this)">
+    ${opt[0]} <span class="ar">(${opt[1]})</span>
+    </label><br>`).join("")}
+    <p id="result${index}"></p>
     `;
 
     quizDiv.appendChild(div);
 });
 
-function toggleArabic() {
-    let arTexts = document.querySelectorAll(".ar");
-    arTexts.forEach(el => {
-        el.style.display = el.style.display === "none" ? "block" : "none";
+function checkAnswer(qIndex, selected, el) {
+    let result = document.getElementById("result"+qIndex);
+
+    if(el.disabled) return;
+
+    let correct = questions[qIndex].correct;
+
+    document.getElementsByName("q"+qIndex).forEach(r=>r.disabled=true);
+
+    if(selected === correct){
+        score++;
+        result.innerHTML = "<span class='correct'>✔ Correct</span>";
+    } else {
+        result.innerHTML = "<span class='wrong'>✘ Wrong</span>";
+    }
+
+    document.getElementById("score").innerText = "Score: " + score + " / 30";
+}
+
+function toggleArabic(){
+    document.querySelectorAll(".ar").forEach(el=>{
+        el.style.display = el.style.display === "none" ? "inline" : "none";
     });
 }
 </script>
