@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sustainability Quiz</title>
+<style>
+body {
+    font-family: Arial;
+    direction: ltr;
+    padding: 20px;
+}
+.ar {
+    display: none;
+    color: green;
+}
+button {
+    margin: 10px 0;
+    padding: 10px;
+}
+.question {
+    margin-bottom: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Environmental Sustainability Quiz</h2>
+
+<button onclick="toggleArabic()">Show/Hide Arabic</button>
+
+<div id="quiz"></div>
+
+<script>
+const questions = [
+{
+q: "Which statement best reflects how sustainable development is understood?",
+ar: "ما العبارة التي تعكس أفضل فهم للتنمية المستدامة؟",
+options: [
+"A) It is mainly concerned with increasing business profits",
+"B) It focuses only on protecting wildlife and forests",
+"C) It can mean economic growth or environmental protection",
+"D) It completely avoids issues related to development"
+]
+},
+{
+q: "What is a key feature of environmental sustainability?",
+ar: "ما السمة الأساسية للاستدامة البيئية؟",
+options: [
+"A) Solving only present problems",
+"B) Conserving resources for the future",
+"C) Ignoring long-term impacts",
+"D) Promoting unlimited economic growth"
+]
+},
+{
+q: "What is the main aim of sustainable development?",
+ar: "ما الهدف الرئيسي للتنمية المستدامة؟",
+options: [
+"A) Increase population quickly",
+"B) Focus only on growth",
+"C) Balance resources and environment",
+"D) Stop all development activities"
+]
+},
+{
+q: "Which of the following is one of the three aspects of sustainable development?",
+ar: "أي مما يلي يُعد أحد الجوانب الثلاثة للتنمية المستدامة؟",
+options: [
+"A) Economic stability and growth",
+"B) Ignoring social services",
+"C) Rapid depletion of resources",
+"D) Focusing only on profits"
+]
+},
+{
+q: "What supports a sustainable society according to the principles?",
+ar: "ما الذي يدعم المجتمع المستدام وفقًا للمبادئ؟",
+options: [
+"A) Health, education, and employment",
+"B) Only industrial expansion",
+"C) Ignoring social needs",
+"D) Rapid resource exploitation"
+]
+},
+{
+q: "What is essential for conserving biodiversity?",
+ar: "ما الأمر الأساسي للحفاظ على التنوع البيولوجي؟",
+options: [
+"A) Focusing only on human needs",
+"B) Exploiting natural resources",
+"C) Ignoring environmental programs",
+"D) Protecting all living beings"
+]
+},
+{
+q: "Why is public participation important in sustainable development?",
+ar: "لماذا تُعد المشاركة العامة مهمة في التنمية المستدامة؟",
+options: [
+"A) It replaces the need for policies",
+"B) It ensures individual efforts alone succeed",
+"C) It helps translate concepts into action",
+"D) It limits environmental conservation efforts"
+]
+},
+{
+q: "Why must development stay within the earth’s carrying capacity?",
+ar: "لماذا يجب أن تبقى التنمية ضمن القدرة الاستيعابية للأرض؟",
+options: [
+"A) To allow unlimited use of earth",
+"B) To prevent overuse of resources",
+"C) To ignore all environmental limits",
+"D) To focus only on economic gain"
+]
+},
+{
+q: "Which of the following is a major threat to sustainability?",
+ar: "أي مما يلي يُعد تهديدًا رئيسيًا للاستدامة؟",
+options: [
+"A) Climate change and deforestation",
+"B) Only economic expansion policies",
+"C) Ignoring social participation",
+"D) Promoting cultural heritage alone"
+]
+},
+{
+q: "What does population ecology study?",
+ar: "ماذا يدرس علم بيئة السكان؟",
+options: [
+"A) Human cultural traditions only",
+"B) Economic growth and profits",
+"C) Population size and its causes",
+"D) Industrial growth without limits"
+]
+}
+];
+
+// generate quiz
+const quizDiv = document.getElementById("quiz");
+
+questions.forEach((item, index) => {
+    let div = document.createElement("div");
+    div.classList.add("question");
+
+    div.innerHTML = `
+        <p><b>Q${index+1}: ${item.q}</b></p>
+        <p class="ar">${item.ar}</p>
+        ${item.options.map(opt => `<label><input type="radio" name="q${index}"> ${opt}</label><br>`).join("")}
+    `;
+
+    quizDiv.appendChild(div);
+});
+
+function toggleArabic() {
+    let arTexts = document.querySelectorAll(".ar");
+    arTexts.forEach(el => {
+        el.style.display = el.style.display === "none" ? "block" : "none";
+    });
+}
+</script>
+
+</body>
+</html>
