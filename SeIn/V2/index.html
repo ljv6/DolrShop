@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منذ النشأة — نسخة مطورة</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --gold:#C9A84C;
+  --dark:#0A0A0F;
+  --card:#16161F;
+  --text:#E8E0D0;
+  --muted:#8A8070;
+}
+
+* {margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:'Tajawal',sans-serif;
+  background:var(--dark);
+  color:var(--text);
+}
+
+/* HERO */
+.hero{
+  text-align:center;
+  padding:50px 20px;
+}
+.hero h1{
+  font-size:40px;
+  color:var(--gold);
+}
+
+/* NAV */
+.nav{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+.nav button{
+  padding:10px 20px;
+  border:none;
+  cursor:pointer;
+  background:#222;
+  color:white;
+}
+.nav button.active{
+  background:var(--gold);
+  color:black;
+}
+
+/* SEARCH */
+.search{
+  text-align:center;
+  margin-bottom:20px;
+}
+.search input{
+  width:80%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+}
+
+/* CARDS */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:15px;
+  padding:20px;
+}
+.card{
+  background:var(--card);
+  padding:20px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.card:hover{
+  border:1px solid var(--gold);
+}
+
+/* DETAIL */
+.detail{
+  display:none;
+  padding:20px;
+}
+
+/* AI */
+.ai-box{
+  padding:20px;
+}
+textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+}
+button.run{
+  margin-top:10px;
+  padding:10px 20px;
+  background:var(--gold);
+  border:none;
+  cursor:pointer;
+}
+.output{
+  margin-top:20px;
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hero">
+  <h1>منذ النشأة</h1>
+  <p>استكشف مناطق المملكة</p>
+</div>
+
+<div class="nav">
+  <button class="active" onclick="showPage('regions',event)">المناطق</button>
+  <button onclick="showPage('ai',event)">المساعد</button>
+</div>
+
+<!-- REGIONS -->
+<div id="regions">
+
+<div class="search">
+  <input id="search" placeholder="ابحث عن منطقة..." onkeyup="filterRegions()">
+</div>
+
+<div class="grid" id="grid">
+
+<div class="card" onclick="showDetail('asir')">🏔️ عسير</div>
+<div class="card" onclick="showDetail('qassim')">🌴 القصيم</div>
+<div class="card" onclick="showDetail('north')">🏜️ الحدود الشمالية</div>
+
+</div>
+
+<div id="asir" class="detail">
+<h2>عسير</h2>
+<p>الأكلات: الحنيذ - العريكة - التصابيع</p>
+</div>
+
+<div id="qassim" class="detail">
+<h2>القصيم</h2>
+<p>تشتهر بالتمور والزراعة</p>
+</div>
+
+<div id="north" class="detail">
+<h2>الحدود الشمالية</h2>
+<p>درب زبيدة وطريق التجارة</p>
+</div>
+
+</div>
+
+<!-- AI -->
+<div id="ai" style="display:none" class="ai-box">
+
+<textarea id="q" placeholder="اسأل عن منطقة..."></textarea>
+<button class="run" onclick="runAI()">تشغيل</button>
+
+<div class="output" id="out"></div>
+
+</div>
+
+<script>
+
+/* NAV */
+function showPage(id,e){
+  document.getElementById('regions').style.display='none';
+  document.getElementById('ai').style.display='none';
+  document.getElementById(id).style.display='block';
+
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+}
+
+/* SEARCH */
+function filterRegions(){
+  let v=document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('.card').forEach(c=>{
+    c.style.display = c.innerText.toLowerCase().includes(v)?'block':'none';
+  });
+}
+
+/* DETAIL */
+function showDetail(id){
+  document.querySelectorAll('.detail').forEach(d=>d.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+/* AI SIMULATION */
+function runAI(){
+  let q=document.getElementById('q').value;
+
+  let answer="";
+
+  if(q.includes("عسير")){
+    answer="منطقة عسير تشتهر بالأكلات مثل الحنيذ والعريكة.";
+  } else if(q.includes("القصيم")){
+    answer="القصيم منطقة زراعية وتشتهر بإنتاج التمور.";
+  } else if(q.includes("درب زبيدة")){
+    answer="درب زبيدة طريق تاريخي مهم للحجاج.";
+  } else{
+    answer="المعلومة غير متوفرة في النظام.";
+  }
+
+  document.getElementById('out').innerText=answer;
+}
+
+</script>
+
+</body>
+</html>
