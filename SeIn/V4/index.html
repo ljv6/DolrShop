@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منذ النشأة | النسخة الخارقة</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --gold:#C9A84C;
+  --dark:#0A0A0F;
+  --card:rgba(255,255,255,0.05);
+}
+
+body{
+  margin:0;
+  font-family:'Tajawal';
+  background:radial-gradient(circle,#111,#000);
+  color:white;
+  transition:0.3s;
+}
+
+/* HEADER */
+.header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:var(--gold);
+}
+
+/* MAP */
+#map{height:400px}
+
+/* PANEL */
+.panel{
+  padding:15px;
+  backdrop-filter:blur(10px);
+  background:var(--card);
+  margin:10px;
+  border-radius:12px;
+  animation:fade 0.5s;
+}
+
+@keyframes fade{
+  from{opacity:0;transform:translateY(10px)}
+}
+
+/* BUTTONS */
+button{
+  background:var(--gold);
+  border:none;
+  padding:8px 15px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* CHAT */
+.chat{
+  max-height:200px;
+  overflow:auto;
+}
+
+.msg{
+  margin:5px 0;
+}
+
+.user{color:#4fc3f7}
+.bot{color:#81c784}
+</style>
+</head>
+
+<body>
+
+<div class="header">🗺️ منذ النشأة — الخريطة الذكية</div>
+
+<div id="map"></div>
+
+<div class="panel" id="info">اختر منطقة...</div>
+
+<div class="panel">
+<input id="search" placeholder="ابحث عن منطقة">
+<button onclick="search()">بحث</button>
+<button onclick="speak()">🎤</button>
+</div>
+
+<div class="panel">
+<h3>🤖 المساعد</h3>
+<div class="chat" id="chat"></div>
+<input id="q">
+<button onclick="ask()">إرسال</button>
+</div>
+
+<div class="panel">
+<h3>🎯 Quiz</h3>
+<p id="quizQ"></p>
+<button onclick="ans(true)">صح</button>
+<button onclick="ans(false)">خطأ</button>
+<p id="quizR"></p>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+/* MAP */
+let map=L.map('map').setView([23.8,45],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+/* DATA */
+const data={
+  asir:{
+    name:"عسير",
+    coords:[18.2,42.5],
+    info:`🏔️ عسير
+تاريخ: القرن 13 هجري
+اقتصاد: زراعة + رعي
+أكلات: الحنيذ - العريكة`
+  },
+  qassim:{
+    name:"القصيم",
+    coords:[26.3,43.9],
+    info:`🌴 القصيم
+تمور: 370 ألف طن
+مزارع: 12000
+دور مهم في توحيد نجد`
+  },
+  north:{
+    name:"الحدود الشمالية",
+    coords:[30,42],
+    info:`🏜️ الحدود الشمالية
+رمال عالج
+درب زبيدة
+ممر تجاري تاريخي`
+  }
+};
+
+/* MARKERS */
+for(let k in data){
+  let m=L.marker(data[k].coords).addTo(map);
+
+  m.on("click",()=>{
+    document.getElementById("info").innerText=data[k].info;
+  });
+}
+
+/* SEARCH */
+function search(){
+  let v=document.getElementById("search").value;
+  for(let k in data){
+    if(data[k].name.includes(v)){
+      map.setView(data[k].coords,8);
+      document.getElementById("info").innerText=data[k].info;
+    }
+  }
+}
+
+/* SPEECH */
+function speak(){
+  let t=document.getElementById("info").innerText;
+  speechSynthesis.speak(new SpeechSynthesisUtterance(t));
+}
+
+/* AI CHAT */
+function ask(){
+  let q=document.getElementById("q").value;
+  let chat=document.getElementById("chat");
+
+  chat.innerHTML+=`<div class="msg user">👤 ${q}</div>`;
+
+  let res="";
+
+  if(q.includes("عسير")) res=data.asir.info;
+  else if(q.includes("القصيم")) res=data.qassim.info;
+  else if(q.includes("زبيدة")) res=data.north.info;
+  else res="المعلومة غير متوفرة";
+
+  chat.innerHTML+=`<div class="msg bot">🤖 ${res}</div>`;
+}
+
+/* QUIZ */
+const quiz=[
+  {q:"القصيم تنتج تمور كثيرة",a:true},
+  {q:"درب زبيدة في عسير",a:false}
+];
+let i=0;
+
+function load(){
+  document
