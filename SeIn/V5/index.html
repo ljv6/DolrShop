@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>منذ النشأة</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+:root{
+  --gold:#C9A84C;
+  --dark:#0A0A0F;
+  --card:rgba(255,255,255,0.06);
+}
+
+body{
+  margin:0;
+  font-family:'Tajawal';
+  background:linear-gradient(#0A0A0F,#111);
+  color:white;
+}
+
+/* HEADER */
+.header{
+  text-align:center;
+  padding:20px;
+  font-size:22px;
+  color:var(--gold);
+  letter-spacing:2px;
+}
+
+/* MAP */
+#map{
+  height:60vh;
+}
+
+/* INFO CARD */
+.info{
+  position:fixed;
+  bottom:-100%;
+  left:0;
+  width:100%;
+  background:var(--card);
+  backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,0.1);
+  padding:20px;
+  border-radius:20px 20px 0 0;
+  transition:0.4s;
+}
+
+.info.active{
+  bottom:0;
+}
+
+/* TITLE */
+.info h2{
+  color:var(--gold);
+}
+
+/* CHAT */
+.chat{
+  position:fixed;
+  top:20px;
+  left:20px;
+  width:260px;
+  background:var(--card);
+  backdrop-filter:blur(15px);
+  border-radius:15px;
+  padding:10px;
+}
+
+.chat input{
+  width:100%;
+  margin-top:5px;
+  padding:6px;
+}
+
+.msg{
+  font-size:13px;
+  margin:4px 0;
+}
+
+.user{color:#4fc3f7}
+.bot{color:#81c784}
+
+/* BUTTON */
+.btn{
+  background:var(--gold);
+  border:none;
+  padding:8px;
+  border-radius:8px;
+  margin-top:5px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">🗺️ منذ النشأة</div>
+
+<div id="map"></div>
+
+<div class="info" id="info"></div>
+
+<div class="chat">
+  <div id="chatBox"></div>
+  <input id="q" placeholder="اسأل...">
+  <button class="btn" onclick="ask()">إرسال</button>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+/* MAP */
+let map=L.map('map').setView([23.8,45],6);
+
+L.tileLayer('https://{
