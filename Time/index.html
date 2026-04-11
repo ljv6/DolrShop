@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flip Clock</title>
+<title>Real Flip Clock</title>
 
 <style>
 :root {
@@ -21,28 +21,26 @@
 body {
   margin: 0;
   background: var(--bg);
-  color: var(--text);
-  font-family: Arial, sans-serif;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100vh;
+  font-family: Arial;
 }
 
-/* زر الوضع */
+/* زر */
 .toggle {
   position: absolute;
   top: 20px;
   right: 20px;
-  cursor: pointer;
-  padding: 10px 15px;
-  border: none;
   background: var(--card);
   color: var(--text);
+  border: none;
+  padding: 10px;
   border-radius: 8px;
+  cursor: pointer;
 }
 
-/* الحاوية */
 .clock {
   display: flex;
   gap: 25px;
@@ -51,12 +49,9 @@ body {
 
 /* الكرت */
 .flip-card {
+  position: relative;
   width: 140px;
   height: 180px;
-  background: var(--card);
-  border-radius: 15px;
-  position: relative;
-  overflow: hidden;
   perspective: 1000px;
 }
 
@@ -65,47 +60,94 @@ body {
   height: 140px;
 }
 
-.flip-card div {
+/* الجزء الثابت */
+.card-face {
   position: absolute;
   width: 100%;
   height: 50%;
+  overflow: hidden;
+  background: var(--card);
+  color: var(--text);
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: bold;
-}
-
-.flip-card .top {
-  top: 0;
-  border-bottom: 2px solid #333;
   font-size: 90px;
 }
 
-.flip-card .bottom {
-  bottom: 0;
-  font-size: 90px;
-}
-
-.flip-card.small .top,
-.flip-card.small .bottom {
+.flip-card.small .card-face {
   font-size: 60px;
 }
 
-/* الانيميشن */
-.flip {
-  animation: flipAnim 0.5s ease;
+.top-static {
+  top: 0;
+  border-bottom: 2px solid #333;
 }
 
-@keyframes flipAnim {
-  0% { transform: rotateX(0deg); }
-  50% { transform: rotateX(-90deg); }
-  100% { transform: rotateX(0deg); }
+.bottom-static {
+  bottom: 0;
+}
+
+/* المتحرك */
+.flip-top,
+.flip-bottom {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  background: var(--card);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backface-visibility: hidden;
+  transform-origin: center bottom;
+}
+
+.flip-top {
+  top: 0;
+  border-bottom: 2px solid #333;
+}
+
+.flip-bottom {
+  bottom: 0;
+  transform-origin: center top;
+}
+
+/* نص داخل المتحرك */
+.flip-top span,
+.flip-bottom span {
+  font-size: 90px;
+  font-weight: bold;
+}
+
+.flip-card.small .flip-top span,
+.flip-card.small .flip-bottom span {
+  font-size: 60px;
+}
+
+/* انيميشن */
+.flip-card.animate .flip-top {
+  animation: flipTop 0.4s forwards;
+}
+
+.flip-card.animate .flip-bottom {
+  animation: flipBottom 0.4s 0.4s forwards;
+}
+
+@keyframes flipTop {
+  0% { transform: rotateX(0); }
+  100% { transform: rotateX(-90deg); }
+}
+
+@keyframes flipBottom {
+  0% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
 }
 
 /* AM PM */
 .ampm {
   font-size: 30px;
-  margin-left: 10px;
+  color: var(--text);
 }
 </style>
 </head>
@@ -116,42 +158,35 @@ body {
 
 <div class="clock">
 
-  <!-- الساعات -->
-  <div class="flip-card" id="hours">
-    <div class="top">00</div>
-    <div class="bottom">00</div>
-  </div>
-
-  <!-- الدقائق -->
-  <div class="flip-card" id="minutes">
-    <div class="top">00</div>
-    <div class="bottom">00</div>
-  </div>
-
-  <!-- الثواني (جنب الدقائق) -->
-  <div class="flip-card small" id="seconds">
-    <div class="top">00</div>
-    <div class="bottom">00</div>
-  </div>
-
-  <!-- AM PM -->
+  <div class="flip-card" id="hours"></div>
+  <div class="flip-card" id="minutes"></div>
+  <div class="flip-card small" id="seconds"></div>
   <div class="ampm" id="ampm">AM</div>
 
 </div>
 
 <script>
-function format(num) {
-  return num < 10 ? "0" + num : num;
+function createCard(id) {
+  const el = document.getElementById(id);
+
+  el.innerHTML = `
+    <div class="card-face top-static">00</div>
+    <div class="card-face bottom-static">00</div>
+
+    <div class="flip-top"><span>00</span></div>
+    <div class="flip-bottom"><span>00</span></div>
+  `;
 }
 
-// نخزن آخر القيم
-let prev = {
-  h: null,
-  m: null,
-  s: null
-};
+["hours","minutes","seconds"].forEach(createCard);
 
-function updateClock() {
+function format(n) {
+  return n < 10 ? "0" + n : n;
+}
+
+let prev = {h:null, m:null, s:null};
+
+function update() {
   const now = new Date();
 
   let h = now.getHours();
@@ -161,44 +196,39 @@ function updateClock() {
   const ampm = h >= 12 ? "PM" : "AM";
   h = h % 12 || 12;
 
-  // يحدث فقط عند التغيير
-  if (prev.h !== h) {
-    flip("hours", format(h));
-    prev.h = h;
-  }
-
-  if (prev.m !== m) {
-    flip("minutes", format(m));
-    prev.m = m;
-  }
-
-  if (prev.s !== s) {
-    flip("seconds", format(s));
-    prev.s = s;
-  }
+  if (prev.h !== h) flip("hours", format(h)), prev.h = h;
+  if (prev.m !== m) flip("minutes", format(m)), prev.m = m;
+  if (prev.s !== s) flip("seconds", format(s)), prev.s = s;
 
   document.getElementById("ampm").textContent = ampm;
 }
 
-function flip(id, value) {
+function flip(id, newVal) {
   const card = document.getElementById(id);
-  const top = card.querySelector(".top");
-  const bottom = card.querySelector(".bottom");
 
-  top.textContent = value;
-  bottom.textContent = value;
+  const topStatic = card.querySelector(".top-static");
+  const bottomStatic = card.querySelector(".bottom-static");
+  const flipTop = card.querySelector(".flip-top span");
+  const flipBottom = card.querySelector(".flip-bottom span");
 
-  card.classList.remove("flip");
-  void card.offsetWidth;
-  card.classList.add("flip");
+  flipTop.textContent = topStatic.textContent;
+  flipBottom.textContent = newVal;
+
+  card.classList.add("animate");
+
+  setTimeout(() => {
+    topStatic.textContent = newVal;
+    bottomStatic.textContent = newVal;
+    card.classList.remove("animate");
+  }, 800);
 }
 
 function toggleMode() {
   document.body.classList.toggle("light");
 }
 
-setInterval(updateClock, 1000);
-updateClock();
+setInterval(update, 1000);
+update();
 </script>
 
 </body>
