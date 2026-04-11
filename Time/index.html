@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flip Clock</title>
+
+<style>
+:root {
+  --bg: #000;
+  --card: #111;
+  --text: #fff;
+}
+
+.light {
+  --bg: #f5f5f5;
+  --card: #ddd;
+  --text: #000;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* زر الوضع */
+.toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  cursor: pointer;
+  padding: 10px 15px;
+  border: none;
+  background: var(--card);
+  color: var(--text);
+  border-radius: 8px;
+}
+
+/* الحاوية */
+.clock {
+  display: flex;
+  gap: 25px;
+  align-items: center;
+}
+
+/* الكرت */
+.flip-card {
+  width: 140px;
+  height: 180px;
+  background: var(--card);
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+.flip-card.small {
+  width: 100px;
+  height: 140px;
+}
+
+.flip-card div {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.flip-card .top {
+  top: 0;
+  border-bottom: 2px solid #333;
+  font-size: 90px;
+}
+
+.flip-card .bottom {
+  bottom: 0;
+  font-size: 90px;
+}
+
+.flip-card.small .top,
+.flip-card.small .bottom {
+  font-size: 60px;
+}
+
+/* الانيميشن */
+.flip {
+  animation: flipAnim 0.5s ease;
+}
+
+@keyframes flipAnim {
+  0% { transform: rotateX(0deg); }
+  50% { transform: rotateX(-90deg); }
+  100% { transform: rotateX(0deg); }
+}
+
+/* AM PM */
+.ampm {
+  font-size: 30px;
+  margin-left: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<button class="toggle" onclick="toggleMode()">تبديل الوضع</button>
+
+<div class="clock">
+
+  <!-- الساعات -->
+  <div class="flip-card" id="hours">
+    <div class="top">00</div>
+    <div class="bottom">00</div>
+  </div>
+
+  <!-- الدقائق -->
+  <div class="flip-card" id="minutes">
+    <div class="top">00</div>
+    <div class="bottom">00</div>
+  </div>
+
+  <!-- الثواني (جنب الدقائق) -->
+  <div class="flip-card small" id="seconds">
+    <div class="top">00</div>
+    <div class="bottom">00</div>
+  </div>
+
+  <!-- AM PM -->
+  <div class="ampm" id="ampm">AM</div>
+
+</div>
+
+<script>
+function format(num) {
+  return num < 10 ? "0" + num : num;
+}
+
+// نخزن آخر القيم
+let prev = {
+  h: null,
+  m: null,
+  s: null
+};
+
+function updateClock() {
+  const now = new Date();
+
+  let h = now.getHours();
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+
+  // يحدث فقط عند التغيير
+  if (prev.h !== h) {
+    flip("hours", format(h));
+    prev.h = h;
+  }
+
+  if (prev.m !== m) {
+    flip("minutes", format(m));
+    prev.m = m;
+  }
+
+  if (prev.s !== s) {
+    flip("seconds", format(s));
+    prev.s = s;
+  }
+
+  document.getElementById("ampm").textContent = ampm;
+}
+
+function flip(id, value) {
+  const card = document.getElementById(id);
+  const top = card.querySelector(".top");
+  const bottom = card.querySelector(".bottom");
+
+  top.textContent = value;
+  bottom.textContent = value;
+
+  card.classList.remove("flip");
+  void card.offsetWidth;
+  card.classList.add("flip");
+}
+
+function toggleMode() {
+  document.body.classList.toggle("light");
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+
+</body>
+</html>
