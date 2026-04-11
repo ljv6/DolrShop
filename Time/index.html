@@ -3,19 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Real Flip Clock</title>
+<title>Flip Clock Clean</title>
 
 <style>
 :root {
   --bg: #000;
-  --card: #111;
+  --card: #000;
   --text: #fff;
+  --line: #222;
 }
 
 .light {
   --bg: #f5f5f5;
-  --card: #ddd;
+  --card: #fff;
   --text: #000;
+  --line: #ccc;
 }
 
 body {
@@ -35,7 +37,7 @@ body {
   right: 20px;
   background: var(--card);
   color: var(--text);
-  border: none;
+  border: 1px solid var(--line);
   padding: 10px;
   border-radius: 8px;
   cursor: pointer;
@@ -52,6 +54,9 @@ body {
   position: relative;
   width: 140px;
   height: 180px;
+  background: var(--card);
+  border-radius: 15px;
+  overflow: hidden;
   perspective: 1000px;
 }
 
@@ -60,87 +65,51 @@ body {
   height: 140px;
 }
 
-/* الجزء الثابت */
-.card-face {
+/* النص الأساسي */
+.display {
   position: absolute;
   width: 100%;
-  height: 50%;
-  overflow: hidden;
-  background: var(--card);
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 90px;
+  font-weight: bold;
   color: var(--text);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  font-size: 90px;
 }
 
-.flip-card.small .card-face {
+.flip-card.small .display {
   font-size: 60px;
 }
 
-.top-static {
-  top: 0;
-  border-bottom: 2px solid #333;
-}
-
-.bottom-static {
-  bottom: 0;
-}
-
-/* المتحرك */
-.flip-top,
-.flip-bottom {
+/* الطبقة المتحركة */
+.flip-layer {
   position: absolute;
   width: 100%;
-  height: 50%;
-  overflow: hidden;
+  height: 100%;
   background: var(--card);
   display: flex;
   justify-content: center;
   align-items: center;
-  backface-visibility: hidden;
-  transform-origin: center bottom;
-}
-
-.flip-top {
-  top: 0;
-  border-bottom: 2px solid #333;
-}
-
-.flip-bottom {
-  bottom: 0;
-  transform-origin: center top;
-}
-
-/* نص داخل المتحرك */
-.flip-top span,
-.flip-bottom span {
   font-size: 90px;
   font-weight: bold;
+  color: var(--text);
+  transform-origin: top;
+  backface-visibility: hidden;
 }
 
-.flip-card.small .flip-top span,
-.flip-card.small .flip-bottom span {
+.flip-card.small .flip-layer {
   font-size: 60px;
 }
 
-/* انيميشن */
-.flip-card.animate .flip-top {
-  animation: flipTop 0.4s forwards;
+/* الانيميشن */
+.animate {
+  animation: flip 0.6s ease;
 }
 
-.flip-card.animate .flip-bottom {
-  animation: flipBottom 0.4s 0.4s forwards;
-}
-
-@keyframes flipTop {
+@keyframes flip {
   0% { transform: rotateX(0); }
-  100% { transform: rotateX(-90deg); }
-}
-
-@keyframes flipBottom {
-  0% { transform: rotateX(90deg); }
+  50% { transform: rotateX(-90deg); }
   100% { transform: rotateX(0); }
 }
 
@@ -157,24 +126,18 @@ body {
 <button class="toggle" onclick="toggleMode()">تبديل الوضع</button>
 
 <div class="clock">
-
   <div class="flip-card" id="hours"></div>
   <div class="flip-card" id="minutes"></div>
   <div class="flip-card small" id="seconds"></div>
   <div class="ampm" id="ampm">AM</div>
-
 </div>
 
 <script>
 function createCard(id) {
   const el = document.getElementById(id);
-
   el.innerHTML = `
-    <div class="card-face top-static">00</div>
-    <div class="card-face bottom-static">00</div>
-
-    <div class="flip-top"><span>00</span></div>
-    <div class="flip-bottom"><span>00</span></div>
+    <div class="display">00</div>
+    <div class="flip-layer" style="display:none;">00</div>
   `;
 }
 
@@ -205,22 +168,20 @@ function update() {
 
 function flip(id, newVal) {
   const card = document.getElementById(id);
+  const display = card.querySelector(".display");
+  const layer = card.querySelector(".flip-layer");
 
-  const topStatic = card.querySelector(".top-static");
-  const bottomStatic = card.querySelector(".bottom-static");
-  const flipTop = card.querySelector(".flip-top span");
-  const flipBottom = card.querySelector(".flip-bottom span");
+  layer.textContent = newVal;
+  layer.style.display = "flex";
 
-  flipTop.textContent = topStatic.textContent;
-  flipBottom.textContent = newVal;
-
+  card.classList.remove("animate");
+  void card.offsetWidth;
   card.classList.add("animate");
 
   setTimeout(() => {
-    topStatic.textContent = newVal;
-    bottomStatic.textContent = newVal;
-    card.classList.remove("animate");
-  }, 800);
+    display.textContent = newVal;
+    layer.style.display = "none";
+  }, 600);
 }
 
 function toggleMode() {
