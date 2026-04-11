@@ -4,10 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- الخط -->
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 
-<title>Pro Flip Clock</title>
+<title>Clean Flip Clock</title>
 
 <style>
 :root{
@@ -26,7 +25,7 @@ body{
   font-family:'Bebas Neue', sans-serif;
 }
 
-/* الحاوية */
+/* layout */
 .clock{
   display:flex;
   gap:25px;
@@ -38,7 +37,10 @@ body{
   position:relative;
   width:160px;
   height:200px;
-  perspective:1200px;
+  background:var(--card);
+  border-radius:15px;
+  overflow:hidden;
+  perspective:1000px;
 }
 
 .small{
@@ -46,120 +48,84 @@ body{
   height:150px;
 }
 
-/* نص */
-.half{
+/* الرقم الثابت */
+.display{
   position:absolute;
   width:100%;
-  height:50%;
-  overflow:hidden;
-  background:var(--card);
+  height:100%;
   display:flex;
   justify-content:center;
   align-items:center;
-  color:var(--text);
   font-size:140px;
-  letter-spacing:2px;
+  color:var(--text);
 }
 
-.small .half{
+.small .display{
   font-size:80px;
 }
 
-/* تقسيم */
-.top{
-  top:0;
-  border-bottom:2px solid #111;
-}
-
-.bottom{
-  bottom:0;
-}
-
-/* ظل واقعي */
-.top::after{
+/* خط المنتصف */
+.display::after{
   content:"";
   position:absolute;
-  bottom:0;
   width:100%;
-  height:100%;
-  background:linear-gradient(to bottom, transparent, rgba(0,0,0,0.6));
-  pointer-events:none;
+  height:2px;
+  background:#111;
+  top:50%;
+  transform:translateY(-50%);
 }
 
-.bottom::before{
-  content:"";
+/* اللوح المتحرك */
+.flip-layer{
   position:absolute;
-  top:0;
   width:100%;
   height:100%;
-  background:linear-gradient(to top, transparent, rgba(0,0,0,0.6));
-  pointer-events:none;
-}
-
-/* طبقات الانيميشن */
-.flip-top,.flip-bottom{
-  position:absolute;
-  width:100%;
-  height:50%;
-  overflow:hidden;
-  background:var(--card);
   display:flex;
   justify-content:center;
   align-items:center;
-  backface-visibility:hidden;
+  font-size:140px;
   color:var(--text);
-}
-
-.flip-top{
-  top:0;
-  transform-origin:bottom;
-  border-bottom:2px solid #111;
-}
-
-.flip-bottom{
-  bottom:0;
+  background:var(--card);
   transform-origin:top;
+  backface-visibility:hidden;
 }
 
-/* الظل أثناء الحركة */
-.flip-top::after{
+.small .flip-layer{
+  font-size:80px;
+}
+
+/* ظل */
+.flip-layer::after{
   content:"";
   position:absolute;
   width:100%;
   height:100%;
-  background:rgba(0,0,0,0.7);
+  background:rgba(0,0,0,0.6);
   opacity:0;
 }
 
-.animate .flip-top::after{
-  animation:shadowTop 0.4s forwards;
+/* الانيميشن */
+.animate{
+  animation:flip 0.6s ease;
 }
 
-@keyframes shadowTop{
+.animate::after{
+  animation:shadow 0.6s ease;
+}
+
+@keyframes flip{
+  0%{ transform:rotateX(0);}
+  50%{ transform:rotateX(-90deg);}
+  100%{ transform:rotateX(0);}
+}
+
+@keyframes shadow{
   0%{opacity:0;}
-  100%{opacity:1;}
+  50%{opacity:1;}
+  100%{opacity:0;}
 }
 
-/* انيميشن */
-.animate .flip-top{
-  animation:flipTop 0.4s forwards;
-}
-
-.animate .flip-bottom{
-  animation:flipBottom 0.4s 0.4s forwards;
-}
-
-@keyframes flipTop{
-  0%{transform:rotateX(0);}
-  100%{transform:rotateX(-90deg);}
-}
-
-@keyframes flipBottom{
-  0%{transform:rotateX(90deg);}
-  100%{transform:rotateX(0);}
-}
-
-/* AMPM */
+/* AM PM */
 .ampm{
   font-size:40px;
   color:#fff;
@@ -179,10 +145,8 @@ body{
 <script>
 function create(el){
   el.innerHTML=`
-    <div class="half top">00</div>
-    <div class="half bottom">00</div>
-    <div class="flip-top">00</div>
-    <div class="flip-bottom">00</div>
+    <div class="display">00</div>
+    <div class="flip-layer" style="display:none;">00</div>
   `;
 }
 
@@ -209,21 +173,20 @@ function tick(){
 }
 
 function flip(el,val){
-  let top=el.querySelector(".top");
-  let bottom=el.querySelector(".bottom");
-  let ft=el.querySelector(".flip-top");
-  let fb=el.querySelector(".flip-bottom");
+  let display=el.querySelector(".display");
+  let layer=el.querySelector(".flip-layer");
 
-  ft.textContent=top.textContent;
-  fb.textContent=val;
+  layer.textContent=val;
+  layer.style.display="flex";
 
-  el.classList.add("animate");
+  layer.classList.remove("animate");
+  void layer.offsetWidth;
+  layer.classList.add("animate");
 
   setTimeout(()=>{
-    top.textContent=val;
-    bottom.textContent=val;
-    el.classList.remove("animate");
-  },800);
+    display.textContent=val;
+    layer.style.display="none";
+  },600);
 }
 
 const apEl=document.getElementById("ap");
