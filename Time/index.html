@@ -3,136 +3,122 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Real Flip Clock Pro</title>
+<title>Flip Clock</title>
 
 <style>
 :root {
-  --bg: #000;
-  --card: #0a0a0a;
-  --text: #fff;
-}
-
-.light {
-  --bg: #f5f5f5;
-  --card: #fff;
-  --text: #000;
+  --bg:#000;
+  --card:#0d0d0d;
+  --text:#fff;
 }
 
 body {
-  margin: 0;
-  background: var(--bg);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: 'Arial Black', sans-serif;
+  margin:0;
+  background:var(--bg);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  font-family:Arial Black, sans-serif;
 }
 
 .clock {
-  display: flex;
-  gap: 25px;
-  align-items: center;
+  display:flex;
+  gap:20px;
+  align-items:center;
 }
 
 /* الكرت */
 .flip-card {
-  position: relative;
-  width: 160px;
-  height: 200px;
-  perspective: 1000px;
+  position:relative;
+  width:150px;
+  height:180px;
+  perspective:1000px;
 }
 
 .small {
-  width: 120px;
-  height: 150px;
+  width:110px;
+  height:140px;
 }
 
-/* النص */
-.number {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  color: var(--text);
-  font-size: 110px;
-  font-weight: 900;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* نص */
+.half {
+  position:absolute;
+  width:100%;
+  height:50%;
+  overflow:hidden;
+  background:var(--card);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:var(--text);
+  font-size:100px;
+  font-weight:900;
 }
 
-/* تقسيم نصين */
-.top, .bottom {
-  position: absolute;
-  width: 100%;
-  height: 50%;
-  overflow: hidden;
-  background: var(--card);
+.small .half {
+  font-size:60px;
 }
 
+/* فوق */
 .top {
-  top: 0;
-  border-bottom: 2px solid #111;
+  top:0;
+  border-bottom:2px solid #111;
 }
 
+/* تحت */
 .bottom {
-  bottom: 0;
+  bottom:0;
 }
 
-/* النص داخل */
-.top span {
-  position: absolute;
-  top: 0;
-}
-
-.bottom span {
-  position: absolute;
-  bottom: 0;
-}
-
-/* طبقة الانيميشن */
+/* طبقات الانيميشن */
 .flip-top, .flip-bottom {
-  position: absolute;
-  width: 100%;
-  height: 50%;
-  overflow: hidden;
-  background: var(--card);
-  backface-visibility: hidden;
+  position:absolute;
+  width:100%;
+  height:50%;
+  overflow:hidden;
+  background:var(--card);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  backface-visibility:hidden;
+  color:var(--text);
 }
 
 .flip-top {
-  top: 0;
-  transform-origin: bottom;
-  border-bottom: 2px solid #111;
+  top:0;
+  transform-origin:bottom;
+  border-bottom:2px solid #111;
 }
 
 .flip-bottom {
-  bottom: 0;
-  transform-origin: top;
+  bottom:0;
+  transform-origin:top;
 }
 
 /* انيميشن */
 .animate .flip-top {
-  animation: topFlip 0.4s forwards;
+  animation:flipTop 0.4s forwards;
 }
 
 .animate .flip-bottom {
-  animation: bottomFlip 0.4s 0.4s forwards;
+  animation:flipBottom 0.4s 0.4s forwards;
 }
 
-@keyframes topFlip {
-  0% { transform: rotateX(0deg); }
-  100% { transform: rotateX(-90deg); }
+@keyframes flipTop {
+  0% {transform:rotateX(0);}
+  100% {transform:rotateX(-90deg);}
 }
 
-@keyframes bottomFlip {
-  0% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0deg); }
+@keyframes flipBottom {
+  0% {transform:rotateX(90deg);}
+  100% {transform:rotateX(0);}
 }
 
-/* AM PM */
+/* AMPM */
 .ampm {
-  font-size: 30px;
-  color: var(--text);
+  font-size:30px;
+  color:var(--text);
 }
 </style>
 </head>
@@ -140,70 +126,64 @@ body {
 <body>
 
 <div class="clock">
-  <div class="flip-card" id="hours"></div>
-  <div class="flip-card" id="minutes"></div>
-  <div class="flip-card small" id="seconds"></div>
-  <div class="ampm" id="ampm">PM</div>
+  <div class="flip-card" id="h"></div>
+  <div class="flip-card" id="m"></div>
+  <div class="flip-card small" id="s"></div>
+  <div class="ampm" id="ap">AM</div>
 </div>
 
 <script>
-function createCard(id) {
-  const el = document.getElementById(id);
-
+function create(el){
   el.innerHTML = `
-    <div class="top"><span>00</span></div>
-    <div class="bottom"><span>00</span></div>
-
-    <div class="flip-top"><span>00</span></div>
-    <div class="flip-bottom"><span>00</span></div>
+    <div class="half top">00</div>
+    <div class="half bottom">00</div>
+    <div class="flip-top">00</div>
+    <div class="flip-bottom">00</div>
   `;
 }
 
-["hours","minutes","seconds"].forEach(createCard);
+create(h);
+create(m);
+create(s);
 
-function format(n){ return n<10?"0"+n:n; }
+function f(n){return n<10?"0"+n:n;}
 
-let prev = {h:null,m:null,s:null};
+let prev={h:null,m:null,s:null};
 
-function update(){
-  const now = new Date();
+function tick(){
+  let d=new Date();
+  let H=d.getHours(),M=d.getMinutes(),S=d.getSeconds();
 
-  let h = now.getHours();
-  const m = now.getMinutes();
-  const s = now.getSeconds();
+  let ap=H>=12?"PM":"AM";
+  H=H%12||12;
 
-  const ampm = h>=12?"PM":"AM";
-  h = h%12 || 12;
+  if(prev.h!==H){flip(h,f(H));prev.h=H;}
+  if(prev.m!==M){flip(m,f(M));prev.m=M;}
+  if(prev.s!==S){flip(s,f(S));prev.s=S;}
 
-  if(prev.h!==h){ flip("hours",format(h)); prev.h=h; }
-  if(prev.m!==m){ flip("minutes",format(m)); prev.m=m; }
-  if(prev.s!==s){ flip("seconds",format(s)); prev.s=s; }
-
-  document.getElementById("ampm").textContent=ampm;
+  document.getElementById("ap").textContent=ap;
 }
 
-function flip(id,newVal){
-  const card = document.getElementById(id);
+function flip(el,val){
+  let top=el.querySelector(".top");
+  let bottom=el.querySelector(".bottom");
+  let ft=el.querySelector(".flip-top");
+  let fb=el.querySelector(".flip-bottom");
 
-  const top = card.querySelector(".top span");
-  const bottom = card.querySelector(".bottom span");
-  const flipTop = card.querySelector(".flip-top span");
-  const flipBottom = card.querySelector(".flip-bottom span");
+  ft.textContent=top.textContent;
+  fb.textContent=val;
 
-  flipTop.textContent = top.textContent;
-  flipBottom.textContent = newVal;
-
-  card.classList.add("animate");
+  el.classList.add("animate");
 
   setTimeout(()=>{
-    top.textContent = newVal;
-    bottom.textContent = newVal;
-    card.classList.remove("animate");
+    top.textContent=val;
+    bottom.textContent=val;
+    el.classList.remove("animate");
   },800);
 }
 
-setInterval(update,1000);
-update();
+setInterval(tick,1000);
+tick();
 </script>
 
 </body>
