@@ -3,21 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flip Clock Clean</title>
+<title>Real Flip Clock Pro</title>
 
 <style>
 :root {
   --bg: #000;
-  --card: #000;
+  --card: #0a0a0a;
   --text: #fff;
-  --line: #222;
 }
 
 .light {
   --bg: #f5f5f5;
   --card: #fff;
   --text: #000;
-  --line: #ccc;
 }
 
 body {
@@ -27,20 +25,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-family: Arial;
-}
-
-/* زر */
-.toggle {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--line);
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
+  font-family: 'Arial Black', sans-serif;
 }
 
 .clock {
@@ -52,65 +37,96 @@ body {
 /* الكرت */
 .flip-card {
   position: relative;
-  width: 140px;
-  height: 180px;
-  background: var(--card);
-  border-radius: 15px;
-  overflow: hidden;
+  width: 160px;
+  height: 200px;
   perspective: 1000px;
 }
 
-.flip-card.small {
-  width: 100px;
-  height: 140px;
+.small {
+  width: 120px;
+  height: 150px;
 }
 
-/* النص الأساسي */
-.display {
+/* النص */
+.number {
   position: absolute;
   width: 100%;
   height: 100%;
+  color: var(--text);
+  font-size: 110px;
+  font-weight: 900;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 90px;
-  font-weight: bold;
-  color: var(--text);
 }
 
-.flip-card.small .display {
-  font-size: 60px;
-}
-
-/* الطبقة المتحركة */
-.flip-layer {
+/* تقسيم نصين */
+.top, .bottom {
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: 50%;
+  overflow: hidden;
   background: var(--card);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 90px;
-  font-weight: bold;
-  color: var(--text);
-  transform-origin: top;
+}
+
+.top {
+  top: 0;
+  border-bottom: 2px solid #111;
+}
+
+.bottom {
+  bottom: 0;
+}
+
+/* النص داخل */
+.top span {
+  position: absolute;
+  top: 0;
+}
+
+.bottom span {
+  position: absolute;
+  bottom: 0;
+}
+
+/* طبقة الانيميشن */
+.flip-top, .flip-bottom {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  background: var(--card);
   backface-visibility: hidden;
 }
 
-.flip-card.small .flip-layer {
-  font-size: 60px;
+.flip-top {
+  top: 0;
+  transform-origin: bottom;
+  border-bottom: 2px solid #111;
 }
 
-/* الانيميشن */
-.animate {
-  animation: flip 0.6s ease;
+.flip-bottom {
+  bottom: 0;
+  transform-origin: top;
 }
 
-@keyframes flip {
-  0% { transform: rotateX(0); }
-  50% { transform: rotateX(-90deg); }
-  100% { transform: rotateX(0); }
+/* انيميشن */
+.animate .flip-top {
+  animation: topFlip 0.4s forwards;
+}
+
+.animate .flip-bottom {
+  animation: bottomFlip 0.4s 0.4s forwards;
+}
+
+@keyframes topFlip {
+  0% { transform: rotateX(0deg); }
+  100% { transform: rotateX(-90deg); }
+}
+
+@keyframes bottomFlip {
+  0% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
 }
 
 /* AM PM */
@@ -123,72 +139,70 @@ body {
 
 <body>
 
-<button class="toggle" onclick="toggleMode()">تبديل الوضع</button>
-
 <div class="clock">
   <div class="flip-card" id="hours"></div>
   <div class="flip-card" id="minutes"></div>
   <div class="flip-card small" id="seconds"></div>
-  <div class="ampm" id="ampm">AM</div>
+  <div class="ampm" id="ampm">PM</div>
 </div>
 
 <script>
 function createCard(id) {
   const el = document.getElementById(id);
+
   el.innerHTML = `
-    <div class="display">00</div>
-    <div class="flip-layer" style="display:none;">00</div>
+    <div class="top"><span>00</span></div>
+    <div class="bottom"><span>00</span></div>
+
+    <div class="flip-top"><span>00</span></div>
+    <div class="flip-bottom"><span>00</span></div>
   `;
 }
 
 ["hours","minutes","seconds"].forEach(createCard);
 
-function format(n) {
-  return n < 10 ? "0" + n : n;
-}
+function format(n){ return n<10?"0"+n:n; }
 
-let prev = {h:null, m:null, s:null};
+let prev = {h:null,m:null,s:null};
 
-function update() {
+function update(){
   const now = new Date();
 
   let h = now.getHours();
   const m = now.getMinutes();
   const s = now.getSeconds();
 
-  const ampm = h >= 12 ? "PM" : "AM";
-  h = h % 12 || 12;
+  const ampm = h>=12?"PM":"AM";
+  h = h%12 || 12;
 
-  if (prev.h !== h) flip("hours", format(h)), prev.h = h;
-  if (prev.m !== m) flip("minutes", format(m)), prev.m = m;
-  if (prev.s !== s) flip("seconds", format(s)), prev.s = s;
+  if(prev.h!==h){ flip("hours",format(h)); prev.h=h; }
+  if(prev.m!==m){ flip("minutes",format(m)); prev.m=m; }
+  if(prev.s!==s){ flip("seconds",format(s)); prev.s=s; }
 
-  document.getElementById("ampm").textContent = ampm;
+  document.getElementById("ampm").textContent=ampm;
 }
 
-function flip(id, newVal) {
+function flip(id,newVal){
   const card = document.getElementById(id);
-  const display = card.querySelector(".display");
-  const layer = card.querySelector(".flip-layer");
 
-  layer.textContent = newVal;
-  layer.style.display = "flex";
+  const top = card.querySelector(".top span");
+  const bottom = card.querySelector(".bottom span");
+  const flipTop = card.querySelector(".flip-top span");
+  const flipBottom = card.querySelector(".flip-bottom span");
 
-  card.classList.remove("animate");
-  void card.offsetWidth;
+  flipTop.textContent = top.textContent;
+  flipBottom.textContent = newVal;
+
   card.classList.add("animate");
 
-  setTimeout(() => {
-    display.textContent = newVal;
-    layer.style.display = "none";
-  }, 600);
+  setTimeout(()=>{
+    top.textContent = newVal;
+    bottom.textContent = newVal;
+    card.classList.remove("animate");
+  },800);
 }
 
-function toggleMode() {
-  document.body.classList.toggle("light");
-}
-
-setInterval(update, 1000);
+setInterval(update,1000);
 update();
 </script>
 
