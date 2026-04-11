@@ -3,46 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flip Clock</title>
+
+<!-- الخط -->
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+<title>Pro Flip Clock</title>
 
 <style>
-:root {
+:root{
   --bg:#000;
-  --card:#0d0d0d;
+  --card:#0a0a0a;
   --text:#fff;
 }
 
-body {
+body{
   margin:0;
   background:var(--bg);
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
-  font-family:Arial Black, sans-serif;
+  font-family:'Bebas Neue', sans-serif;
 }
 
-.clock {
+/* الحاوية */
+.clock{
   display:flex;
-  gap:20px;
+  gap:25px;
   align-items:center;
 }
 
 /* الكرت */
-.flip-card {
+.flip{
   position:relative;
-  width:150px;
-  height:180px;
-  perspective:1000px;
+  width:160px;
+  height:200px;
+  perspective:1200px;
 }
 
-.small {
-  width:110px;
-  height:140px;
+.small{
+  width:120px;
+  height:150px;
 }
 
 /* نص */
-.half {
+.half{
   position:absolute;
   width:100%;
   height:50%;
@@ -52,27 +57,47 @@ body {
   justify-content:center;
   align-items:center;
   color:var(--text);
-  font-size:100px;
-  font-weight:900;
+  font-size:140px;
+  letter-spacing:2px;
 }
 
-.small .half {
-  font-size:60px;
+.small .half{
+  font-size:80px;
 }
 
-/* فوق */
-.top {
+/* تقسيم */
+.top{
   top:0;
   border-bottom:2px solid #111;
 }
 
-/* تحت */
-.bottom {
+.bottom{
   bottom:0;
 }
 
+/* ظل واقعي */
+.top::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(to bottom, transparent, rgba(0,0,0,0.6));
+  pointer-events:none;
+}
+
+.bottom::before{
+  content:"";
+  position:absolute;
+  top:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(to top, transparent, rgba(0,0,0,0.6));
+  pointer-events:none;
+}
+
 /* طبقات الانيميشن */
-.flip-top, .flip-bottom {
+.flip-top,.flip-bottom{
   position:absolute;
   width:100%;
   height:50%;
@@ -85,40 +110,59 @@ body {
   color:var(--text);
 }
 
-.flip-top {
+.flip-top{
   top:0;
   transform-origin:bottom;
   border-bottom:2px solid #111;
 }
 
-.flip-bottom {
+.flip-bottom{
   bottom:0;
   transform-origin:top;
 }
 
+/* الظل أثناء الحركة */
+.flip-top::after{
+  content:"";
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  opacity:0;
+}
+
+.animate .flip-top::after{
+  animation:shadowTop 0.4s forwards;
+}
+
+@keyframes shadowTop{
+  0%{opacity:0;}
+  100%{opacity:1;}
+}
+
 /* انيميشن */
-.animate .flip-top {
+.animate .flip-top{
   animation:flipTop 0.4s forwards;
 }
 
-.animate .flip-bottom {
+.animate .flip-bottom{
   animation:flipBottom 0.4s 0.4s forwards;
 }
 
-@keyframes flipTop {
-  0% {transform:rotateX(0);}
-  100% {transform:rotateX(-90deg);}
+@keyframes flipTop{
+  0%{transform:rotateX(0);}
+  100%{transform:rotateX(-90deg);}
 }
 
-@keyframes flipBottom {
-  0% {transform:rotateX(90deg);}
-  100% {transform:rotateX(0);}
+@keyframes flipBottom{
+  0%{transform:rotateX(90deg);}
+  100%{transform:rotateX(0);}
 }
 
 /* AMPM */
-.ampm {
-  font-size:30px;
-  color:var(--text);
+.ampm{
+  font-size:40px;
+  color:#fff;
 }
 </style>
 </head>
@@ -126,15 +170,15 @@ body {
 <body>
 
 <div class="clock">
-  <div class="flip-card" id="h"></div>
-  <div class="flip-card" id="m"></div>
-  <div class="flip-card small" id="s"></div>
-  <div class="ampm" id="ap">AM</div>
+  <div class="flip" id="h"></div>
+  <div class="flip" id="m"></div>
+  <div class="flip small" id="s"></div>
+  <div class="ampm" id="ap">PM</div>
 </div>
 
 <script>
 function create(el){
-  el.innerHTML = `
+  el.innerHTML=`
     <div class="half top">00</div>
     <div class="half bottom">00</div>
     <div class="flip-top">00</div>
@@ -161,7 +205,7 @@ function tick(){
   if(prev.m!==M){flip(m,f(M));prev.m=M;}
   if(prev.s!==S){flip(s,f(S));prev.s=S;}
 
-  document.getElementById("ap").textContent=ap;
+  apEl.textContent=ap;
 }
 
 function flip(el,val){
@@ -181,6 +225,8 @@ function flip(el,val){
     el.classList.remove("animate");
   },800);
 }
+
+const apEl=document.getElementById("ap");
 
 setInterval(tick,1000);
 tick();
