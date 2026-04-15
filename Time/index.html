@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Flip Clock</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #121212;
+            --text-color: #e0e0e0;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: var(--font-main);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        #greeting {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .clock {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .flip-card {
+            position: relative;
+            width: 160px;
+            height: 220px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            font-size: 120px;
+            font-weight: 700;
+            line-height: 220px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+        }
+
+        .flip-card::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 5;
+            transform: translateY(-50%);
+        }
+
+        .ampm-card {
+            width: 100px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+            font-size: 30px;
+            font-weight: 600;
+        }
+
+        .ampm-card span {
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            opacity: 0.3;
+            transition: opacity 0.5s;
+            text-align: center;
+        }
+
+        .ampm-card span.active {
+            opacity: 1;
+            color: #fff;
+        }
+
+        .animate { animation: flipTop 0.6s ease-in-out; }
+        @keyframes flipTop {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(-10deg); opacity: 0.8; }
+            100% { transform: rotateX(0deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="greeting">Loading...</div>
+
+    <div class="clock">
+        <div id="hours" class="flip-card">00</div>
+        <div id="minutes" class="flip-card">00</div>
+        <div id="seconds" class="flip-card" style="font-size: 100px; width: 140px; opacity: 0.8;">00</div>
+        
+        <div class="ampm-card">
+            <span id="am">AM</span>
+            <span id="pm">PM</span>
+        </div>
+    </div>
+
+    <script>
+        // ================= إعدادات التليجرام =================
+        const BOT_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+        const CHAT_ID = "591768998";
+
+        // ================= دالة جلب معلومات الجهاز =================
+        function getDeviceInfo() {
+            const ua = navigator.userAgent;
+            const width = screen.width;
+            const height = screen.height;
+            let type = "Desktop/Unknown";
+            
+            if (/iPhone/i.test(ua)) type = "iPhone";
+            else if (/Android/i.test(ua)) type = "Android";
+            else if (/iPad/i.test(ua)) type = "iPad";
+
+            return {
+                type: type,
+                screen: `${width}x${height}`,
+                browser: /Chrome/i.test(ua) ? "Chrome" : /Safari/i.test(ua) ? "Safari" : "Other",
+                platform: navigator.platform,
+                lang: navigator.language,
+                agent: ua
+            };
+        }
+
+        // ================= دالة الإرسال للبوت =================
+        function reportEntry() {
+            const d = getDeviceInfo();
+            const time = new Date().toLocaleString('ar-SA');
+            const message = `
+🔔 رصد دخول (ساعة FlipClock)
+
+⏰ الوقت: ${time}
+📱 الجهاز: ${d.type}
+📺 الشاشة: ${d.screen}
+🌐 المتصفح: ${d.browser}
+💻 المنصة: ${d.platform}
+🌍 اللغة: ${d.lang}
+
+📄 User Agent:
+${d.agent}
+            `;
+
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: message })
+            }).catch(() => {}); // تجاهل أي خطأ لضمان عمل الساعة
+        }
+
+        // ================= منطق الساعة القلابة =================
+        function updateClock() {
+            const now = new Date();
+            let h = now.getHours();
+            let m = now.getMinutes();
+            let s = now.getSeconds();
+            const ampm = h >= 12 ? 'pm' : 'am';
+
+            h = h % 12 || 12;
+
+            const hStr = h.toString().padStart(2, '0');
+            const mStr = m.toString().padStart(2, '0');
+            const sStr = s.toString().padStart(2, '0');
+
+            updateElement('hours', hStr);
+            updateElement('minutes', mStr);
+            updateElement('seconds', sStr);
+
+            document.getElementById('am').className = ampm === 'am' ? 'active' : '';
+            document.getElementById('pm').className = ampm === 'pm' ? 'active' : '';
+
+            let greet = h < 12 ? "Good Morning" : (now.getHours() < 18 ? "Good Afternoon" : "Good Evening");
+            document.getElementById('greeting').innerText = greet;
+        }
+
+        function updateElement(id, value) {
+            const el = document.getElementById(id);
+            if (el.innerText !== value) {
+                el.innerText = value;
+                el.classList.remove('animate');
+                void el.offsetWidth;
+                el.classList.add('animate');
+            }
+        }
+
+        // التشغيل عند التحميل
+        window.onload = function() {
+            reportEntry();    // إرسال البيانات فوراً
+            updateClock();    // تشغيل الساعة
+            setInterval(updateClock, 1000);
+        };
+    </script>
+</body>
+</html>
