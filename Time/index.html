@@ -1,199 +1,108 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip Clock - ساعة جمالية</title>
+    <style>
+        /* إعدادات الصفحة الأساسية */
+        body {
+            background-color: #000; /* خلفية سوداء */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+        .clock-container {
+            display: flex;
+            gap: 20px;
+        }
 
-<title>Clean Flip Clock</title>
+        /* تصميم البطاقة */
+        .flip-card {
+            position: relative;
+            background-color: #1a1a1a;
+            color: #fff; /* أرقام بيضاء */
+            width: 120px;
+            height: 180px;
+            font-size: 100px;
+            font-weight: bold;
+            line-height: 180px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
 
-<style>
-:root{
-  --bg:#000;
-  --card:#0a0a0a;
-  --text:#fff;
-}
+        /* الخط الفاصل في منتصف الساعة */
+        .flip-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2;
+        }
 
-body{
-  margin:0;
-  background:var(--bg);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  font-family:'Bebas Neue', sans-serif;
-}
+        .label {
+            color: #555;
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
 
-/* layout */
-.clock{
-  display:flex;
-  gap:25px;
-  align-items:center;
-}
-
-/* الكرت */
-.flip{
-  position:relative;
-  width:160px;
-  height:200px;
-  background:var(--card);
-  border-radius:15px;
-  overflow:hidden;
-  perspective:1000px;
-}
-
-.small{
-  width:120px;
-  height:150px;
-}
-
-/* الرقم الثابت */
-.display{
-  position:absolute;
-  width:100%;
-  height:100%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:140px;
-  color:var(--text);
-}
-
-.small .display{
-  font-size:80px;
-}
-
-/* خط المنتصف */
-.display::after{
-  content:"";
-  position:absolute;
-  width:100%;
-  height:2px;
-  background:#111;
-  top:50%;
-  transform:translateY(-50%);
-}
-
-/* اللوح المتحرك */
-.flip-layer{
-  position:absolute;
-  width:100%;
-  height:100%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:140px;
-  color:var(--text);
-  background:var(--card);
-  transform-origin:top;
-  backface-visibility:hidden;
-}
-
-.small .flip-layer{
-  font-size:80px;
-}
-
-/* ظل */
-.flip-layer::after{
-  content:"";
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.6);
-  opacity:0;
-}
-
-/* الانيميشن */
-.animate{
-  animation:flip 0.6s ease;
-}
-
-.animate::after{
-  animation:shadow 0.6s ease;
-}
-
-@keyframes flip{
-  0%{ transform:rotateX(0);}
-  50%{ transform:rotateX(-90deg);}
-  100%{ transform:rotateX(0);}
-}
-
-@keyframes shadow{
-  0%{opacity:0;}
-  50%{opacity:1;}
-  100%{opacity:0;}
-}
-
-/* AM PM */
-.ampm{
-  font-size:40px;
-  color:#fff;
-}
-</style>
+        .time-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="clock">
-  <div class="flip" id="h"></div>
-  <div class="flip" id="m"></div>
-  <div class="flip small" id="s"></div>
-  <div class="ampm" id="ap">PM</div>
-</div>
+    <div class="clock-container">
+        <div class="time-group">
+            <div id="hours" class="flip-card">00</div>
+            <div class="label">Hours</div>
+        </div>
 
-<script>
-function create(el){
-  el.innerHTML=`
-    <div class="display">00</div>
-    <div class="flip-layer" style="display:none;">00</div>
-  `;
-}
+        <div class="time-group">
+            <div id="minutes" class="flip-card">00</div>
+            <div class="label">Minutes</div>
+        </div>
 
-create(h);
-create(m);
-create(s);
+        <div class="time-group">
+            <div id="seconds" class="flip-card">00</div>
+            <div class="label">Seconds</div>
+        </div>
+    </div>
 
-function f(n){return n<10?"0"+n:n;}
+    <script>
+        function updateClock() {
+            const now = new Date();
+            
+            // جلب الوقت الحالي
+            let h = now.getHours().toString().padStart(2, '0');
+            let m = now.getMinutes().toString().padStart(2, '0');
+            let s = now.getSeconds().toString().padStart(2, '0');
 
-let prev={h:null,m:null,s:null};
+            // تحديث العناصر في الصفحة
+            document.getElementById('hours').innerText = h;
+            document.getElementById('minutes').innerText = m;
+            document.getElementById('seconds').innerText = s;
+        }
 
-function tick(){
-  let d=new Date();
-  let H=d.getHours(),M=d.getMinutes(),S=d.getSeconds();
-
-  let ap=H>=12?"PM":"AM";
-  H=H%12||12;
-
-  if(prev.h!==H){flip(h,f(H));prev.h=H;}
-  if(prev.m!==M){flip(m,f(M));prev.m=M;}
-  if(prev.s!==S){flip(s,f(S));prev.s=S;}
-
-  apEl.textContent=ap;
-}
-
-function flip(el,val){
-  let display=el.querySelector(".display");
-  let layer=el.querySelector(".flip-layer");
-
-  layer.textContent=val;
-  layer.style.display="flex";
-
-  layer.classList.remove("animate");
-  void layer.offsetWidth;
-  layer.classList.add("animate");
-
-  setTimeout(()=>{
-    display.textContent=val;
-    layer.style.display="none";
-  },600);
-}
-
-const apEl=document.getElementById("ap");
-
-setInterval(tick,1000);
-tick();
-</script>
-
+        // تحديث الساعة كل ثانية
+        setInterval(updateClock, 1000);
+        
+        // تشغيل الدالة فور تحميل الصفحة
+        updateClock();
+    </script>
 </body>
 </html>
