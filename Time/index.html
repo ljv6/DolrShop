@@ -1,107 +1,171 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flip Clock - ساعة جمالية</title>
+    <title>Premium Flip Clock</title>
     <style>
-        /* إعدادات الصفحة الأساسية */
+        :root {
+            --bg-color: #000000;
+            --card-bg: #121212;
+            --text-color: #e0e0e0;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         body {
-            background-color: #000; /* خلفية سوداء */
+            background-color: var(--bg-color);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: var(--font-main);
+            color: var(--text-color);
         }
 
-        .clock-container {
+        /* التحية العلوية */
+        #greeting {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .clock {
             display: flex;
-            gap: 20px;
+            gap: 15px;
+            align-items: center;
         }
 
-        /* تصميم البطاقة */
         .flip-card {
             position: relative;
-            background-color: #1a1a1a;
-            color: #fff; /* أرقام بيضاء */
-            width: 120px;
-            height: 180px;
-            font-size: 100px;
-            font-weight: bold;
-            line-height: 180px;
+            width: 160px;
+            height: 220px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            font-size: 120px;
+            font-weight: 700;
+            line-height: 220px;
             text-align: center;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
         }
 
-        /* الخط الفاصل في منتصف الساعة */
-        .flip-card::after {
+        /* الخط الفاصل في المنتصف */
+        .flip-card::before {
             content: '';
             position: absolute;
             top: 50%;
             left: 0;
             width: 100%;
-            height: 2px;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 2;
+            height: 3px;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 5;
+            transform: translateY(-50%);
         }
 
-        .label {
-            color: #555;
-            text-align: center;
-            font-size: 14px;
-            margin-top: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .time-group {
+        /* تنسيق AM/PM */
+        .ampm-card {
+            width: 100px;
+            height: 220px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 30px;
+            font-weight: 600;
+            background: transparent;
         }
+
+        .ampm-card span {
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            opacity: 0.3;
+            transition: opacity 0.5s;
+        }
+
+        .ampm-card span.active {
+            opacity: 1;
+            color: #fff;
+        }
+
+        /* تأثير الانقلاب البسيط عند التغيير */
+        .animate {
+            animation: flipTop 0.6s ease-in-out;
+        }
+
+        @keyframes flipTop {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(-10deg); opacity: 0.8; }
+            100% { transform: rotateX(0deg); }
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="clock-container">
-        <div class="time-group">
-            <div id="hours" class="flip-card">00</div>
-            <div class="label">Hours</div>
-        </div>
+    <div id="greeting">Good Loading...</div>
 
-        <div class="time-group">
-            <div id="minutes" class="flip-card">00</div>
-            <div class="label">Minutes</div>
-        </div>
-
-        <div class="time-group">
-            <div id="seconds" class="flip-card">00</div>
-            <div class="label">Seconds</div>
+    <div class="clock">
+        <div id="hours" class="flip-card">00</div>
+        <div id="minutes" class="flip-card">00</div>
+        <div id="seconds" class="flip-card" style="font-size: 100px; width: 140px; opacity: 0.9;">00</div>
+        
+        <div class="ampm-card">
+            <span id="am">AM</span>
+            <span id="pm">PM</span>
         </div>
     </div>
 
     <script>
         function updateClock() {
             const now = new Date();
-            
-            // جلب الوقت الحالي
-            let h = now.getHours().toString().padStart(2, '0');
-            let m = now.getMinutes().toString().padStart(2, '0');
-            let s = now.getSeconds().toString().padStart(2, '0');
+            let h = now.getHours();
+            let m = now.getMinutes();
+            let s = now.getSeconds();
+            const ampm = h >= 12 ? 'pm' : 'am';
 
-            // تحديث العناصر في الصفحة
-            document.getElementById('hours').innerText = h;
-            document.getElementById('minutes').innerText = m;
-            document.getElementById('seconds').innerText = s;
+            // تحويل لنظام 12 ساعة
+            h = h % 12;
+            h = h ? h : 12; 
+
+            // إضافة صفر على اليسار
+            const hStr = h.toString().padStart(2, '0');
+            const mStr = m.toString().padStart(2, '0');
+            const sStr = s.toString().padStart(2, '0');
+
+            // تحديث الأرقام مع تأثير انيميشن بسيط عند التغيير
+            updateElement('hours', hStr);
+            updateElement('minutes', mStr);
+            updateElement('seconds', sStr);
+
+            // تحديث AM/PM
+            document.getElementById('am').className = ampm === 'am' ? 'active' : '';
+            document.getElementById('pm').className = ampm === 'pm' ? 'active' : '';
+
+            // تحديث التحية
+            const hour = now.getHours();
+            let greet = "";
+            if (hour < 12) greet = "Good Morning";
+            else if (hour < 18) greet = "Good Afternoon";
+            else greet = "Good Evening";
+            document.getElementById('greeting').innerText = greet;
         }
 
-        // تحديث الساعة كل ثانية
+        function updateElement(id, value) {
+            const el = document.getElementById(id);
+            if (el.innerText !== value) {
+                el.innerText = value;
+                el.classList.remove('animate');
+                void el.offsetWidth; // Trigger reflow
+                el.classList.add('animate');
+            }
+        }
+
         setInterval(updateClock, 1000);
-        
-        // تشغيل الدالة فور تحميل الصفحة
         updateClock();
     </script>
 </body>
