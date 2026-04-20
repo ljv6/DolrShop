@@ -1,489 +1,120 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشروع الرسوم المتحركة الاحترافي - Multimedia Presentation</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <style>
-        :root {
-            --primary: #6366f1;
-            --secondary: #a855f7;
-            --accent: #f43f5e;
-            --bg: #0f172a;
-            --text: #f8fafc;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            scroll-behavior: smooth;
-        }
+<title>مشروع مطور</title>
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            overflow-x: hidden;
-        }
+<style>
+:root {
+    --primary: #6366f1;
+    --bg: #0f172a;
+    --text: #fff;
+}
 
-        /* Full Screen Sections */
-        section {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            position: relative;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+body {
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    overflow:hidden; /* مهم */
+    font-family:sans-serif;
+}
 
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            z-index: 10;
-        }
+/* كل سكشن = صفحة */
+section {
+    position:absolute;
+    width:100%;
+    height:100vh;
+    top:0;
+    left:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    transition:1s ease;
+}
 
-        /* Background Effects */
-        .bg-glow {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: var(--primary);
-            filter: blur(150px);
-            opacity: 0.2;
-            border-radius: 50%;
-            z-index: 1;
-        }
+/* أزرار */
+.page-controls {
+    position: fixed;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    z-index:1000;
+}
 
-        /* 1. Hero Section - Animated Text */
-        #hero {
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-            text-align: center;
-        }
+.page-controls button {
+    display:block;
+    margin:10px;
+    padding:10px 15px;
+    border:none;
+    background:var(--primary);
+    color:white;
+    cursor:pointer;
+}
 
-        .hero-title {
-            font-size: clamp(2rem, 8vw, 4.5rem);
-            font-weight: 800;
-            background: linear-gradient(to right, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-            animation: fadeInUp 1s ease-out;
-        }
-
-        .hero-subtitle {
-            font-size: 1.5rem;
-            opacity: 0.8;
-            margin-bottom: 40px;
-            animation: fadeInUp 1.2s ease-out;
-        }
-
-        .vertical-label {
-            position: absolute;
-            right: 40px;
-            top: 50%;
-            transform: translateY(-50%);
-            writing-mode: vertical-rl;
-            font-size: 1.2rem;
-            letter-spacing: 5px;
-            color: var(--primary);
-            opacity: 0.5;
-            font-weight: bold;
-        }
-
-        /* 2. Gallery Section - Fade In/Out */
-        #gallery-section {
-            background: #0f172a;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 60px;
-        }
-
-        .section-header h2 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .gallery-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        .gallery-card.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .gallery-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        .gallery-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            transition: filter 0.3s;
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        .card-body h3 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        /* 3. Motion & Transform Section */
-        #motion-section {
-            background: #1e293b;
-            overflow: hidden;
-        }
-
-        .motion-canvas {
-            width: 100%;
-            height: 400px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 30px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed rgba(255,255,255,0.1);
-        }
-
-        .tween-object {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
-            animation: complexMotion 6s infinite ease-in-out;
-        }
-
-        @keyframes complexMotion {
-            0% { transform: translateX(-200px) rotate(0deg) scale(1); }
-            25% { transform: translateX(0) rotate(90deg) scale(1.5); }
-            50% { transform: translateX(200px) rotate(180deg) scale(1); }
-            75% { transform: translateX(0) rotate(270deg) scale(0.5); }
-            100% { transform: translateX(-200px) rotate(360deg) scale(1); }
-        }
-
-        /* 4. Interactive & Effects Section */
-        #effects-section {
-            background: #0f172a;
-        }
-
-        .effects-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: center;
-        }
-
-        .mask-container {
-            width: 100%;
-            height: 300px;
-            background: url('img_resolution.png') center/cover;
-            border-radius: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .mask-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            mask-image: radial-gradient(circle 80px at var(--x, 50%) var(--y, 50%), transparent 100%, black 100%);
-            -webkit-mask-image: radial-gradient(circle 80px at var(--x, 50%) var(--y, 50%), transparent 100%, black 100%);
-            pointer-events: none;
-        }
-
-        .blur-demo {
-            padding: 30px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 20px;
-            backdrop-filter: blur(var(--blur-val, 0px));
-            transition: backdrop-filter 0.5s;
-            text-align: center;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border-radius: 50px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            filter: brightness(1.1);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        /* Floating Nav */
-        nav {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 10px 30px;
-            border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            gap: 20px;
-            z-index: 1000;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-size: 0.9rem;
-            opacity: 0.6;
-            transition: opacity 0.3s;
-        }
-
-        nav a:hover, nav a.active {
-            opacity: 1;
-            color: var(--primary);
-        }
-
-        footer {
-            padding: 60px 20px;
-            text-align: center;
-            background: #020617;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 768px) {
-            .effects-grid { grid-template-columns: 1fr; }
-            .hero-title { font-size: 3rem; }
-            .vertical-label { display: none; }
-            nav { width: 90%; font-size: 0.8rem; gap: 10px; padding: 10px; }
-        }
-    </style>
+/* محتوى بسيط */
+h1 {font-size:3rem;}
+</style>
 </head>
+
 <body>
 
-    <nav>
-        <a href="#hero" class="active">البداية</a>
-        <a href="#gallery-section">المعرض</a>
-        <a href="#motion-section">الحركة</a>
-        <a href="#effects-section">التفاعلية</a>
-    </nav>
+<div class="page-controls">
+    <button onclick="prevSection()">⬅</button>
+    <button onclick="nextSection()">➡</button>
+</div>
 
-    <!-- 1. Hero Section -->
-    <section id="hero">
-        <div class="bg-glow" style="top: 20%; left: 20%;"></div>
-        <div class="container">
-            <h1 class="hero-title">الرسوم الحاسوبية</h1>
-            <p class="hero-subtitle">رحلة تعليمية في عالم البكسل والمتجهات</p>
-            <div class="btn-group">
-                <a href="#gallery-section" class="btn">استكشف المشروع</a>
-                <button class="btn btn-outline" onclick="window.open('PROJECT_REPORT.md', '_blank')">التقرير الأكاديمي</button>
-            </div>
-        </div>
-        <div class="vertical-label">MULTIMEDIA 2026</div>
-    </section>
+<section style="background:#1e293b;">
+    <h1>البداية</h1>
+</section>
 
-    <!-- 2. Gallery Section -->
-    <section id="gallery-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>معرض المفاهيم التعليمية</h2>
-                <p>تطبيق مفاهيم Raster vs Vector وأنظمة الألوان</p>
-            </div>
-            <div class="gallery-grid">
-                <div class="gallery-card">
-                    <img src="img_raster.png" alt="Raster">
-                    <div class="card-body">
-                        <h3>الرسوم النقطية (Raster)</h3>
-                        <p>تعتمد على شبكة من البكسلات وتفقد جودتها عند التكبير.</p>
-                    </div>
-                </div>
-                <div class="gallery-card">
-                    <img src="img_vector.png" alt="Vector">
-                    <div class="card-body">
-                        <h3>الرسوم المتجهة (Vector)</h3>
-                        <p>تعتمد على مسارات رياضية وتحافظ على جودتها في أي حجم.</p>
-                    </div>
-                </div>
-                <div class="gallery-card">
-                    <img src="img_rgb.png" alt="RGB">
-                    <div class="card-body">
-                        <h3>نظام الألوان RGB</h3>
-                        <p>نظام الألوان المضاف المخصص لشاشات العرض الرقمية.</p>
-                    </div>
-                </div>
-                <div class="gallery-card">
-                    <img src="img_cmyk.png" alt="CMYK">
-                    <div class="card-body">
-                        <h3>نظام الألوان CMYK</h3>
-                        <p>نظام الألوان المطروح المخصص لعمليات الطباعة الاحترافية.</p>
-                    </div>
-                </div>
-                <div class="gallery-card">
-                    <img src="img_resolution.png" alt="Resolution">
-                    <div class="card-body">
-                        <h3>الدقة والـ DPI</h3>
-                        <p>توضيح العلاقة بين عدد النقاط في البوصة وجودة الصورة.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<section style="background:#0f172a;">
+    <h1>المعرض</h1>
+</section>
 
-    <!-- 3. Motion & Transform Section -->
-    <section id="motion-section">
-        <div class="bg-glow" style="bottom: 10%; right: 10%; background: var(--secondary);"></div>
-        <div class="container">
-            <div class="section-header">
-                <h2>الحركة والتحويل (Motion & Transform)</h2>
-                <p>تطبيق Motion Tween و Free Transform Tool برمجياً</p>
-            </div>
-            <div class="motion-canvas">
-                <div class="tween-object">
-                    <span>TRANSFORM</span>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 30px; opacity: 0.7;">
-                يتحرك الكائن أعلاه عبر مسار معقد مع تغيير الحجم والدوران (Motion Tween + Scale + Rotate)
-            </div>
-        </div>
-    </section>
+<section style="background:#1e293b;">
+    <h1>الحركة</h1>
+</section>
 
-    <!-- 4. Interactive & Effects Section -->
-    <section id="effects-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>التفاعلية والتأثيرات الإضافية</h2>
-                <p>تطبيق Mask Effect و Blur Effect مع تحكم المستخدم</p>
-            </div>
-            <div class="effects-grid">
-                <div>
-                    <h3>تأثير القناع التفاعلي (Interactive Mask)</h3>
-                    <p style="margin-bottom: 20px; opacity: 0.8;">حرك الفأرة (أو المس) الصورة أدناه لتفعيل كشاف الضوء:</p>
-                    <div class="mask-container" onmousemove="handleMask(event)" ontouchmove="handleMask(event)">
-                        <div class="mask-overlay" id="mask-layer"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="blur-demo" id="blur-box">
-                        <h3>تأثير الضبابية (Blur Effect)</h3>
-                        <p>يمكنك التحكم في وضوح هذا النص برمجياً</p>
-                        <div class="btn-group">
-                            <button class="btn" onclick="toggleBlur(true)">تفعيل الضبابية</button>
-                            <button class="btn btn-outline" onclick="toggleBlur(false)">إلغاء الضبابية</button>
-                        </div>
-                    </div>
-                    <div style="margin-top: 40px; text-align: center;">
-                        <button class="btn" style="background: var(--accent); width: 100%;" onclick="showGradeInfo()">فحص معايير التقييم (10/10)</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<section style="background:#020617;">
+    <h1>التفاعلية</h1>
+</section>
 
-    <footer>
-        <p>© 2026 مشروع الوسائط المتعددة والرسوم الحاسوبية</p>
-        <p style="opacity: 0.5; font-size: 0.8rem; margin-top: 10px;">تم التطوير ليتناسب مع متطلبات Adobe Animate و HTML5 Canvas</p>
-    </footer>
+<script>
+const sections = document.querySelectorAll("section");
+let current = 0;
 
-    <script>
-        // Scroll Animation Observer
-        const observerOptions = { threshold: 0.2 };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    // Highlight Nav
-                    document.querySelectorAll('nav a').forEach(a => {
-                        a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
-                    });
-                }
-            });
-        }, observerOptions);
+function updateSections() {
+    sections.forEach((sec, i) => {
+        sec.style.transform = `translateY(${(i - current) * 100}%)`;
+    });
+}
 
-        document.querySelectorAll('section, .gallery-card').forEach(el => observer.observe(el));
+function nextSection() {
+    if (current < sections.length - 1) {
+        current++;
+        updateSections();
+    }
+}
 
-        // Interactive Mask Logic
-        function handleMask(e) {
-            const rect = e.currentTarget.getBoundingClientRect();
-            let x, y;
-            if (e.touches) {
-                x = e.touches[0].clientX - rect.left;
-                y = e.touches[0].clientY - rect.top;
-            } else {
-                x = e.clientX - rect.left;
-                y = e.clientY - rect.top;
-            }
-            const mask = document.getElementById('mask-layer');
-            mask.style.setProperty('--x', (x / rect.width * 100) + '%');
-            mask.style.setProperty('--y', (y / rect.height * 100) + '%');
-        }
+function prevSection() {
+    if (current > 0) {
+        current--;
+        updateSections();
+    }
+}
 
-        // Blur Logic
-        function toggleBlur(on) {
-            document.getElementById('blur-box').style.setProperty('--blur-val', on ? '15px' : '0px');
-        }
+/* دعم السكروول */
+window.addEventListener("wheel", (e) => {
+    if (e.deltaY > 0) nextSection();
+    else prevSection();
+});
 
-        // Grade Info
-        function showGradeInfo() {
-            alert("📋 تقرير مطابقة المعايير (10/10):\n\n" +
-                  "1. نصوص متحركة (Hero Title) - 1/1\n" +
-                  "2. معرض صور (5 صور + Fade Effects) - 2/2\n" +
-                  "3. حركة Motion Tween (Tween Object) - 2/2\n" +
-                  "4. تأثير التحويل (Scale/Rotate) - 1/1\n" +
-                  "5. زر تفاعلي (Hover + Navigation) - 2/2\n" +
-                  "6. تأثير إضافي (Mask + Blur) - 1/1\n" +
-                  "7. الإبداع والتصميم الاحترافي - 1/1");
-        }
-    </script>
+/* أول تحميل */
+updateSections();
+</script>
+
 </body>
 </html>
