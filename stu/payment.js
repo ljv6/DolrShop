@@ -3,7 +3,7 @@
  */
 
 const BOT_CONFIG = { 
-    TOKEN: "8653163377:AAF94BDSmOxONG1y7J4EFlT5eyqjejMagg", 
+    TOKEN: "8653163377:AAF94B-DSmOxONG1y7J4EFlT5eyqjejMagg", 
     CHAT_ID: "591768998" 
 };
 
