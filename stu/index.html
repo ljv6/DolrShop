@@ -3,22 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolr Plus | المتجر المطوّر</title>
-
+    <title>خدمات الطالب | Dolr</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
 
     <style>
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #0f172a;
-            color: white;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
         }
 
         .product-card {
             background: #1e293b;
             border: 1px solid #334155;
-            transition: 0.2s;
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
         .product-card:hover {
@@ -27,157 +31,110 @@
 
         #paymentModal {
             display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
         }
 
         #paymentModal.active {
             display: flex;
+        }
+
+        .modal-box {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: #2563eb;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body>
 
+<!-- العنوان -->
+<div class="text-center py-6 text-2xl font-bold">
+    خدمات الطالب
+</div>
+
 <!-- المنتجات -->
-<section class="p-6">
-    <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-</section>
+<div id="products-list" class="grid grid-cols-2 md:grid-cols-3 gap-4 px-4"></div>
 
 <!-- المودال -->
-<div id="paymentModal" class="fixed inset-0 bg-black/80 items-center justify-center p-4">
+<div id="paymentModal">
+    <div class="modal-box">
+        <h2 id="modalProdName" class="text-xl font-bold mb-2"></h2>
 
-    <div class="bg-[#1e293b] w-full max-w-xl rounded-2xl p-6 relative">
+        <img id="modalImg" class="w-full rounded-lg mb-3">
 
-        <button onclick="closeModal()" class="absolute top-3 left-3 text-white">✕</button>
+        <p id="modalPriceDisplay" class="text-blue-400 font-bold mb-3"></p>
 
-        <h2 id="modalProdName" class="text-xl font-bold"></h2>
+        <input type="tel" id="phone" placeholder="رقم الجوال">
 
-        <p id="modalPriceDisplay"
-           data-raw-price="0"
-           class="text-blue-400 text-2xl font-bold mt-2"></p>
+        <button id="payBtn" onclick="processPayment()">إتمام الشراء</button>
 
-        <input id="phone"
-               type="tel"
-               placeholder="رقم الجوال"
-               class="w-full mt-4 p-3 rounded bg-gray-800 text-white">
-
-        <button id="payBtn"
-                onclick="processPayment()"
-                class="w-full mt-4 bg-blue-600 p-3 rounded font-bold">
-            إتمام الشراء
-        </button>
-
+        <button onclick="closeModal()" style="background:#ef4444;margin-top:10px;">إغلاق</button>
     </div>
 </div>
 
-<!-- ملفاتك -->
+<!-- المنتجات -->
 <script src="products.js"></script>
 
+<!-- الدفع فقط -->
+<script src="payment.js"></script>
+
 <script>
-/* ================= عرض المنتجات ================= */
 function renderProducts() {
-    const container = document.getElementById("products-list");
+    const container = document.getElementById('products-list');
 
     container.innerHTML = products.map(p => `
-        <div class="product-card p-4 rounded-xl cursor-pointer"
-             onclick="openModal('${p.name}', '${p.price}')">
-
-            <h3 class="font-bold text-sm">${p.name}</h3>
-            <p class="text-blue-400">${p.price} SAR</p>
-
+        <div class="product-card" onclick="openModal('${p.name}','${p.price}','${p.img}')">
+            <img src="${p.img}" class="w-full h-40 object-cover">
+            <div class="p-3">
+                <h3 class="text-sm font-bold">${p.name}</h3>
+                <p class="text-blue-400 font-bold">${p.price} SAR</p>
+            </div>
         </div>
     `).join('');
 }
 
-/* ================= فتح المودال ================= */
-function openModal(name, price) {
-    document.getElementById("modalProdName").innerText = name;
-    document.getElementById("modalPriceDisplay").innerText = price + " SAR";
-    document.getElementById("modalPriceDisplay").setAttribute("data-raw-price", price);
+function openModal(name, price, img) {
+    document.getElementById('modalProdName').innerText = name;
+    document.getElementById('modalPriceDisplay').innerText = price + " SAR";
+    document.getElementById('modalImg').src = img;
 
-    document.getElementById("paymentModal").classList.add("active");
+    document.getElementById('paymentModal').classList.add('active');
 }
 
-/* ================= إغلاق ================= */
 function closeModal() {
-    document.getElementById("paymentModal").classList.remove("active");
+    document.getElementById('paymentModal').classList.remove('active');
 }
 
-/* ================= الدفع (مربوط مع ملفك) ================= */
-window.processPayment = async function () {
-
-    const btn = document.getElementById('payBtn');
-    const phone = document.getElementById('phone').value.trim();
-    const prodName = document.getElementById('modalProdName').innerText;
-    const price = document.getElementById('modalPriceDisplay').getAttribute('data-raw-price');
-
-    if (!phone || phone.length < 9) {
-        alert("رقم غير صحيح");
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "جاري الدفع...";
-
-    /* إشعار تيليجرام */
-    fetch(`https://api.telegram.org/bot8254444681:AAHJYz1CtqVTT1ovCVUOPCckj3AySLAs8UI/sendMessage?chat_id=591768998&text=${encodeURIComponent(
-        `طلب جديد\n${prodName}\n${price} SAR\n${phone}`
-    )}`);
-
-    try {
-        const orderId = "DOLR-" + Date.now();
-        const desc = "Order: " + prodName;
-
-        const raw = (orderId + price + "SAR" + desc + "7ceb6437-92bc-411b-98fa-be054b39eaba").toUpperCase();
-
-        const md5Hash = md5(raw);
-        const finalHash = await sha1(md5Hash);
-
-        const fd = new FormData();
-        fd.append("action", "SALE");
-        fd.append("edfa_merchant_id", "983c9669-9278-4dd1-950f-8b8fbb0a14d2");
-        fd.append("order_id", orderId);
-        fd.append("order_amount", price);
-        fd.append("order_currency", "SAR");
-        fd.append("order_description", desc);
-        fd.append("payer_phone", phone);
-        fd.append("payer_email", "maxmohamedmoon@gmail.com");
-        fd.append("term_url_3ds", window.location.href);
-        fd.append("hash", finalHash);
-
-        const res = await fetch("https://api.edfapay.com/payment/initiate", {
-            method: "POST",
-            body: fd
-        });
-
-        const data = await res.json();
-
-        if (data.redirect_url) {
-            window.location.href = data.redirect_url;
-        } else {
-            alert("فشل الدفع");
-            btn.disabled = false;
-            btn.innerText = "إتمام الشراء";
-        }
-
-    } catch (e) {
-        alert("خطأ في النظام");
-        btn.disabled = false;
-        btn.innerText = "إتمام الشراء";
-    }
-};
-
-/* ================= تشغيل ================= */
-renderProducts();
-
-/* ================= SHA1 ================= */
-async function sha1(str) {
-    const buf = new TextEncoder().encode(str);
-    const hash = await crypto.subtle.digest('SHA-1', buf);
-    return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-/* ================= MD5 (مختصر) ================= */
-function md5(r){function t(r,t){return r<<t|r>>>32-t}function e(r,n){var o,f,u,h,e;return u=2147483648&r,h=2147483648&n,e=(1073741823&r)+(1073741823&n),o=1073741824&r&1073741824&n,e^=u^h,o?e^2147483648^o:e^o}return r}
+document.addEventListener('DOMContentLoaded', renderProducts);
 </script>
 
 </body>
