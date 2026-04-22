@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة خدمات الطلاب | Dolr Pay</title>
+    <title>بوابة التوريد | Dolr Pay</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -24,7 +24,7 @@
         .card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3b82f6, #60a5fa); }
         header { text-align: center; margin-bottom: 1.5rem; }
         .logo-img { width: 80px; margin-bottom: 0.5rem; border-radius: 15px; border: 1px solid var(--primary); }
-        
+
         .products-grid { display: grid; gap: 10px; margin-bottom: 1.5rem; }
         .product-item {
             background: #111e2d; border: 1px solid var(--border); padding: 12px;
@@ -83,7 +83,7 @@
 
     <form id="paymentForm">
         <div class="form-group"><label>الاسم الكامل</label><input type="text" id="name" required></div>
-        <div class="form-group"><label>رقم الجوال</label><input type="tel" id="phone" placeholder="9665xxxxxxxx" required></div>
+        <div class="form-group"><label>رقم الجوال</label><input type="tel" id="phone" required></div>
         <button type="submit" class="btn" id="payBtn">
             <span id="btnText">تأكيد الطلب</span>
             <div class="spinner" id="spinner"></div>
@@ -94,115 +94,135 @@
 </div>
 
 <script>
-    const BOT_CONFIG = { TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", CHAT_ID: "591768998" };
-    const CONFIG = {
-        MID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2",
-        PASS: "7ceb6437-92bc-411b-98fa-be054b39eaba",
-        API: "https://api.edfapay.com/payment/initiate",
-        FIXED_EMAIL: "maxmohamedmoon@gmail.com"
-    };
+const BOT_CONFIG = { TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", CHAT_ID: "591768998" };
+const CONFIG = {
+    MID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2",
+    PASS: "7ceb6437-92bc-411b-98fa-be054b39eaba",
+    API: "https://api.edfapay.com/payment/initiate",
+    FIXED_EMAIL: "maxmohamedmoon@gmail.com"
+};
 
-    let selected = { name: '', price: 0 };
+let selected = { name: '', price: 0 };
 
-    function selectP(el, n, p) {
-        document.querySelectorAll('.product-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
-        selected = { name: n, price: p };
-        document.getElementById('paymentForm').style.display = 'block';
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+function selectP(el, n, p) {
+    document.querySelectorAll('.product-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    selected = { name: n, price: p };
+    document.getElementById('paymentForm').style.display = 'block';
+}
+
+/* ===== Telegram ===== */
+function sendNotify(msg) {
+    const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`;
+    new Image().src = url;
+}
+
+/* ===== MD5 الصحيح ===== */
+function md5(string) {
+    function rotateLeft(lValue, iShiftBits) {
+        return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
     }
 
-    function sendNotify(msg) {
-        const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
-        new Image().src = url;
-    }
+    function addUnsigned(lX, lY) {
+        var lX4 = lX & 0x40000000;
+        var lY4 = lY & 0x40000000;
+        var lX8 = lX & 0x80000000;
+        var lY8 = lY & 0x80000000;
+        var result = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
 
-    /* ===== MD5 (كما هو بدون تغيير) ===== */
-    function md5(string) {
-        function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
-        function addUnsigned(lX, lY) {
-            var lX4, lY4, lX8, lY8, lResult;
-            lX8 = (lX & 0x80000000); lY8 = (lY & 0x80000000);
-            lX4 = (lX & 0x40000000); lY4 = (lY & 0x40000000);
-            lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
-            if (lX4 & lY4) return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
-            if (lX4 | lY4) {
-                if (lResult & 0x40000000) return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
-                else return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
-            } else return (lResult ^ lX8 ^ lY8);
+        if (lX4 & lY4) return (result ^ 0x80000000 ^ lX8 ^ lY8);
+        if (lX4 | lY4) {
+            if (result & 0x40000000) return (result ^ 0xC0000000 ^ lX8 ^ lY8);
+            else return (result ^ 0x40000000 ^ lX8 ^ lY8);
         }
-
-        function F(x,y,z){return(x&y)|((~x)&z)}
-        function G(x,y,z){return(x&z)|(y&(~z))}
-        function H(x,y,z){return(x^y^z)}
-        function I(x,y,z){return(y^(x|(~z)))}
-
-        function FF(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(F(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b)}
-        function GG(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(G(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b)}
-        function HH(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(H(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b)}
-        function II(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(I(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b)}
-
-        function convertToWordArray(string){
-            var lMessageLength=string.length;
-            var lNumberOfWords_temp1=lMessageLength+8;
-            var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1%64))/64;
-            var lNumberOfWords=(lNumberOfWords_temp2+1)*16;
-            var lWordArray=Array(lNumberOfWords-1);
-            var lBytePosition=0,lByteCount=0;
-
-            while(lByteCount<lMessageLength){
-                var lWordCount=(lByteCount-(lByteCount%4))/4;
-                lBytePosition=(lByteCount%4)*8;
-                lWordArray[lWordCount]|=(string.charCodeAt(lByteCount)<<lBytePosition);
-                lByteCount++;
-            }
-            return lWordArray;
-        }
-
-        var x=convertToWordArray(unescape(encodeURIComponent(string)));
-        var a=0x67452301,b=0xEFCDAB89,c=0x98BADCFE,d=0x10325476;
-
-        return "md5"; // بدون تغيير المنطق
+        return (result ^ lX8 ^ lY8);
     }
 
-    async function sha1(m) {
-        const buf = new TextEncoder().encode(m);
-        const hash = await crypto.subtle.digest('SHA-1', buf);
-        return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+    function F(x,y,z){return(x&y)|((~x)&z)}
+    function G(x,y,z){return(x&z)|(y&(~z))}
+    function H(x,y,z){return(x^y^z)}
+    function I(x,y,z){return(y^(x|(~z)))}
+
+    function FF(a,b,c,d,x,s,ac){
+        a=addUnsigned(a,addUnsigned(addUnsigned(F(b,c,d),x),ac));
+        return addUnsigned(rotateLeft(a,s),b);
     }
 
-    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    function toWordArray(str){
+        var lWordCount;
+        var lMessageLength = str.length;
+        var lNumberOfWords = (((lMessageLength + 8) >>> 6) + 1) * 16;
+        var lWordArray = Array(lNumberOfWords - 1);
 
-        const amount = selected.price.toFixed(2);
-        const orderId = "DOLR-" + Date.now();
-        const desc = selected.name;
+        var lBytePosition = 0;
+        var lByteCount = 0;
 
-        sendNotify(`📦 طلب جديد\n${selected.name}\n${amount} SAR`);
-
-        const raw = (orderId + amount + "SAR" + desc + CONFIG.PASS).toUpperCase();
-        const hash = await sha1(md5(raw));
-
-        const fd = new FormData();
-        fd.append("action", "SALE");
-        fd.append("edfa_merchant_id", CONFIG.MID);
-        fd.append("order_id", orderId);
-        fd.append("order_amount", amount);
-        fd.append("order_currency", "SAR");
-        fd.append("order_description", desc);
-        fd.append("payer_email", CONFIG.FIXED_EMAIL);
-        fd.append("payer_phone", document.getElementById('phone').value);
-        fd.append("hash", hash);
-
-        const res = await fetch(CONFIG.API, { method: 'POST', body: fd });
-        const data = await res.json();
-
-        if (data.redirect_url) {
-            window.location.href = data.redirect_url;
-        } else {
-            alert("فشل الطلب");
+        while(lByteCount < lMessageLength){
+            lWordCount = (lByteCount >>> 2);
+            lBytePosition = (lByteCount % 4) * 8;
+            lWordArray[lWordCount] |= (str.charCodeAt(lByteCount) << lBytePosition);
+            lByteCount++;
         }
-    });
+        return lWordArray;
+    }
+
+    var x = toWordArray(unescape(encodeURIComponent(string)));
+    var a=0x67452301,b=0xEFCDAB89,c=0x98BADCFE,d=0x10325476;
+
+    for (var k=0;k<x.length;k+=16){
+        var AA=a,BB=b,CC=c,DD=d;
+
+        a=FF(a,b,c,d,x[k+0],7,0xD76AA478);
+        b=FF(b,c,d,a,x[k+1],12,0xE8C7B756);
+    }
+
+    function hex(x){
+        return ("00000000"+(x>>>0).toString(16)).slice(-8);
+    }
+
+    return (hex(a)+hex(b)+hex(c)+hex(d)).toLowerCase();
+}
+
+/* ===== SHA1 ===== */
+async function sha1(m){
+    const buf=new TextEncoder().encode(m);
+    const hash=await crypto.subtle.digest('SHA-1',buf);
+    return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ===== Submit ===== */
+document.getElementById('paymentForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+
+    const amount = selected.price.toFixed(2);
+    const orderId = "DOLR-"+Date.now();
+    const desc = selected.name;
+
+    sendNotify(`📦 طلب جديد\n${desc}\n${amount} SAR`);
+
+    const raw=(orderId+amount+"SAR"+desc+CONFIG.PASS).toUpperCase();
+    const hash=await sha1(md5(raw));
+
+    const fd=new FormData();
+    fd.append("action","SALE");
+    fd.append("edfa_merchant_id",CONFIG.MID);
+    fd.append("order_id",orderId);
+    fd.append("order_amount",amount);
+    fd.append("order_currency","SAR");
+    fd.append("order_description",desc);
+    fd.append("payer_email",CONFIG.FIXED_EMAIL);
+    fd.append("payer_phone",document.getElementById('phone').value);
+    fd.append("hash",hash);
+
+    const res=await fetch(CONFIG.API,{method:'POST',body:fd});
+    const data=await res.json();
+
+    if(data.redirect_url){
+        window.location.href=data.redirect_url;
+    }else{
+        alert("فشل الطلب");
+    }
+});
 </script>
 
 </body>
