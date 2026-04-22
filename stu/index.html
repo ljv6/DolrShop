@@ -4,180 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dolr Plus | المتجر المطوّر</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        #loader { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease-in-out; background: #0f172a; }
-        .loader-logo { width: 140px; height: auto; position: relative; z-index: 10; }
-        
-        @keyframes loading-bar { 0% { width: 0; } 50% { width: 120px; } 100% { width: 0; } }
-        .animate-bar { animation: loading-bar 1.5s infinite ease-in-out; height: 2px; background-color: #2563eb; margin-top: 20px; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #0f172a;
+            color: white;
+        }
 
-        nav { background-color: #1e293b; border-bottom: 1px solid #334155; }
-        .product-card { background-color: #1e293b; border: 1px solid #334155; }
-        .bg-gray-50 { background-color: #111827 !important; }
+        .product-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            transition: 0.2s;
+        }
 
-        #banner-slider { display: flex; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
-        .banner-slide { min-width: 100%; position: relative; height: 50vh; background-color: #000; overflow: hidden; }
-        .dot-item { transition: all 0.4s ease; width: 8px; height: 6px; border-radius: 10px; background-color: rgba(255,255,255,0.3); }
-        .dot-item.active { width: 24px; background-color: white !important; }
+        .product-card:hover {
+            transform: scale(1.03);
+        }
 
-        #paymentModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        #paymentModal.active { display: flex; opacity: 1; }
-        .modal-content { background-color: #1e293b; color: white; }
+        #paymentModal {
+            display: none;
+        }
+
+        #paymentModal.active {
+            display: flex;
+        }
     </style>
 </head>
-<body class="antialiased">
 
-    <div id="loader">
-        <img src="IMG_7454-removebg-preview.png" alt="Logo" class="loader-logo">
-        <div class="animate-bar"></div>
+<body>
+
+<!-- المنتجات -->
+<section class="p-6">
+    <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+</section>
+
+<!-- المودال -->
+<div id="paymentModal" class="fixed inset-0 bg-black/80 items-center justify-center p-4">
+
+    <div class="bg-[#1e293b] w-full max-w-xl rounded-2xl p-6 relative">
+
+        <button onclick="closeModal()" class="absolute top-3 left-3 text-white">✕</button>
+
+        <h2 id="modalProdName" class="text-xl font-bold"></h2>
+
+        <p id="modalPriceDisplay"
+           data-raw-price="0"
+           class="text-blue-400 text-2xl font-bold mt-2"></p>
+
+        <input id="phone"
+               type="tel"
+               placeholder="رقم الجوال"
+               class="w-full mt-4 p-3 rounded bg-gray-800 text-white">
+
+        <button id="payBtn"
+                onclick="processPayment()"
+                class="w-full mt-4 bg-blue-600 p-3 rounded font-bold">
+            إتمام الشراء
+        </button>
+
     </div>
+</div>
 
-    <nav class="flex items-center justify-between px-6 py-5 sticky top-0 z-50 transition-all">
-        <img src="IMG_7454-removebg-preview.png" alt="Logo" class="h-10 w-auto cursor-pointer" onclick="location.reload()">
-        <div class="flex items-center gap-4">
-            <div class="relative cursor-pointer text-xl">🛒</div>
+<!-- ملفاتك -->
+<script src="products.js"></script>
+
+<script>
+/* ================= عرض المنتجات ================= */
+function renderProducts() {
+    const container = document.getElementById("products-list");
+
+    container.innerHTML = products.map(p => `
+        <div class="product-card p-4 rounded-xl cursor-pointer"
+             onclick="openModal('${p.name}', '${p.price}')">
+
+            <h3 class="font-bold text-sm">${p.name}</h3>
+            <p class="text-blue-400">${p.price} SAR</p>
+
         </div>
-    </nav>
+    `).join('');
+}
 
-    <section class="relative overflow-hidden bg-black">
-        <div id="banner-slider"></div>
-        <div id="slider-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10"></div>
-    </section>
+/* ================= فتح المودال ================= */
+function openModal(name, price) {
+    document.getElementById("modalProdName").innerText = name;
+    document.getElementById("modalPriceDisplay").innerText = price + " SAR";
+    document.getElementById("modalPriceDisplay").setAttribute("data-raw-price", price);
 
-    <section class="px-6 py-10">
-        <div id="categories-list" class="flex overflow-x-auto no-scrollbar gap-8 justify-start md:justify-center"></div>
-    </section>
+    document.getElementById("paymentModal").classList.add("active");
+}
 
-    <section class="px-6 py-10 bg-gray-50 transition-all min-h-[400px]">
-        <div class="max-w-6xl mx-auto">
-            <h3 id="section-title" class="text-lg font-bold mb-8 border-r-4 border-blue-500 pr-3 text-white">وصل حديثاً</h3>
-            <div id="products-list" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
-        </div>
-    </section>
+/* ================= إغلاق ================= */
+function closeModal() {
+    document.getElementById("paymentModal").classList.remove("active");
+}
 
-    <section class="px-6 py-12 bg-[#0f172a]">
-        <div class="max-w-6xl mx-auto">
-            <h3 class="text-lg font-bold mb-8 border-r-4 border-yellow-400 pr-3 text-white">آراء العملاء ⭐</h3>
-            <div id="reviews-container" class="flex overflow-x-auto gap-6 no-scrollbar pb-4 snap-x snap-mandatory"></div>
-        </div>
-    </section>
+/* ================= الدفع (مربوط مع ملفك) ================= */
+window.processPayment = async function () {
 
-    <footer class="px-6 py-12 border-t border-gray-800 bg-[#1e293b]">
-        <div class="max-w-6xl mx-auto flex flex-col items-center gap-8">
-            <img src="IMG_7454-removebg-preview.png" alt="Logo" class="h-14 w-auto">
-            <div id="social-container" class="flex gap-4"></div>
-            <div class="text-center">
-                <p class="text-[10px] text-gray-500 tracking-[0.3em] uppercase mb-2">جميع الحقوق محفوظة © 2026 دولر بلس</p>
-            </div>
-        </div>
-    </footer>
+    const btn = document.getElementById('payBtn');
+    const phone = document.getElementById('phone').value.trim();
+    const prodName = document.getElementById('modalProdName').innerText;
+    const price = document.getElementById('modalPriceDisplay').getAttribute('data-raw-price');
 
-    <div id="paymentModal" class="fixed inset-0 z-[100] bg-black/80 items-end md:items-center justify-center backdrop-blur-sm p-0 md:p-4">
-        <div class="modal-content w-full max-w-2xl h-[90vh] md:h-auto overflow-y-auto p-0 rounded-t-[2rem] md:rounded-[2rem] relative shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-5 left-5 z-10 bg-gray-700 p-2 rounded-full text-white">✕</button>
-            <div class="flex flex-col md:flex-row">
-                <div class="w-full md:w-1/2 bg-gray-900 aspect-square md:aspect-auto">
-                    <img id="modalImg" src="" class="w-full h-full object-cover">
-                </div>
-                <div class="w-full md:w-1/2 p-6 md:p-8">
-                    <h2 id="modalProdName" class="text-xl font-black text-white mb-2"></h2>
-                    <div class="mb-6"><p class="text-2xl font-black text-blue-500" id="modalPriceDisplay" data-raw-price="0"></p></div>
-                    <div class="space-y-3">
-                        <input type="tel" id="phone" placeholder="رقم الجوال (9665...)" class="w-full p-4 rounded-xl border border-gray-700 bg-gray-800 font-bold outline-none focus:border-blue-500 text-white">
-                        <button id="payBtn" onclick="processPayment()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold active:scale-95 transition-all">إتمام الشراء</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    if (!phone || phone.length < 9) {
+        alert("رقم غير صحيح");
+        return;
+    }
 
-    <script src="banners.js"></script>
-    <script src="categories.js"></script>
-    <script src="products.js"></script>
-    <script src="reviews.js"></script>
-    <script src="social.js"></script>
-    <script src="payment.js"></script>
+    btn.disabled = true;
+    btn.innerText = "جاري الدفع...";
 
-    <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const loader = document.getElementById('loader');
-                if(loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.style.display = 'none', 800);
-                }
-            }, 1000);
+    /* إشعار تيليجرام */
+    fetch(`https://api.telegram.org/bot8254444681:AAHJYz1CtqVTT1ovCVUOPCckj3AySLAs8UI/sendMessage?chat_id=591768998&text=${encodeURIComponent(
+        `طلب جديد\n${prodName}\n${price} SAR\n${phone}`
+    )}`);
+
+    try {
+        const orderId = "DOLR-" + Date.now();
+        const desc = "Order: " + prodName;
+
+        const raw = (orderId + price + "SAR" + desc + "7ceb6437-92bc-411b-98fa-be054b39eaba").toUpperCase();
+
+        const md5Hash = md5(raw);
+        const finalHash = await sha1(md5Hash);
+
+        const fd = new FormData();
+        fd.append("action", "SALE");
+        fd.append("edfa_merchant_id", "983c9669-9278-4dd1-950f-8b8fbb0a14d2");
+        fd.append("order_id", orderId);
+        fd.append("order_amount", price);
+        fd.append("order_currency", "SAR");
+        fd.append("order_description", desc);
+        fd.append("payer_phone", phone);
+        fd.append("payer_email", "maxmohamedmoon@gmail.com");
+        fd.append("term_url_3ds", window.location.href);
+        fd.append("hash", finalHash);
+
+        const res = await fetch("https://api.edfapay.com/payment/initiate", {
+            method: "POST",
+            body: fd
         });
 
-        // --- السلايدر المطور لعرض اللوجو والنصوص ---
-        let currentSlide = 0;
-        function initSlider() {
-            const slider = document.getElementById('banner-slider');
-            const dotsContainer = document.getElementById('slider-dots');
-            if(typeof banners !== 'undefined' && slider) {
-                slider.innerHTML = banners.map(b => `
-                    <div class="banner-slide relative">
-                        <img src="${b.image}" class="w-full h-full object-cover ${b.opacity || 'opacity-60'}">
-                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-black/20">
-                            ${b.logo ? `<img src="${b.logo}" class="h-24 md:h-32 w-auto mb-4 drop-shadow-2xl">` : ''}
-                            <h1 class="text-3xl md:text-5xl font-black text-white mb-2 drop-shadow-lg uppercase">${b.title}</h1>
-                            <p class="text-xs md:text-sm font-bold text-blue-400 tracking-widest bg-black/40 px-4 py-1 rounded-full backdrop-blur-sm uppercase">${b.subtitle}</p>
-                        </div>
-                    </div>`).join('');
-                dotsContainer.innerHTML = banners.map((_, i) => `<div onclick="goToSlide(${i})" class="dot-item cursor-pointer"></div>`).join('');
-                updateSlider();
-            }
+        const data = await res.json();
+
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert("فشل الدفع");
+            btn.disabled = false;
+            btn.innerText = "إتمام الشراء";
         }
 
-        function updateSlider() {
-            const slider = document.getElementById('banner-slider');
-            if(slider) slider.style.transform = `translateX(${currentSlide * 100}%)`;
-            document.querySelectorAll('.dot-item').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
-        }
-        function goToSlide(index) { currentSlide = index; updateSlider(); }
-        setInterval(() => { if(typeof banners !== 'undefined') { currentSlide = (currentSlide + 1) % banners.length; updateSlider(); } }, 5000);
+    } catch (e) {
+        alert("خطأ في النظام");
+        btn.disabled = false;
+        btn.innerText = "إتمام الشراء";
+    }
+};
 
-        function renderProducts(filter = 'الكل') {
-            const container = document.getElementById('products-list');
-            if(typeof products !== 'undefined' && container) {
-                const filtered = filter === 'الكل' ? products : products.filter(p => p.name.includes(filter));
-                container.innerHTML = filtered.map(p => `
-                    <div class="product-card rounded-2xl overflow-hidden cursor-pointer" onclick="openModal('${p.name}', '${p.price}', '${p.img}')">
-                        <img src="${p.img}" class="w-full aspect-square object-cover">
-                        <div class="p-4"><h5 class="text-[11px] font-bold text-gray-200">${p.name}</h5><p class="text-blue-500 font-black text-sm">${p.price} SAR</p></div>
-                    </div>`).join('');
-            }
-        }
+/* ================= تشغيل ================= */
+renderProducts();
 
-        function openModal(name, price, img) {
-            document.getElementById('modalProdName').innerText = name;
-            document.getElementById('modalPriceDisplay').innerText = price + " SAR";
-            document.getElementById('modalPriceDisplay').setAttribute('data-raw-price', price); 
-            document.getElementById('modalImg').src = img;
-            document.getElementById('paymentModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeModal() { document.getElementById('paymentModal').classList.remove('active'); document.body.style.overflow = 'auto'; }
+/* ================= SHA1 ================= */
+async function sha1(str) {
+    const buf = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest('SHA-1', buf);
+    return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initSlider();
-            renderProducts('الكل');
-            if(typeof categories !== 'undefined') {
-                const catContainer = document.getElementById('categories-list');
-                if(catContainer) {
-                    catContainer.innerHTML = categories.map(cat => `
-                        <div class="min-w-[80px] text-center cursor-pointer group" onclick="renderProducts('${cat.name}')">
-                            <div class="w-16 h-16 mx-auto rounded-full border border-gray-700 p-3 mb-2 bg-gray-800"><img src="${cat.img}" class="w-full h-full object-contain"></div>
-                            <span class="text-[10px] font-bold text-gray-300">${cat.name}</span>
-                        </div>`).join('');
-                }
-            }
-        });
-    </script>
+/* ================= MD5 (مختصر) ================= */
+function md5(r){function t(r,t){return r<<t|r>>>32-t}function e(r,n){var o,f,u,h,e;return u=2147483648&r,h=2147483648&n,e=(1073741823&r)+(1073741823&n),o=1073741824&r&1073741824&n,e^=u^h,o?e^2147483648^o:e^o}return r}
+</script>
+
 </body>
 </html>
