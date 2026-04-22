@@ -1,7 +1,3 @@
-/**
- * Dolr Plus - Payment Handler (Fixed)
- */
-
 const BOT_CONFIG = {
     TOKEN: "8653163377:AAF94B-DSmOxONG1y7J4EFlT5eyqjejMagg",
     CHAT_ID: "591768998"
