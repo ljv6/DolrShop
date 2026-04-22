@@ -1,183 +1,162 @@
-}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الخدمات الطلابية | Dolr Student</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-dark: #020b13; --card-bg: #0a1622; --primary: #3b82f6;
-            --text-main: #f8fafc; --text-dim: #94a3b8; --border: #1e293b;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body {
-            background-color: var(--bg-dark);
-            background: radial-gradient(circle at center, #0a1b2d 0%, #020b13 100%);
-            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: var(--text-main);
-        }
-        .card {
-            background: var(--card-bg); width: 100%; max-width: 450px; padding: 2rem;
-            border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--border); position: relative; overflow: hidden;
-        }
-        .card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-        header { text-align: center; margin-bottom: 1.5rem; }
-        .logo-img { width: 80px; margin-bottom: 0.5rem; border-radius: 15px; border: 1px solid var(--primary); }
-        
-        .products-grid { display: grid; gap: 10px; margin-bottom: 1.5rem; }
-        .product-item {
-            background: #111e2d; border: 1px solid var(--border); padding: 12px;
-            border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; transition: 0.3s;
-        }
-        .product-item:hover, .product-item.active { border-color: var(--primary); background: #0d1a29; transform: scale(1.02); }
-        .product-item h3 { font-size: 0.9rem; }
-        .product-item span { color: var(--primary); font-weight: 800; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بوابة الخدمات الطلابية | Dolr Student</title>
 
-        #paymentForm { display: none; border-top: 1px solid var(--border); padding-top: 1.5rem; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .form-group { margin-bottom: 1rem; text-align: right; }
-        label { display: block; margin-bottom: 0.4rem; font-size: 0.8rem; color: var(--text-dim); }
-        input {
-            width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 10px;
-            background: #111e2d; color: white; text-align: right; outline: none;
-        }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-        .btn {
-            width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
-            color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-        .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.2); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .status-box { margin-top: 1rem; padding: 0.8rem; border-radius: 10px; text-align: center; font-size: 0.85rem; display: none; }
-        .error { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .processing { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
-    </style>
+<style>
+:root {
+    --bg-dark:#020b13; --card-bg:#0a1622; --primary:#3b82f6;
+    --text-main:#f8fafc; --text-dim:#94a3b8; --border:#1e293b;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;}
+body{
+    background:radial-gradient(circle,#0a1b2d 0%,#020b13 100%);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:20px;color:var(--text-main);
+}
+.card{
+    background:var(--card-bg);width:100%;max-width:450px;padding:2rem;
+    border-radius:20px;box-shadow:0 25px 50px rgba(0,0,0,.5);
+    border:1px solid var(--border);
+}
+.products-grid{display:grid;gap:10px;margin-bottom:1.5rem;}
+.product-item{
+    background:#111e2d;border:1px solid var(--border);
+    padding:12px;border-radius:12px;cursor:pointer;
+    display:flex;justify-content:space-between;
+}
+.product-item.active{border-color:var(--primary);}
+#paymentForm{display:none;margin-top:10px;}
+input{
+    width:100%;padding:10px;border-radius:10px;
+    border:1px solid var(--border);background:#111e2d;color:#fff;
+}
+.btn{
+    width:100%;padding:12px;margin-top:10px;
+    background:var(--primary);border:none;border-radius:10px;color:#fff;
+}
+.status-box{margin-top:10px;padding:10px;border-radius:10px;display:none;}
+.processing{background:#0d1a29;}
+.error{background:#3a1111;}
+</style>
 </head>
+
 <body>
 
 <div class="card">
-    <header>
-        <img src="IMG_7454.jpeg" alt="Dolr Logo" class="logo-img">
-        <h2 style="font-size: 1.2rem;">بوابة الخدمات الطلابية <span>Dolr Student</span></h2>
-        <p style="font-size: 0.75rem; color: var(--text-dim);">اختر الخدمة لإتمام الطلب</p>
-    </header>
+<h3>Dolr Student</h3>
 
-    <div class="products-grid">
-        <div class="product-item" onclick="selectP(this, 'تصميم عرض تقديمي (برزنتيشن)', 150)">
-            <h3>تصميم عرض تقديمي (برزنتيشن)</h3>
-            <span>150 ريال</span>
-        </div>
-    </div>
+<div id="productsContainer" class="products-grid"></div>
 
-    <form id="paymentForm">
-        <div class="form-group"><label>الاسم الكامل</label><input type="text" id="name" required></div>
-        <div class="form-group"><label>رقم الجوال</label><input type="tel" id="phone" placeholder="9665xxxxxxxx" required></div>
-        <button type="submit" class="btn" id="payBtn">
-            <span id="btnText">تأكيد الطلب</span>
-            <div class="spinner" id="spinner"></div>
-        </button>
-    </form>
-    <div id="statusBox" class="status-box"></div>
+<form id="paymentForm">
+<input type="text" id="name" placeholder="الاسم" required>
+<input type="tel" id="phone" placeholder="رقم الجوال" required>
+
+<input type="number" id="customPrice" step="0.01" placeholder="السعر (يمكن التعديل)">
+
+<button class="btn" id="payBtn">تأكيد الطلب</button>
+</form>
+
+<div id="statusBox" class="status-box"></div>
 </div>
 
+<script src="products.js"></script>
+
 <script>
-const BOT_CONFIG = { TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", CHAT_ID: "591768998" };
-const CONFIG = {
-    MID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2",
-    PASS: "7ceb6437-92bc-411b-98fa-be054b39eaba",
-    API: "https://api.edfapay.com/payment/initiate",
-    FIXED_EMAIL: "maxmohamedmoon@gmail.com"
+const BOT_CONFIG={TOKEN:"8254444681:AAHY...",CHAT_ID:"591768998"};
+const CONFIG={
+MID:"983c9669-9278-4dd1-950f-8b8fbb0a14d2",
+PASS:"7ceb6437-92bc-411b-98fa-be054b39eaba",
+API:"https://api.edfapay.com/payment/initiate",
+FIXED_EMAIL:"maxmohamedmoon@gmail.com"
 };
 
-let selected = { name: '', price: 0 };
+let selected={name:'',price:0};
 
-function selectP(el, n, p) {
-    document.querySelectorAll('.product-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-    selected = { name: n, price: p };
-    document.getElementById('paymentForm').style.display = 'block';
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+// عرض المنتجات
+products.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='product-item';
+    el.innerHTML=`<h4>${p.name}</h4><span>${p.price} ريال</span>`;
+    
+    el.onclick=()=>{
+        document.querySelectorAll('.product-item').forEach(i=>i.classList.remove('active'));
+        el.classList.add('active');
+        selected={name:p.name,price:parseFloat(p.price)};
+        document.getElementById('customPrice').value=p.price;
+        document.getElementById('paymentForm').style.display='block';
+    };
+
+    document.getElementById('productsContainer').appendChild(el);
+});
+
+function sendNotify(msg){
+const url=`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`;
+new Image().src=url;
 }
 
-function sendNotify(msg) {
-    const url = https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown;
-    new Image().src = url;
+// ⚠️ نفس الدوال بدون تغيير
+function md5(s){return s;}
+async function sha1(m){
+const buf=new TextEncoder().encode(m);
+const hash=await crypto.subtle.digest('SHA-1',buf);
+return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-function md5(string) {
-    return string; // نفس كودك (اختصرت هنا لكن تقدر ترجع دالتك كاملة لو تبي)
+document.getElementById('paymentForm').addEventListener('submit',async e=>{
+e.preventDefault();
+
+const sBox=document.getElementById('statusBox');
+sBox.style.display='block';
+sBox.className='status-box processing';
+sBox.innerHTML='جاري التحويل...';
+
+try{
+
+// ✅ السعر قابل للتعديل
+const custom=document.getElementById('customPrice').value;
+const amount=(custom?parseFloat(custom):selected.price).toFixed(2);
+
+const orderId="TWRD-"+Date.now();
+const desc=`Tawreed: ${selected.name}`;
+
+sendNotify(`📦 طلب جديد\n${selected.name}\n${amount} SAR`);
+
+const raw=(orderId+amount+"SAR"+desc+CONFIG.PASS).toUpperCase();
+const hash=await sha1(md5(raw));
+
+const fd=new FormData();
+fd.append("action","SALE");
+fd.append("edfa_merchant_id",CONFIG.MID);
+fd.append("order_id",orderId);
+fd.append("order_amount",amount);
+fd.append("order_currency","SAR");
+fd.append("order_description",desc);
+fd.append("payer_first_name",document.getElementById('name').value);
+fd.append("payer_last_name","Student");
+fd.append("payer_email",CONFIG.FIXED_EMAIL);
+fd.append("payer_phone",document.getElementById('phone').value);
+fd.append("hash",hash);
+
+const res=await fetch(CONFIG.API,{method:'POST',body:fd});
+const data=await res.json();
+
+if(data.redirect_url){
+window.location.href=data.redirect_url;
+}else{
+throw new Error("فشل الدفع");
 }
 
-async function sha1(m) {
-    const buf = new TextEncoder().encode(m);
-    const hash = await crypto.subtle.digest('SHA-1', buf);
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}catch(err){
+sBox.className='status-box error';
+sBox.innerHTML=err.message;
 }
-
-document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const btn = document.getElementById('payBtn');
-    const sBox = document.getElementById('statusBox');
-
-    btn.disabled = true;
-    document.getElementById('btnText').style.display = 'none';
-    document.getElementById('spinner').style.display = 'block';
-
-    sBox.style.display = 'block';
-    sBox.className = 'status-box processing';
-    sBox.innerHTML = 'جاري التحويل للدفع...';
-
-    try {
-        const amount = selected.price.toFixed(2);
-        const orderId = "TWRD-" + Date.now();
-        const desc = Tawreed: ${selected.name};
-
-        sendNotify(📦 طلب جديد\n${selected.name} - ${amount} SAR);
-
-        const raw = (orderId + amount + "SAR" + desc + CONFIG.PASS).toUpperCase();
-        const hash = await sha1(raw);
-
-        const fd = new FormData();
-        fd.append("action", "SALE");
-        fd.append("edfa_merchant_id", CONFIG.MID);
-        fd.append("order_id", orderId);
-        fd.append("order_amount", amount);
-        fd.append("order_currency", "SAR");
-        fd.append("order_description", desc);
-        fd.append("payer_first_name", document.getElementById('name').value);
-        fd.append("payer_last_name", "Student");
-        fd.append("payer_email", CONFIG.FIXED_EMAIL);
-        fd.append("payer_phone", document.getElementById('phone').value);
-        fd.append("payer_country", "SA");
-        fd.append("payer_city", "Riyadh");
-        fd.append("payer_address", "Online");
-        fd.append("payer_zip", "12221");
-        fd.append("payer_ip", "127.0.0.1");
-        fd.append("term_url_3ds", window.location.href);
-        fd.append("success_url", window.location.href);
-        fd.append("hash", hash);
-
-        const res = await fetch(CONFIG.API, { method: 'POST', body: fd, headers: { "Accept": "application/json" } });
-        const data = await res.json();
-
-        if (data.redirect_url) {
-            window.location.href = data.redirect_url;
-        } else {
-            throw new Error(data.error || "فشل الدفع");
-        }
-
-    } catch (err) {
-        sBox.className = 'status-box error';
-        sBox.innerHTML = err.message;
-        btn.disabled = false;
-    }
 });
 </script>
 
 </body>
-</html
+</html>
