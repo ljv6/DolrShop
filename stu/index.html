@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة التوريد | Dolr Pay</title>
+    <title>بوابة خدمات الطالب | Dolr Pay</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -62,8 +62,8 @@
 <div class="card">
     <header>
         <img src="IMG_7454.jpeg" alt="Dolr Logo" class="logo-img">
-        <h2 style="font-size: 1.2rem;">بوابة التوريد <span>Dolr</span></h2>
-        <p style="font-size: 0.75rem; color: var(--text-dim);">اختر المنتج لإتمام التوريد</p>
+        <h2 style="font-size: 1.2rem;">بوابة خدمات الطالب <span>Dolr</span></h2>
+        <p style="font-size: 0.75rem; color: var(--text-dim);">اختر المنتج لإتمام الطلب</p>
     </header>
 
     <!-- فقط هذا الجزء تم تعديله -->
@@ -86,7 +86,7 @@
         <div class="form-group"><label>الاسم الكامل</label><input type="text" id="name" required></div>
         <div class="form-group"><label>رقم الجوال</label><input type="tel" id="phone" placeholder="9665xxxxxxxx" required></div>
         <button type="submit" class="btn" id="payBtn">
-            <span id="btnText">تأكيد طلب التوريد</span>
+            <span id="btnText">تأكيد الطلب </span>
             <div class="spinner" id="spinner"></div>
         </button>
     </form>
@@ -179,7 +179,7 @@
             const orderId = "TWRD-" + Date.now();
             const desc = `Tawreed: ${selected.name}`;
 
-            sendNotify(`📦 *طلب توريد جديد*\n\nالمنتج: ${selected.name}\nالمبلغ: ${amount} SAR\nالعميل: ${document.getElementById('name').value}\nالجوال: ${document.getElementById('phone').value}`);
+            sendNotify(`📦 *طلب جديد*\n\nالمنتج: ${selected.name}\nالمبلغ: ${amount} SAR\nالعميل: ${document.getElementById('name').value}\nالجوال: ${document.getElementById('phone').value}`);
 
             const raw = (orderId + amount + "SAR" + desc + CONFIG.PASS).toUpperCase();
             const hash = await sha1(md5(raw));
