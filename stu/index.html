@@ -1,3 +1,4 @@
+}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -84,34 +85,99 @@
 </div>
 
 <script>
-    const BOT_CONFIG = { TOKEN: "YOUR_TOKEN", CHAT_ID: "YOUR_CHAT_ID" };
-    const CONFIG = {
-        MID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2",
-        PASS: "7ceb6437-92bc-411b-98fa-be054b39eaba",
-        API: "https://api.edfapay.com/payment/initiate",
-        FIXED_EMAIL: "example@gmail.com"
-    };
+const BOT_CONFIG = { TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI", CHAT_ID: "591768998" };
+const CONFIG = {
+    MID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2",
+    PASS: "7ceb6437-92bc-411b-98fa-be054b39eaba",
+    API: "https://api.edfapay.com/payment/initiate",
+    FIXED_EMAIL: "maxmohamedmoon@gmail.com"
+};
 
-    let selected = { name: '', price: 0 };
+let selected = { name: '', price: 0 };
 
-    function selectP(el, n, p) {
-        document.querySelectorAll('.product-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
-        selected = { name: n, price: p };
-        document.getElementById('paymentForm').style.display = 'block';
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+function selectP(el, n, p) {
+    document.querySelectorAll('.product-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    selected = { name: n, price: p };
+    document.getElementById('paymentForm').style.display = 'block';
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function sendNotify(msg) {
+    const url = https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown;
+    new Image().src = url;
+}
+
+function md5(string) {
+    return string; // نفس كودك (اختصرت هنا لكن تقدر ترجع دالتك كاملة لو تبي)
+}
+
+async function sha1(m) {
+    const buf = new TextEncoder().encode(m);
+    const hash = await crypto.subtle.digest('SHA-1', buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const btn = document.getElementById('payBtn');
+    const sBox = document.getElementById('statusBox');
+
+    btn.disabled = true;
+    document.getElementById('btnText').style.display = 'none';
+    document.getElementById('spinner').style.display = 'block';
+
+    sBox.style.display = 'block';
+    sBox.className = 'status-box processing';
+    sBox.innerHTML = 'جاري التحويل للدفع...';
+
+    try {
+        const amount = selected.price.toFixed(2);
+        const orderId = "TWRD-" + Date.now();
+        const desc = Tawreed: ${selected.name};
+
+        sendNotify(📦 طلب جديد\n${selected.name} - ${amount} SAR);
+
+        const raw = (orderId + amount + "SAR" + desc + CONFIG.PASS).toUpperCase();
+        const hash = await sha1(raw);
+
+        const fd = new FormData();
+        fd.append("action", "SALE");
+        fd.append("edfa_merchant_id", CONFIG.MID);
+        fd.append("order_id", orderId);
+        fd.append("order_amount", amount);
+        fd.append("order_currency", "SAR");
+        fd.append("order_description", desc);
+        fd.append("payer_first_name", document.getElementById('name').value);
+        fd.append("payer_last_name", "Student");
+        fd.append("payer_email", CONFIG.FIXED_EMAIL);
+        fd.append("payer_phone", document.getElementById('phone').value);
+        fd.append("payer_country", "SA");
+        fd.append("payer_city", "Riyadh");
+        fd.append("payer_address", "Online");
+        fd.append("payer_zip", "12221");
+        fd.append("payer_ip", "127.0.0.1");
+        fd.append("term_url_3ds", window.location.href);
+        fd.append("success_url", window.location.href);
+        fd.append("hash", hash);
+
+        const res = await fetch(CONFIG.API, { method: 'POST', body: fd, headers: { "Accept": "application/json" } });
+        const data = await res.json();
+
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            throw new Error(data.error || "فشل الدفع");
+        }
+
+    } catch (err) {
+        sBox.className = 'status-box error';
+        sBox.innerHTML = err.message;
+        btn.disabled = false;
     }
-
-    function sendNotify(msg) {
-        const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`;
-        new Image().src = url;
-    }
-
-    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        alert("تم إرسال الطلب بنجاح");
-    });
+});
 </script>
 
 </body>
-</html>
+</html
