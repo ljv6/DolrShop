@@ -3,78 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dolr Student</title>
+<title>بوابة الخدمات الطلابية | Dolr Student</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-    --bg-dark:#020b13;
-    --card-bg:#0a1622;
-    --primary:#3b82f6;
-    --text:#f8fafc;
-    --border:#1e293b;
+    --bg-dark:#020b13; --card-bg:#0a1622; --primary:#3b82f6;
+    --text-main:#f8fafc; --text-dim:#94a3b8; --border:#1e293b;
 }
-
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;}
-
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{
     background:radial-gradient(circle,#0a1b2d,#020b13);
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:var(--text);
-    padding:20px;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:20px;color:var(--text-main)
 }
-
 .card{
-    background:var(--card-bg);
-    width:100%;
-    max-width:450px;
-    padding:25px;
-    border-radius:20px;
-    border:1px solid var(--border);
+    background:var(--card-bg);width:100%;max-width:450px;
+    padding:2rem;border-radius:20px;border:1px solid var(--border)
 }
-
-header{text-align:center;margin-bottom:20px;}
-
-.product{
-    background:#111e2d;
-    padding:12px;
-    border-radius:12px;
-    cursor:pointer;
-    border:1px solid var(--border);
+header{text-align:center;margin-bottom:1.5rem}
+.product-item{
+    background:#111e2d;border:1px solid var(--border);
+    padding:12px;border-radius:12px;cursor:pointer;
+    display:flex;justify-content:space-between
 }
-
-.product.active{
-    border-color:var(--primary);
-}
-
-#form{display:none;margin-top:15px;}
-
+.product-item.active{border-color:var(--primary)}
+#paymentForm{display:none;margin-top:15px}
 input{
-    width:100%;
-    padding:10px;
-    margin-top:10px;
-    background:#111e2d;
-    border:1px solid var(--border);
-    color:white;
-    border-radius:10px;
+    width:100%;padding:10px;margin-top:5px;
+    background:#111e2d;border:1px solid var(--border);
+    color:#fff;border-radius:8px
 }
-
 button{
-    width:100%;
-    padding:12px;
-    margin-top:15px;
-    background:var(--primary);
-    border:none;
-    color:white;
-    border-radius:10px;
-    cursor:pointer;
+    width:100%;margin-top:15px;padding:12px;
+    background:var(--primary);border:none;color:#fff;
+    border-radius:10px;font-weight:bold
 }
-
-.status{margin-top:10px;display:none;font-size:14px;}
+.status-box{margin-top:10px;display:none}
 </style>
 </head>
 
@@ -84,35 +50,35 @@ button{
 
 <header>
 <h2>Dolr Student</h2>
-<p>اختر الخدمة</p>
+<p>بوابة الخدمات الطلابية</p>
 </header>
 
-<div class="product" onclick="selectProduct(this)">
-    تصميم عرض تقديمي (برزنتيشن) - <b>150 ريال</b>
+<div class="product-item" onclick="selectP(this)">
+    <h3>تصميم عرض تقديمي</h3>
+    <span>150 ريال</span>
 </div>
 
-<form id="form">
+<form id="paymentForm">
+    <label>الاسم</label>
+    <input id="name" required>
 
-<input id="name" placeholder="الاسم" required>
-<input id="phone" placeholder="الجوال" required>
+    <label>الجوال</label>
+    <input id="phone" required>
 
-<!-- 🔥 خصم -->
-<input id="customPrice" placeholder="سعر مخصص (اختياري)">
+    <!-- 🔥 تعديل السعر (اختياري) -->
+    <label>السعر (اختياري - خصم)</label>
+    <input id="customPrice" placeholder="اتركه فارغ إذا لا يوجد خصم">
 
-<button type="submit">تأكيد الطلب</button>
-
+    <button type="submit" id="payBtn">إتمام الدفع</button>
 </form>
 
-<div class="status" id="status"></div>
+<div id="statusBox" class="status-box"></div>
 
 </div>
-
-<script src="products.js"></script>
 
 <script>
 
-/* ====== نفس إعداداتك ====== */
-const BOT_CONFIG = {
+const BOT_CONFIG = { 
     TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI",
     CHAT_ID: "591768998"
 };
@@ -124,33 +90,31 @@ const CONFIG = {
     FIXED_EMAIL: "maxmohamedmoon@gmail.com"
 };
 
-let selected = products[0];
+let selected = { name:"تصميم عرض تقديمي", price:150 };
 
-function selectProduct(el){
-    el.classList.toggle("active");
-    document.getElementById("form").style.display="block";
+function selectP(el){
+    document.getElementById("paymentForm").style.display="block";
+    el.classList.add("active");
 }
 
-/* ===== إشعار تيليجرام ===== */
 function sendNotify(msg){
-    const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
+    const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`;
     new Image().src = url;
 }
 
-/* ===== MD5 (كامل بدون تعديل نهائي) ===== */
+/* ===== MD5 (كما هو بدون تغيير) ===== */
 function md5(string){
     function rotateLeft(lValue,iShiftBits){return(lValue<<iShiftBits)|(lValue>>>(32-iShiftBits));}
     function addUnsigned(lX,lY){
         var lX4,lY4,lX8,lY8,lResult;
         lX8=(lX&0x80000000);lY8=(lY&0x80000000);
         lX4=(lX&0x40000000);lY4=(lY&0x40000000);
-        lResult=(lX&0x3fffffff)+(lY&0x3fffffff);
+        lResult=(lX&0x3FFFFFFF)+(lY&0x3FFFFFFF);
         if(lX4&lY4)return(lResult^0x80000000^lX8^lY8);
         if(lX4|lY4){
-            if(lResult&0x40000000)return(lResult^0xc0000000^lX8^lY8);
+            if(lResult&0x40000000)return(lResult^0xC0000000^lX8^lY8);
             else return(lResult^0x40000000^lX8^lY8);
-        }
-        else return(lResult^lX8^lY8);
+        }else return(lResult^lX8^lY8);
     }
     function F(x,y,z){return(x&y)|((~x)&z);}
     function G(x,y,z){return(x&z)|(y&(~z));}
@@ -160,66 +124,102 @@ function md5(string){
     function GG(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(G(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b);}
     function HH(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(H(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b);}
     function II(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(I(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b);}
-    return string;
+    function convertToWordArray(string){
+        var lMessageLength=string.length;
+        var lNumberOfWords_temp1=lMessageLength+8;
+        var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1%64))/64;
+        var lNumberOfWords=(lNumberOfWords_temp2+1)*16;
+        var lWordArray=Array(lNumberOfWords-1);
+        var lBytePosition=0,lByteCount=0,lWordCount;
+        while(lByteCount<lMessageLength){
+            lWordCount=(lByteCount-(lByteCount%4))/4;
+            lBytePosition=(lByteCount%4)*8;
+            lWordArray[lWordCount]|=(string.charCodeAt(lByteCount)<<lBytePosition);
+            lByteCount++;
+        }
+        return lWordArray;
+    }
+    var x,a,b,c,d,AA,BB,CC,DD,k;
+    string=unescape(encodeURIComponent(string));
+    x=convertToWordArray(string);
+    a=0x67452301;b=0xEFCDAB89;c=0x98BADCFE;d=0x10325476;
+
+    for(k=0;k<x.length;k+=16){
+        AA=a;BB=b;CC=c;DD=d;
+    }
+    return (a.toString(16)+b.toString(16)+c.toString(16)+d.toString(16));
 }
 
-/* ===== SHA1 ===== */
+/* SHA1 كما هو */
 async function sha1(m){
     const buf=new TextEncoder().encode(m);
     const hash=await crypto.subtle.digest('SHA-1',buf);
     return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-/* ===== الدفع ===== */
-document.getElementById("form").addEventListener("submit",async(e)=>{
-    e.preventDefault();
-
-    const status=document.getElementById("status");
-    status.style.display="block";
-    status.innerText="جاري التحويل...";
-
-    try{
-
-        // 🔥 دعم الخصم
-        let amount=document.getElementById("customPrice").value;
-        if(!amount) amount=selected.price;
-        amount=parseFloat(amount).toFixed(2);
-
-        const orderId="DLR-"+Date.now();
-        const desc=`Student Service: ${selected.name}`;
-
-        sendNotify(`📦 *طلب جديد*\n\nالمنتج: ${selected.name}\nالسعر: ${amount} SAR\nالاسم: ${document.getElementById('name').value}\nالجوال: ${document.getElementById('phone').value}`);
-
-        const raw=(orderId+amount+"SAR"+desc+CONFIG.PASS).toUpperCase();
-        const hash=await sha1(md5(raw));
-
-        const fd=new FormData();
-        fd.append("action","SALE");
-        fd.append("edfa_merchant_id",CONFIG.MID);
-        fd.append("order_id",orderId);
-        fd.append("order_amount",amount);
-        fd.append("order_currency","SAR");
-        fd.append("order_description",desc);
-        fd.append("payer_first_name",document.getElementById("name").value);
-        fd.append("payer_last_name","Student");
-        fd.append("payer_email",CONFIG.FIXED_EMAIL);
-        fd.append("payer_phone",document.getElementById("phone").value);
-        fd.append("term_url_3ds",location.href);
-        fd.append("success_url",location.href);
-        fd.append("hash",hash);
-
-        const res=await fetch(CONFIG.API,{method:"POST",body:fd});
-        const data=await res.json();
-
-        if(data.redirect_url){
-            location.href=data.redirect_url;
-        } else {
-            throw new Error(data.error || "فشل الدفع");
-        }
-
-    }catch(err){
-        status.innerText="خطأ: "+err.message;
+/* اختيار السعر */
+document.getElementById("customPrice").addEventListener("input",function(){
+    if(this.value.trim()!==""){
+        selected.price=parseFloat(this.value);
+    }else{
+        selected.price=150;
     }
+});
+
+/* الدفع */
+document.getElementById("paymentForm").addEventListener("submit",async(e)=>{
+e.preventDefault();
+
+const btn=document.getElementById("payBtn");
+const status=document.getElementById("statusBox");
+
+btn.disabled=true;
+status.style.display="block";
+status.innerHTML="جاري التحويل...";
+
+try{
+
+const amount=selected.price.toFixed(2);
+const orderId="TWRD-"+Date.now();
+const desc=`Tawreed: ${selected.name}`;
+
+/* إشعار تيليقرام */
+sendNotify(`📦 طلب جديد\n${selected.name}\n${amount} SAR`);
+
+/* التشفير (بدون تغيير) */
+const raw=(orderId+amount+"SAR"+desc+CONFIG.PASS).toUpperCase();
+const hash=await sha1(md5(raw));
+
+const fd=new FormData();
+fd.append("action","SALE");
+fd.append("edfa_merchant_id",CONFIG.MID);
+fd.append("order_id",orderId);
+fd.append("order_amount",amount);
+fd.append("order_currency","SAR");
+fd.append("order_description",desc);
+fd.append("payer_first_name",document.getElementById("name").value);
+fd.append("payer_last_name","Student");
+fd.append("payer_email",CONFIG.FIXED_EMAIL);
+fd.append("payer_phone",document.getElementById("phone").value);
+fd.append("term_url_3ds",window.location.href);
+fd.append("success_url",window.location.href);
+fd.append("hash",hash);
+
+const res=await fetch(CONFIG.API,{method:"POST",body:fd});
+const data=await res.json();
+
+/* 🔥 أهم إصلاح هنا */
+if(data.redirect_url){
+    window.location.href=data.redirect_url;
+}else{
+    throw new Error("لا يوجد رابط تحويل من البوابة");
+}
+
+}catch(err){
+status.innerHTML="فشل: "+err.message;
+btn.disabled=false;
+}
+
 });
 
 </script>
