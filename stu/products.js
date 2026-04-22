@@ -1,10 +1,9 @@
-// products.js
+// Dolr Student Products
 const products = [
     { 
         id: 1, 
         name: "تصميم عرض تقديمي (برزنتيشن)", 
-        price: "150.00",
-        desc: "تصميم احترافي لعرض تقديمي جاهز للتسليم"
+        price: "150.00"
     }
 ];
 
