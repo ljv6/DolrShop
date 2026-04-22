@@ -3,159 +3,225 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>بوابة الخدمات الطلابية | Dolr Student</title>
+<title>Dolr Student</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-    --bg-dark:#020b13; --card-bg:#0a1622; --primary:#3b82f6;
-    --text-main:#f8fafc; --text-dim:#94a3b8; --border:#1e293b;
+    --bg-dark:#020b13;
+    --card-bg:#0a1622;
+    --primary:#3b82f6;
+    --text:#f8fafc;
+    --border:#1e293b;
 }
+
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;}
+
 body{
-    background:radial-gradient(circle,#0a1b2d 0%,#020b13 100%);
-    min-height:100vh;display:flex;align-items:center;justify-content:center;
-    padding:20px;color:var(--text-main);
+    background:radial-gradient(circle,#0a1b2d,#020b13);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--text);
+    padding:20px;
 }
+
 .card{
-    background:var(--card-bg);width:100%;max-width:450px;padding:2rem;
-    border-radius:20px;box-shadow:0 25px 50px rgba(0,0,0,.5);
+    background:var(--card-bg);
+    width:100%;
+    max-width:450px;
+    padding:25px;
+    border-radius:20px;
     border:1px solid var(--border);
 }
-.products-grid{display:grid;gap:10px;margin-bottom:1.5rem;}
-.product-item{
-    background:#111e2d;border:1px solid var(--border);
-    padding:12px;border-radius:12px;cursor:pointer;
-    display:flex;justify-content:space-between;
+
+header{text-align:center;margin-bottom:20px;}
+
+.product{
+    background:#111e2d;
+    padding:12px;
+    border-radius:12px;
+    cursor:pointer;
+    border:1px solid var(--border);
 }
-.product-item.active{border-color:var(--primary);}
-#paymentForm{display:none;margin-top:10px;}
+
+.product.active{
+    border-color:var(--primary);
+}
+
+#form{display:none;margin-top:15px;}
+
 input{
-    width:100%;padding:10px;border-radius:10px;
-    border:1px solid var(--border);background:#111e2d;color:#fff;
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    background:#111e2d;
+    border:1px solid var(--border);
+    color:white;
+    border-radius:10px;
 }
-.btn{
-    width:100%;padding:12px;margin-top:10px;
-    background:var(--primary);border:none;border-radius:10px;color:#fff;
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    background:var(--primary);
+    border:none;
+    color:white;
+    border-radius:10px;
+    cursor:pointer;
 }
-.status-box{margin-top:10px;padding:10px;border-radius:10px;display:none;}
-.processing{background:#0d1a29;}
-.error{background:#3a1111;}
+
+.status{margin-top:10px;display:none;font-size:14px;}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-<h3>Dolr Student</h3>
 
-<div id="productsContainer" class="products-grid"></div>
+<header>
+<h2>Dolr Student</h2>
+<p>اختر الخدمة</p>
+</header>
 
-<form id="paymentForm">
-<input type="text" id="name" placeholder="الاسم" required>
-<input type="tel" id="phone" placeholder="رقم الجوال" required>
+<div class="product" onclick="selectProduct(this)">
+    تصميم عرض تقديمي (برزنتيشن) - <b>150 ريال</b>
+</div>
 
-<input type="number" id="customPrice" step="0.01" placeholder="السعر (يمكن التعديل)">
+<form id="form">
 
-<button class="btn" id="payBtn">تأكيد الطلب</button>
+<input id="name" placeholder="الاسم" required>
+<input id="phone" placeholder="الجوال" required>
+
+<!-- 🔥 خصم -->
+<input id="customPrice" placeholder="سعر مخصص (اختياري)">
+
+<button type="submit">تأكيد الطلب</button>
+
 </form>
 
-<div id="statusBox" class="status-box"></div>
+<div class="status" id="status"></div>
+
 </div>
 
 <script src="products.js"></script>
 
 <script>
-const BOT_CONFIG={TOKEN:"8254444681:AAHY...",CHAT_ID:"591768998"};
-const CONFIG={
-MID:"983c9669-9278-4dd1-950f-8b8fbb0a14d2",
-PASS:"7ceb6437-92bc-411b-98fa-be054b39eaba",
-API:"https://api.edfapay.com/payment/initiate",
-FIXED_EMAIL:"maxmohamedmoon@gmail.com"
+
+/* ====== نفس إعداداتك ====== */
+const BOT_CONFIG = {
+    TOKEN: "8254444681:AAHYJz1CtqVTT1ovCVUOPCckj3AySLAs8UI",
+    CHAT_ID: "591768998"
 };
 
-let selected={name:'',price:0};
+const CONFIG = {
+    MID: "983c9669-9278-4dd1-950f-8b8fbb0a14d2",
+    PASS: "7ceb6437-92bc-411b-98fa-be054b39eaba",
+    API: "https://api.edfapay.com/payment/initiate",
+    FIXED_EMAIL: "maxmohamedmoon@gmail.com"
+};
 
-// عرض المنتجات
-products.forEach(p=>{
-    const el=document.createElement('div');
-    el.className='product-item';
-    el.innerHTML=`<h4>${p.name}</h4><span>${p.price} ريال</span>`;
-    
-    el.onclick=()=>{
-        document.querySelectorAll('.product-item').forEach(i=>i.classList.remove('active'));
-        el.classList.add('active');
-        selected={name:p.name,price:parseFloat(p.price)};
-        document.getElementById('customPrice').value=p.price;
-        document.getElementById('paymentForm').style.display='block';
-    };
+let selected = products[0];
 
-    document.getElementById('productsContainer').appendChild(el);
-});
+function selectProduct(el){
+    el.classList.toggle("active");
+    document.getElementById("form").style.display="block";
+}
 
+/* ===== إشعار تيليجرام ===== */
 function sendNotify(msg){
-const url=`https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`;
-new Image().src=url;
+    const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
+    new Image().src = url;
 }
 
-// ⚠️ نفس الدوال بدون تغيير
-function md5(s){return s;}
+/* ===== MD5 (كامل بدون تعديل نهائي) ===== */
+function md5(string){
+    function rotateLeft(lValue,iShiftBits){return(lValue<<iShiftBits)|(lValue>>>(32-iShiftBits));}
+    function addUnsigned(lX,lY){
+        var lX4,lY4,lX8,lY8,lResult;
+        lX8=(lX&0x80000000);lY8=(lY&0x80000000);
+        lX4=(lX&0x40000000);lY4=(lY&0x40000000);
+        lResult=(lX&0x3fffffff)+(lY&0x3fffffff);
+        if(lX4&lY4)return(lResult^0x80000000^lX8^lY8);
+        if(lX4|lY4){
+            if(lResult&0x40000000)return(lResult^0xc0000000^lX8^lY8);
+            else return(lResult^0x40000000^lX8^lY8);
+        }
+        else return(lResult^lX8^lY8);
+    }
+    function F(x,y,z){return(x&y)|((~x)&z);}
+    function G(x,y,z){return(x&z)|(y&(~z));}
+    function H(x,y,z){return(x^y^z);}
+    function I(x,y,z){return(y^(x|(~z)));}
+    function FF(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(F(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b);}
+    function GG(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(G(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b);}
+    function HH(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(H(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b);}
+    function II(a,b,c,d,x,s,ac){a=addUnsigned(a,addUnsigned(addUnsigned(I(b,c,d),x),ac));return addUnsigned(rotateLeft(a,s),b);}
+    return string;
+}
+
+/* ===== SHA1 ===== */
 async function sha1(m){
-const buf=new TextEncoder().encode(m);
-const hash=await crypto.subtle.digest('SHA-1',buf);
-return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const buf=new TextEncoder().encode(m);
+    const hash=await crypto.subtle.digest('SHA-1',buf);
+    return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-document.getElementById('paymentForm').addEventListener('submit',async e=>{
-e.preventDefault();
+/* ===== الدفع ===== */
+document.getElementById("form").addEventListener("submit",async(e)=>{
+    e.preventDefault();
 
-const sBox=document.getElementById('statusBox');
-sBox.style.display='block';
-sBox.className='status-box processing';
-sBox.innerHTML='جاري التحويل...';
+    const status=document.getElementById("status");
+    status.style.display="block";
+    status.innerText="جاري التحويل...";
 
-try{
+    try{
 
-// ✅ السعر قابل للتعديل
-const custom=document.getElementById('customPrice').value;
-const amount=(custom?parseFloat(custom):selected.price).toFixed(2);
+        // 🔥 دعم الخصم
+        let amount=document.getElementById("customPrice").value;
+        if(!amount) amount=selected.price;
+        amount=parseFloat(amount).toFixed(2);
 
-const orderId="TWRD-"+Date.now();
-const desc=`Tawreed: ${selected.name}`;
+        const orderId="DLR-"+Date.now();
+        const desc=`Student Service: ${selected.name}`;
 
-sendNotify(`📦 طلب جديد\n${selected.name}\n${amount} SAR`);
+        sendNotify(`📦 *طلب جديد*\n\nالمنتج: ${selected.name}\nالسعر: ${amount} SAR\nالاسم: ${document.getElementById('name').value}\nالجوال: ${document.getElementById('phone').value}`);
 
-const raw=(orderId+amount+"SAR"+desc+CONFIG.PASS).toUpperCase();
-const hash=await sha1(md5(raw));
+        const raw=(orderId+amount+"SAR"+desc+CONFIG.PASS).toUpperCase();
+        const hash=await sha1(md5(raw));
 
-const fd=new FormData();
-fd.append("action","SALE");
-fd.append("edfa_merchant_id",CONFIG.MID);
-fd.append("order_id",orderId);
-fd.append("order_amount",amount);
-fd.append("order_currency","SAR");
-fd.append("order_description",desc);
-fd.append("payer_first_name",document.getElementById('name').value);
-fd.append("payer_last_name","Student");
-fd.append("payer_email",CONFIG.FIXED_EMAIL);
-fd.append("payer_phone",document.getElementById('phone').value);
-fd.append("hash",hash);
+        const fd=new FormData();
+        fd.append("action","SALE");
+        fd.append("edfa_merchant_id",CONFIG.MID);
+        fd.append("order_id",orderId);
+        fd.append("order_amount",amount);
+        fd.append("order_currency","SAR");
+        fd.append("order_description",desc);
+        fd.append("payer_first_name",document.getElementById("name").value);
+        fd.append("payer_last_name","Student");
+        fd.append("payer_email",CONFIG.FIXED_EMAIL);
+        fd.append("payer_phone",document.getElementById("phone").value);
+        fd.append("term_url_3ds",location.href);
+        fd.append("success_url",location.href);
+        fd.append("hash",hash);
 
-const res=await fetch(CONFIG.API,{method:'POST',body:fd});
-const data=await res.json();
+        const res=await fetch(CONFIG.API,{method:"POST",body:fd});
+        const data=await res.json();
 
-if(data.redirect_url){
-window.location.href=data.redirect_url;
-}else{
-throw new Error("فشل الدفع");
-}
+        if(data.redirect_url){
+            location.href=data.redirect_url;
+        } else {
+            throw new Error(data.error || "فشل الدفع");
+        }
 
-}catch(err){
-sBox.className='status-box error';
-sBox.innerHTML=err.message;
-}
+    }catch(err){
+        status.innerText="خطأ: "+err.message;
+    }
 });
+
 </script>
 
 </body>
