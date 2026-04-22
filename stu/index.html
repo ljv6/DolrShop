@@ -7,24 +7,44 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 
+<!-- 🔥 CryptoJS (حل المشكلة) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
 <style>
-:root {
-    --bg-dark:#020b13; --card-bg:#0a1622; --primary:#3b82f6;
-    --text-main:#f8fafc; --text-dim:#94a3b8; --border:#1e293b;
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{
-    background:radial-gradient(circle,#0a1b2d,#020b13);
-    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:var(--text-main)
+    font-family:'Cairo',sans-serif;
+    background:#020b13;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    padding:20px;
 }
-.card{background:var(--card-bg);width:100%;max-width:450px;padding:2rem;border-radius:20px;border:1px solid var(--border)}
-.products-grid{display:grid;gap:10px;margin-bottom:1rem}
-.product-item{background:#111e2d;padding:12px;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between}
-.product-item.active{border:1px solid var(--primary)}
-input{width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid var(--border);background:#111e2d;color:#fff}
-button{width:100%;padding:12px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-weight:bold;margin-top:10px}
-.status-box{margin-top:10px;display:none}
-.processing{color:#3b82f6}
+.card{
+    width:100%;
+    max-width:450px;
+    background:#0a1622;
+    padding:20px;
+    border-radius:15px;
+}
+.product{
+    padding:10px;
+    margin:5px 0;
+    background:#111e2d;
+    cursor:pointer;
+    border-radius:10px;
+    display:flex;
+    justify-content:space-between;
+}
+.product.active{border:1px solid #3b82f6}
+input,button{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+    border:none;
+}
+button{background:#3b82f6;color:#fff;font-weight:bold}
+.status{margin-top:10px;display:none}
 .error{color:red}
 </style>
 </head>
@@ -33,22 +53,21 @@ button{width:100%;padding:12px;border:none;border-radius:10px;background:var(--p
 
 <div class="card">
 
-<h3 style="text-align:center;margin-bottom:10px">بوابة التوريد Dolr</h3>
+<h3 style="text-align:center">بوابة التوريد</h3>
 
-<div class="products-grid" id="products"></div>
+<div id="list"></div>
 
-<form id="paymentForm">
-
+<form id="form">
 <input type="text" id="name" placeholder="الاسم" required>
 <input type="tel" id="phone" placeholder="الجوال" required>
 
-<!-- 🔥 سعر متفق عليه (اختياري للخصم) -->
-<input type="number" id="customPrice" placeholder="السعر المتفق عليه (اختياري)">
+<!-- 🔥 سعر متفق عليه -->
+<input type="number" id="customPrice" placeholder="سعر مخفض (اختياري)">
 
-<button type="submit">تأكيد الطلب</button>
+<button type="submit">إرسال الطلب</button>
 </form>
 
-<div id="statusBox" class="status-box"></div>
+<div id="status" class="status"></div>
 
 </div>
 
@@ -69,58 +88,55 @@ const CONFIG = {
 
 let selected = { name:"", price:0 };
 
-// عرض المنتجات من الملف
-const box = document.getElementById("products");
+// عرض المنتجات
+const list = document.getElementById("list");
 products.forEach(p=>{
     const div = document.createElement("div");
-    div.className="product-item";
-    div.innerHTML = `<h4>${p.name}</h4><span>${p.price} ريال</span>`;
-    div.onclick = ()=>{
-        document.querySelectorAll(".product-item").forEach(e=>e.classList.remove("active"));
+    div.className="product";
+    div.innerHTML=`<span>${p.name}</span><span>${p.price} SAR</span>`;
+    div.onclick=()=>{
+        document.querySelectorAll(".product").forEach(x=>x.classList.remove("active"));
         div.classList.add("active");
         selected = p;
-        document.getElementById("paymentForm").style.display="block";
     };
-    box.appendChild(div);
+    list.appendChild(div);
 });
 
-// إشعار تيليقرام
+// تيليقرام
 function sendNotify(msg){
-    const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
+    const url = `https://api.telegram.org/bot${BOT_CONFIG.TOKEN}/sendMessage?chat_id=${BOT_CONFIG.CHAT_ID}&text=${encodeURIComponent(msg)}`;
     new Image().src = url;
 }
 
-// MD5 (كما هو)
-function md5(string) {
-    return CryptoJS.MD5(string).toString();
+// MD5
+function md5(str){
+    return CryptoJS.MD5(str).toString();
 }
 
-// إصلاح الاستجابة (سبب المشكلة الأساسية)
+// حماية JSON
 async function safeJson(res){
-    try { return await res.json(); }
-    catch { return { raw: await res.text() }; }
+    try{return await res.json();}
+    catch{return {};}
 }
 
-document.getElementById("paymentForm").addEventListener("submit", async (e)=>{
+document.getElementById("form").addEventListener("submit", async (e)=>{
     e.preventDefault();
 
-    const status = document.getElementById("statusBox");
+    const status = document.getElementById("status");
     status.style.display="block";
-    status.className="status-box processing";
-    status.innerHTML="جاري التحويل...";
+    status.innerHTML="جاري الدفع...";
 
     try {
 
-        // 🔥 السعر (يدعم الخصم)
-        const finalPrice = document.getElementById("customPrice").value || selected.price;
-        const amount = parseFloat(finalPrice).toFixed(2);
+        // 🔥 دعم الخصم
+        const price = document.getElementById("customPrice").value || selected.price;
+        const amount = parseFloat(price).toFixed(2);
 
         const orderId = "TWRD-" + Date.now();
-        const desc = `Tawreed: ${selected.name}`;
+        const desc = "Tawreed: " + selected.name;
 
-        sendNotify(`📦 طلب جديد\n\n${selected.name}\n${amount} SAR\n${document.getElementById("phone").value}`);
+        sendNotify(`طلب جديد\n${selected.name}\n${amount} SAR`);
 
-        // 🔥 التشفير الصحيح (MD5 فقط — إصلاح مشكلة الفشل)
         const raw = (orderId + amount + "SAR" + desc + CONFIG.PASS).toUpperCase();
         const hash = md5(raw);
 
@@ -141,17 +157,16 @@ document.getElementById("paymentForm").addEventListener("submit", async (e)=>{
         const res = await fetch(CONFIG.API,{method:"POST",body:fd});
         const data = await safeJson(res);
 
-        // 🔥 حل مشكلة "لا يوجد redirect_url"
         if(data.redirect_url){
-            status.innerHTML="جاري التحويل للدفع...";
-            setTimeout(()=>window.location.href=data.redirect_url,800);
+            status.innerHTML="جاري التحويل...";
+            setTimeout(()=>window.location.href=data.redirect_url,700);
         } else {
-            throw new Error("البوابة لم ترجع رابط تحويل");
+            throw new Error("لا يوجد رابط تحويل من البوابة");
         }
 
     } catch(err){
-        status.className="status-box error";
-        status.innerHTML="فشل: " + err.message;
+        status.innerHTML="فشل: "+err.message;
+        status.className="error";
     }
 });
 </script>
