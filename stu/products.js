@@ -4,7 +4,7 @@ const products = [
         id: 1, 
         name: "حل واجب", 
         price: "30.00", 
-        img: "IMG_HW.png",
+        img: "IMG_1196.png",
         desc: "حل كامل للواجبات المدرسية والجامعية بشكل احترافي وسريع."
     },
     { 
