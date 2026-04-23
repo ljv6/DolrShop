@@ -11,14 +11,14 @@ const products = [
         id: 2, 
         name: "بحث", 
         price: "60.00", 
-        img: "Aa.png",
+        img: "IMG_1198.png",
         desc: "إعداد بحث أكاديمي متكامل مع تنسيق ومراجع حسب الطلب."
     },
     { 
         id: 3, 
         name: "عرض تقديمي", 
         price: "150.00", 
-        img: "IMG_PPT.png",
+        img: "Aa.png",
         desc: "تصميم عرض تقديمي احترافي (PowerPoint) مع تنسيق جذاب ومحتوى مرتب."
     },
     { 
