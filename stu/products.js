@@ -11,7 +11,7 @@ const products = [
         id: 2, 
         name: "بحث", 
         price: "60.00", 
-        img: "IMG_RESEARCH.png",
+        img: "stu/IMG_1198.png",
         desc: "إعداد بحث أكاديمي متكامل مع تنسيق ومراجع حسب الطلب."
     },
     { 
