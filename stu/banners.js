@@ -1,9 +1,9 @@
 const banners = [
     {
-        title: "DOLR PLUS",
+        title: "Dolr Student Services",
         subtitle: "موثوق في مركز الأعمال السعودي",
         image: "IMG_7606.jpeg", 
-        logo: "IMG_7454-removebg-preview.png", // أضفنا مسار اللوجو هنا ليتم استخدامه في المنتصف
+        logo: "IMG_7454-removebg-preview.pn", // أضفنا مسار اللوجو هنا ليتم استخدامه في المنتصف
         opacity: "opacity-80" 
     }
 ];
