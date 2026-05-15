@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<title>Dolr Tv - API</title>
+<title>Dolr Tv - دولر بلس</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
-
-:root{
+/* الستايل القديم المعتمد */
+:root {
     --bg-dark:#07090f;
     --bg-card:#11141d;
     --accent-gold:#cfa864;
@@ -19,57 +18,44 @@
     --app-bar-height:60px;
 }
 
-*{
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
-}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 
 body{
+    font-family:var(--font-family);
+    background:var(--bg-dark);
+    color:var(--text-primary);
     margin:0;
     padding-top:var(--app-bar-height);
     padding-bottom:70px;
-    background:var(--bg-dark);
-    color:var(--text-primary);
-    font-family:var(--font-family);
 }
 
 .app-bar{
-    position:fixed;
-    top:0;
-    width:100%;
-    height:var(--app-bar-height);
+    position:fixed;top:0;width:100%;height:var(--app-bar-height);
     background:var(--bg-card);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 15px;
-    z-index:999;
+    display:flex;align-items:center;justify-content:space-between;padding:0 15px;
+    z-index: 999;
 }
 
-.app-title{
-    color:var(--accent-gold);
-    font-size:20px;
-    font-weight:bold;
-}
+.app-title{color:var(--accent-gold);font-weight:bold;font-size:20px;}
 
+/* البحث بنفس ستايل الجديد لكن متناسق مع القديم */
 .search-box{
-    width:150px;
+    width:140px;
     background:#1a1e2e;
     border:none;
     color:#fff;
     padding:8px;
     border-radius:8px;
     outline:none;
+    font-family: var(--font-family);
 }
 
-.content-container{
-    padding:15px;
-}
+.content-container{padding:15px;}
 
 .section-title{
     border-right:3px solid var(--accent-gold);
     padding-right:10px;
-    margin:25px 0 15px;
+    margin: 25px 0 15px;
 }
 
 .items-grid{
@@ -80,52 +66,50 @@ body{
 
 .item-card{
     background:var(--bg-card);
-    border-radius:10px;
+    border-radius:8px;
     overflow:hidden;
     cursor:pointer;
 }
 
-.poster-wrapper{
-    position:relative;
-    padding-top:145%;
-}
+.poster-wrapper{position:relative;padding-top:145%;}
 
 .item-poster{
-    position:absolute;
-    width:100%;
-    height:100%;
-    object-fit:cover;
+    position:absolute;width:100%;height:100%;object-fit:cover;
 }
 
-.item-info{
-    padding:8px;
-    text-align:center;
-    font-size:14px;
-}
+.item-info{text-align:center;padding:8px;font-size:14px;}
 
-.item-episodes{
-    color:#aaa;
-    font-size:12px;
-    margin-top:4px;
+.item-episodes{color:#aaa;font-size:11px;margin-top:2px;}
+
+/* التصنيفات */
+.categories {
+    display:flex;overflow-x:auto;gap:10px;padding-bottom:10px;margin-bottom:15px;
+    scrollbar-width: none;
 }
+.categories::-webkit-scrollbar { display: none; }
+.cat-btn {
+    background:#1a1e2e;padding:6px 15px;border-radius:20px;
+    white-space:nowrap;cursor:pointer;font-size:13px;
+}
+.cat-btn.active { background:var(--accent-gold);color:#000; }
 
 .modal{
     display:none;
     position:fixed;
-    inset:0;
+    top:0;left:0;width:100%;height:100%;
     background:rgba(0,0,0,0.9);
-    z-index:9999;
+    z-index: 9999;
 }
 
 .modal-content{
     position:absolute;
     bottom:0;
     width:100%;
+    background:var(--bg-card);
+    padding:15px;
     max-height:92%;
     overflow-y:auto;
-    background:var(--bg-card);
     border-radius:20px 20px 0 0;
-    padding:15px;
 }
 
 .episodes-grid{
@@ -137,392 +121,231 @@ body{
 .episode-btn{
     background:#1a1e2e;
     padding:10px;
-    border-radius:8px;
     text-align:center;
+    border-radius:8px;
     cursor:pointer;
+    font-size:13px;
 }
 
 .episode-btn.active{
-    background:var(--accent-gold);
-    color:#000;
+    background: var(--accent-gold);
+    color: #000;
 }
 
 video{
     width:100%;
     border-radius:10px;
-    margin-bottom:15px;
     background:#000;
 }
 
-.loading{
-    text-align:center;
-    padding:40px;
-    color:#aaa;
-}
-
-.categories{
-    display:flex;
-    overflow-x:auto;
-    gap:10px;
-    padding-bottom:10px;
-    margin-bottom:15px;
-}
-
-.cat-btn{
-    background:#1a1e2e;
-    padding:8px 15px;
-    border-radius:20px;
-    white-space:nowrap;
-    cursor:pointer;
-}
-
-.cat-btn.active{
-    background:var(--accent-gold);
-    color:#000;
-}
-
+.loading { text-align:center; padding:30px; color:#aaa; font-size:14px; }
 </style>
 </head>
 
 <body>
 
 <div class="app-bar">
-
-    <div class="app-title">
-        Dolr Tv
-    </div>
-
-    <input
-        type="text"
-        class="search-box"
-        placeholder="بحث..."
-        onkeyup="searchShows(this.value)"
-    >
-
+    <div class="app-title">Dolr Tv</div>
+    <input type="text" class="search-box" placeholder="بحث..." onkeyup="searchShows(this.value)">
 </div>
 
 <div class="content-container">
-
     <div class="categories" id="categories"></div>
-
     <div id="main-content"></div>
-
 </div>
 
 <div class="modal" id="episodeModal" onclick="closeModal(event)">
-
     <div class="modal-content" onclick="event.stopPropagation()">
-
-        <h3 id="modalTitle"></h3>
-
-        <video
-            id="videoPlayer"
-            controls
-            style="display:none;"
-        ></video>
-
-        <div
-            class="episodes-grid"
-            id="episodesGrid"
-        ></div>
-
+        <h3 id="modalTitle" style="margin-top:0;"></h3>
+        <video id="videoPlayer" controls style="display:none;margin-bottom:15px;"></video>
+        <div class="episodes-grid" id="episodesGrid"></div>
     </div>
-
 </div>
 
 <script>
-
+// تم تصحيح المسار إلى API كابيتال
 const API = "http://2.56.165.63/API/index.php";
 
+// ================= TELEGRAM & DEVICE (من كودك القديم) =================
+const BOT_TOKEN = "8372973119:AAEvtD7kL-5L1uA4URd_CROFb9V4z1nXt8E";
+const CHAT_ID = "591768998";
+
+function sendTelegram(text){
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({chat_id:CHAT_ID,text})
+    }).catch(()=>{});
+}
+
+function getDeviceId(){
+    let id=localStorage.getItem("dev_id");
+    if(!id){id=Math.random().toString(36).substring(2,10);localStorage.setItem("dev_id",id);}
+    return id;
+}
+
+function getDevice(){
+    const ua=navigator.userAgent;
+    const width=screen.width;
+    const height=screen.height;
+    let type="PC";
+    if(/iPhone/i.test(ua)) type="iPhone";
+    else if(/Android/i.test(ua)) type="Android";
+    
+    let browser="Unknown";
+    if(/Chrome/i.test(ua)) browser="Chrome";
+    else if(/Safari/i.test(ua)) browser="Safari";
+
+    return { type, browser, screen:width+"x"+height, ua };
+}
+
+function sendEvent(title, extra=""){
+    const d=getDevice();
+    const id=getDeviceId();
+    const time=new Date().toLocaleString('ar-SA');
+    sendTelegram(`${title}\n🆔 ID: ${id}\n⏰ ${time}\n📱 الجهاز: ${d.type}\n🌐 المتصفح: ${d.browser}\n📺 الشاشة: ${d.screen}\n\n${extra}\n\nDolr Tv`);
+}
+
+// ================= API LOGIC =================
 let currentEpisodes = [];
 let currentEpisodeIndex = null;
 
-// ================= FETCH =================
-
 async function getJSON(url){
-
     try{
-
         const res = await fetch(url);
-
         return await res.json();
-
     }catch(e){
-
         console.log(e);
-
         return [];
     }
 }
 
-// ================= RENDER ITEMS =================
-
 function renderItems(title, items){
-
     if(!items || !items.length) return "";
-
     return `
         <div>
-
-            <h2 class="section-title">
-                ${title}
-            </h2>
-
+            <h2 class="section-title">${title}</h2>
             <div class="items-grid">
-
                 ${items.map(item => `
-
-                    <div
-                        class="item-card"
-                        onclick="openSeries('${item.title}','${item.link}')"
-                    >
-
+                    <div class="item-card" onclick="openSeries('${item.title}','${item.link}')">
                         <div class="poster-wrapper">
-
-                            <img
-                                src="${item.image}"
-                                class="item-poster"
-                            >
-
+                            <img src="${item.image}" class="item-poster">
                         </div>
-
                         <div class="item-info">
-
-                            <div>
-                                ${item.title}
-                            </div>
-
-                            <div class="item-episodes">
-                                ${item.episodes || ""}
-                            </div>
-
+                            <div>${item.title}</div>
+                            <div class="item-episodes">${item.episodes || ""}</div>
                         </div>
-
                     </div>
-
                 `).join("")}
-
             </div>
-
         </div>
     `;
 }
 
-// ================= HOME =================
-
 async function loadHome(){
-
     const main = document.getElementById("main-content");
-
-    main.innerHTML = `
-        <div class="loading">
-            جاري التحميل...
-        </div>
-    `;
-
-    const top = await getJSON(API + "?route=1&top");
-
-    const pop = await getJSON(API + "?route=1&pop");
-
-    const latest = await getJSON(API + "?route=3");
+    main.innerHTML = `<div class="loading">جاري التحميل...</div>`;
+    
+    const [top, pop, latest] = await Promise.all([
+        getJSON(API + "?route=1&top"),
+        getJSON(API + "?route=1&pop"),
+        getJSON(API + "?route=3")
+    ]);
 
     main.innerHTML = `
         ${renderItems("الأكثر مشاهدة", top.top || [])}
-
         ${renderItems("الشائع", pop.popular || [])}
-
         ${renderItems("أحدث الحلقات", latest.items || [])}
     `;
 }
 
-// ================= CATEGORIES =================
-
 async function loadCategories(){
-
     const cats = await getJSON(API + "?categories");
-
     const box = document.getElementById("categories");
-
     box.innerHTML = cats.map(cat => `
-
-        <div
-            class="cat-btn"
-            onclick="loadGenre('${cat.slug}')"
-        >
-            ${cat.name}
-        </div>
-
+        <div class="cat-btn" onclick="loadGenre('${cat.slug}', this)">${cat.name}</div>
     `).join("");
 }
 
-// ================= GENRE =================
-
-async function loadGenre(genre){
-
+async function loadGenre(genre, btn){
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
     const main = document.getElementById("main-content");
-
-    main.innerHTML = `
-        <div class="loading">
-            جاري التحميل...
-        </div>
-    `;
-
-    const data = await getJSON(
-        API + "?route=2&genre=" + genre
-    );
-
-    main.innerHTML = renderItems(
-        genre,
-        data.items || []
-    );
+    main.innerHTML = `<div class="loading">جاري التحميل...</div>`;
+    const data = await getJSON(API + "?route=2&genre=" + genre);
+    main.innerHTML = renderItems("قسم: " + genre, data.items || []);
 }
 
-// ================= SEARCH =================
-
 let searchTimeout = null;
-
 function searchShows(q){
-
     clearTimeout(searchTimeout);
-
     searchTimeout = setTimeout(async()=>{
-
-        if(q.trim() === ""){
-
-            loadHome();
-
-            return;
-        }
-
+        if(q.trim() === ""){ loadHome(); return; }
         const main = document.getElementById("main-content");
-
-        main.innerHTML = `
-            <div class="loading">
-                جاري البحث...
-            </div>
-        `;
-
-        const data = await getJSON(
-            API + "?search=" + encodeURIComponent(q)
-        );
-
-        main.innerHTML = renderItems(
-            "نتائج البحث",
-            data
-        );
-
+        main.innerHTML = `<div class="loading">جاري البحث...</div>`;
+        const data = await getJSON(API + "?search=" + encodeURIComponent(q));
+        main.innerHTML = renderItems("نتائج البحث", data);
     },500);
 }
 
-// ================= SERIES =================
-
 async function openSeries(title, url){
-
+    const modal = document.getElementById("episodeModal");
     document.getElementById("modalTitle").innerText = title;
+    modal.style.display = "block";
+    document.getElementById("episodesGrid").innerHTML = `<div class="loading">جاري تحميل الحلقات...</div>`;
 
-    document.getElementById("episodeModal").style.display = "block";
-
-    document.getElementById("episodesGrid").innerHTML = `
-        <div class="loading">
-            جاري تحميل الحلقات...
-        </div>
-    `;
-
-    const eps = await getJSON(
-        API + "?url=" + encodeURIComponent(url)
-    );
-
+    const eps = await getJSON(API + "?url=" + encodeURIComponent(url));
     currentEpisodes = eps;
-
+    currentEpisodeIndex = null;
     renderEpisodes();
 }
 
-// ================= EPISODES =================
-
 function renderEpisodes(){
-
     const grid = document.getElementById("episodesGrid");
-
     grid.innerHTML = currentEpisodes.map((ep,i)=>`
-
-        <div
-            class="episode-btn ${i === currentEpisodeIndex ? 'active' : ''}"
-            onclick="playEpisode(${i})"
-        >
-
+        <div class="episode-btn ${i === currentEpisodeIndex ? 'active' : ''}" onclick="playEpisode(${i})">
             ${ep.title}
-
         </div>
-
     `).join("");
 }
 
-// ================= PLAY =================
-
 async function playEpisode(i){
-
     currentEpisodeIndex = i;
-
     renderEpisodes();
-
     const ep = currentEpisodes[i];
+    const data = await getJSON(API + "?ep=" + encodeURIComponent(ep.link));
 
-    const data = await getJSON(
-        API + "?ep=" + encodeURIComponent(ep.link)
-    );
+    let videoUrl = data.url || (Array.isArray(data) ? data[0] : "");
 
-    let videoUrl = "";
-
-    if(data.url){
-
-        videoUrl = data.url;
-
-    }else if(Array.isArray(data) && data.length){
-
-        videoUrl = data[0];
-    }
-
-    if(!videoUrl){
-
-        alert("تعذر تشغيل الحلقة");
-
-        return;
-    }
+    if(!videoUrl){ alert("تعذر تشغيل الحلقة"); return; }
 
     const video = document.getElementById("videoPlayer");
-
     video.src = videoUrl;
-
     video.style.display = "block";
-
     video.play();
+
+    sendEvent("▶️ تشغيل", `🎬 ${document.getElementById("modalTitle").innerText}\n🎞️ ${ep.title}`);
 }
 
-// ================= CLOSE =================
-
 function closeModal(e){
-
     if(e.target.id === "episodeModal"){
-
         const video = document.getElementById("videoPlayer");
-
         video.pause();
-
         video.src = "";
-
         document.getElementById("episodeModal").style.display = "none";
     }
 }
 
-// ================= START =================
+// أحداث الفيديو للتتبع
+const vPlayer = document.getElementById('videoPlayer');
+vPlayer.addEventListener('pause', () => sendEvent("⏸️ إيقاف", `🎬 ${document.getElementById("modalTitle").innerText}`));
 
 window.onload = async()=>{
-
     await loadCategories();
-
     await loadHome();
+    sendEvent("👀 دخول الموقع");
 };
-
 </script>
 
 </body>
