@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolr Plus - جاري التحميل</title>
+    <style>
+        :root {
+            --bg-color: #030712;
+            --primary-glow: #3b82f6;
+            --secondary-glow: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* حاوية شاشة التحميل */
+        .loader-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #0f172a 0%, var(--bg-color) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+        }
+
+        .loader-screen.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* حاوية الشعار مع تأثير التوهج الخلفي المشع */
+        .logo-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        /* التوهج الخلفي المتحرك */
+        .glow-effect {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+            filter: blur(40px);
+            border-radius: 50%;
+            opacity: 0.75;
+            animation: pulseGlow 3s ease-in-out infinite alternate;
+            z-index: 1;
+        }
+
+        /* الشعار */
+        .logo-container img {
+            position: relative;
+            z-index: 2;
+            max-width: 110px;
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+            animation: floatLogo 3s ease-in-out infinite alternate;
+        }
+
+        /* شريط التحميل العصري (خط متوهج) */
+        .progress-track {
+            width: 180px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 40%;
+            background: linear-gradient(90deg, transparent, #60a5fa, #c084fc, transparent);
+            border-radius: 9999px;
+            animation: loadingSlide 1.8s cubic-bezier(0.65, 0.05, 0.36, 1) infinite;
+            box-shadow: 0 0 12px rgba(96, 165, 250, 0.6);
+        }
+
+        /* تأثيرات الحركة (Animations) */
+        @keyframes pulseGlow {
+            0% {
+                transform: scale(0.85);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1.25);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes floatLogo {
+            0% {
+                transform: translateY(0px);
+            }
+            100% {
+                transform: translateY(-6px);
+            }
+        }
+
+        @keyframes loadingSlide {
+            0% {
+                left: -60%;
+            }
+            100% {
+                left: 120%;
+            }
+        }
+
+        /* دعم تقليل الحركة حسب رغبة المستخدم */
+        @media (prefers-reduced-motion: reduce) {
+            .glow-effect, .logo-container img, .progress-bar {
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loader-screen" id="loader" role="status" aria-label="جاري تحميل المتجر">
+        <div class="logo-container">
+            <!-- التوهج الخلفي المشع -->
+            <div class="glow-effect"></div>
+            <!-- شعار المتجر (يمكنك استبدال رابط الـ Base64 برابط صورتك الخاص) -->
+            <img src="data:image/png;base64,..." alt="Dolr Plus">
+        </div>
+        
+        <!-- مؤشر التحميل الخطي المتوهج -->
+        <div class="progress-track">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        // إخفاء شاشة التحميل بسلاسة عند اكتمال تحميل الصفحة
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                setTimeout(() => {
+                    loader.classList.add('is-hidden');
+                }, 400); // تأخير بسيط لاكتساب طابع التميز والانسيابية
+            }
+        });
+    </script>
+
+</body>
+</html>
