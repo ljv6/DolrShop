@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جاري التحميل</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0f172a;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* حاوية شاشة التحميل */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background-color: #0f172a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+        }
+
+        #loader.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* حاوية اللوجو مع إضاءة خلفية مشعة فقط */
+        .logo-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        /* الإضاءة المشعة خلف اللوجو */
+        .logo-glow {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background: #2563eb;
+            filter: blur(45px);
+            border-radius: 50%;
+            opacity: 0.65;
+            animation: pulseGlow 2.5s ease-in-out infinite alternate;
+            z-index: 1;
+        }
+
+        /* صورة اللوجو الأصلية */
+        .logo-container img {
+            position: relative;
+            z-index: 2;
+            max-width: 45vw;
+            height: auto;
+        }
+
+        /* شريط التحميل الأصلي */
+        .progress-track {
+            width: 180px;
+            height: 4px;
+            background: rgba(255, 255, 255, .12);
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 40%;
+            background-color: #2563eb;
+            border-radius: 9999px;
+            animation: loading-bar 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(0.85); opacity: 0.4; }
+            100% { transform: scale(1.25); opacity: 0.8; }
+        }
+
+        @keyframes loading-bar {
+            0% { left: -40%; }
+            100% { left: 100%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .logo-glow, .progress-bar {
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader" role="status" aria-label="جاري تحميل المتجر">
+        <div class="logo-container">
+            <!-- طبقة الإضاءة المشعة خلف اللوجو -->
+            <div class="logo-glow"></div>
+            <!-- اللوجو الأصلي بالباينري كما هو بدون تعديل (حط كود Base64 الخاص بك بداخل src) -->
+            <img src="data:image/png;base64,ضع_كود_الباينري_الخاص_بك_هنا" alt="Logo">
+        </div>
+        
+        <div class="progress-track">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        // تأخير الاختفاء بناءً على طلبك (2.5 ثانية)
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                setTimeout(() => {
+                    loader.classList.add('is-hidden');
+                }, 2500);
+            }
+        });
+    </script>
+
+</body>
+</html>
